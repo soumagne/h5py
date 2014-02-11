@@ -555,7 +555,7 @@ hdf5:
 
    MPI 1.9.170 hid_t H5Fclose_ff(hid_t file_id, hid_t es_id) 
    MPI 1.9.170 hid_t H5Fcreate_ff(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
-   MPI 1.9.170 hid_t H5Fopen_ff(const char *name, unsigned flags, hid_t fapl_id, hid_t rcntxt_id, hid_t es_id) 
+   MPI 1.9.170 hid_t H5Fopen_ff(const char *name, unsigned flags, hid_t fapl_id, hid_t *rcntxt_id, hid_t es_id)
 
 
 hdf5_hl:

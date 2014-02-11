@@ -78,7 +78,7 @@ def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
                                                 PropFAID fapl=None):
     """(STRING name, INT flags=ACC_TRUNC, PropFCID fcpl=None,
     PropFAID fapl=None) => FileID
-
+    
     Create a new HDF5 file.  Keyword "flags" may be:
 
     ACC_TRUNC
@@ -91,6 +91,85 @@ def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
     the default is ACC_TRUNC.  Be careful!
     """
     return FileID.open(H5Fcreate(name, flags, pdefault(fcpl), pdefault(fapl)))
+
+
+# For Exascale FastForward
+IF MPI and HDF5_VERSION >= (1, 9, 170):
+    def create_ff(char *name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
+                  PropFAID fapl=None, EventStackID es=None):
+        """(STRING name, INT flags=ACC_TRUNC, PropFCID fcpl=None,
+        PropFAID fapl=None, EventStackID es=None) => FileID
+
+        Create an HDF5 file (container), possibly asynchronously. This is the
+        primary function for creating HDF5 containers on the Exascale
+        FastForward storage system.
+
+        Keyword "flags" may be:
+
+        ACC_TRUNC
+            Truncate an existing file, discarding its data
+
+        ACC_EXCL
+            Fail if a conflicting file exists
+
+        To keep the behavior in line with that of Python's built-in functions,
+        the default is ACC_TRUNC.  Be careful!
+
+        The es parameter indicates the event stack the event object
+        for this call should be pushed onto when the function is
+        executed asynchronously. The function may be executed
+        synchronously by not passing this parameter.
+
+        Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
+        """
+        
+        # TODO
+        # Note: The H5Pset_vol_iod() routine must be invoked on the
+        # fapl_id, or the IOD VOL plugin will not be used.
+        cdef hid_t es_id
+        if es is None:
+           es_id = <hid_t>H5_EVENT_STACK_NULL
+        else:
+           es_id = <hid_t>es.id
+        return FileID.open(H5Fcreate_ff(name, flags, pdefault(fcpl), pdefault(fapl), es_id))
+
+
+    def open_ff(char* name, unsigned int flags=H5F_ACC_RDWR,
+                PropFAID fapl=None, rcntxt=None, EventStackID es=None):
+        """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None,
+        rcntxt=None, EventStackID es=None) => FileID
+
+        Open an existing HDF5 file (container), possibly asynchronously.
+        This is the primary function for accessing existing HDF5 containers
+        on the Exascale FastForward storage system.
+
+        Keyword "flags" may be:
+
+        ACC_RDWR
+            Open in read-write mode
+
+        ACC_RDONLY
+            Open in readonly mode
+
+        Keyword fapl may be a file access property list.
+
+        The es parameter indicates the event stack the event object for
+        this call should be pushed onto when the function is executed
+        asynchronously. The function may be executed synchronously by not
+        passing this parameter.
+
+        Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
+        """
+        cdef hid_t es_id
+        cdef hid_t *rcntxt_id = NULL
+        if es is None:
+           es_id = <hid_t>H5_EVENT_STACK_NULL
+        else:
+           es_id = <hid_t>es.id
+        # TODO
+        # Note: the H5Pset_vol_iod() routine must be invoked on the
+        # fapl_id, or the IOD VOL plugin will not be used.
+        return FileID.open(H5Fopen_ff(name, flags, pdefault(fapl), rcntxt_id, es_id))
 
 
 def flush(ObjectID obj not None, int scope=H5F_SCOPE_LOCAL):
@@ -391,6 +470,8 @@ cdef class FileID(GroupID):
               for this call should be pushed onto when the function is
               executed asynchronously. The function may be executed
               synchronously by not passing this parameter.
+
+              Requires HDF5 FastForward library.
               """
 
               cdef hid_t es_id
@@ -398,6 +479,10 @@ cdef class FileID(GroupID):
                  es_id = <hid_t>H5_EVENT_STACK_NULL
               else:
                  es_id = <hid_t>es.id
+              with _objects.registry.lock:
+                 self.locked = False
+                  H5Fclose_ff(self.id, es_id)
+                  _objects.registry.cleanup()
 
 
     def get_mdc_hit_rate(self):
