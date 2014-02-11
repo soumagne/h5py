@@ -24,6 +24,9 @@ from utils cimport emalloc, efree
 from h5py import _objects
 import h5fd
 
+# For Exascale FastForward
+from h5es cimport EventStackID
+
 # Initialization
 
 # === Public constants and data structures ====================================
@@ -346,32 +349,56 @@ cdef class FileID(GroupID):
         return handle[0]
 
 
-    IF MPI and HDF5_VERSION >= (1, 8, 9):
+    IF MPI:
+       IF HDF5_VERSION >= (1, 8, 9):
 
-        def set_mpi_atomicity(self, bint atomicity):
-            """ (BOOL atomicity)
+           def set_mpi_atomicity(self, bint atomicity):
+               """ (BOOL atomicity)
 
-            For MPI-IO driver, set to atomic (True), which guarantees sequential 
-            I/O semantics, or non-atomic (False), which improves  performance.
+               For MPI-IO driver, set to atomic (True), which guarantees sequential 
+               I/O semantics, or non-atomic (False), which improves  performance.
 
-            Default is False.
+               Default is False.
 
-            Feature requires: 1.8.9 and Parallel HDF5
-            """
-            H5Fset_mpi_atomicity(self.id, <hbool_t>atomicity)
+               Feature requires: 1.8.9 and Parallel HDF5
+               """
+               H5Fset_mpi_atomicity(self.id, <hbool_t>atomicity)
 
 
-        def get_mpi_atomicity(self):
-            """ () => BOOL
+           def get_mpi_atomicity(self):
+               """ () => BOOL
 
-            Return atomicity setting for MPI-IO driver.
+               Return atomicity setting for MPI-IO driver.
 
-            Feature requires: 1.8.9 and Parallel HDF5
-            """
-            cdef hbool_t atom
+               Feature requires: 1.8.9 and Parallel HDF5
+               """
+               cdef hbool_t atom
 
-            H5Fget_mpi_atomicity(self.id, &atom)
-            return <bint>atom
+               H5Fget_mpi_atomicity(self.id, &atom)
+               return <bint>atom
+
+       IF HDF5_VERSION >= (1, 9, 170):
+          # For Exascale FastForward
+          def close_ff(self, EventStackID es=None):
+              """(EventStackID es=None)
+
+              Terminate access through this identifier.  Note that depending on
+              what property list settings were used to open the file, the
+              physical file might not be closed until all remaining open
+              identifiers are freed.
+
+              The es parameter indicates the event stack the event object
+              for this call should be pushed onto when the function is
+              executed asynchronously. The function may be executed
+              synchronously by not passing this parameter.
+              """
+
+              cdef hid_t es_id
+              if es is None:
+                 es_id = <hid_t>H5_EVENT_STACK_NULL
+              else:
+                 es_id = <hid_t>es.id
+
 
     def get_mdc_hit_rate(self):
         """() => DOUBLE

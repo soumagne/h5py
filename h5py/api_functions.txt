@@ -536,6 +536,28 @@ hdf5:
   MPI 1.8.9 herr_t H5Fset_mpi_atomicity(hid_t file_id, hbool_t flag)
   MPI 1.8.9 herr_t H5Fget_mpi_atomicity(hid_t file_id, hbool_t *flag)
 
+#=========================================================================
+# Exascale FastForward
+#=========================================================================
+
+# === H5ES - Event Stack API =============================================
+
+   MPI 1.9.170 hid_t H5EScreate(void)
+   MPI 1.9.170 herr_t H5ESget_count(hid_t es_id, size_t *count)
+   MPI 1.9.170 herr_t H5EStest(hid_t es_id, size_t event_idx, H5ES_status_t *status)
+   MPI 1.9.170 herr_t H5EStest_all(hid_t es_id,  H5ES_status_t *status)
+   MPI 1.9.170 herr_t H5ESwait(hid_t es_id, size_t event_idx, H5ES_status_t *status)
+   MPI 1.9.170 herr_t H5ESwait_all(hid_t es_id,  H5ES_status_t *status)
+   MPI 1.9.170 herr_t H5ESclear(hid_t es_id)
+   MPI 1.9.170 herr_t H5ESclose(hid_t es_id)
+
+# === H5F API New Additions ==============================================
+
+   MPI 1.9.170 hid_t H5Fclose_ff(hid_t file_id, hid_t es_id) 
+   MPI 1.9.170 hid_t H5Fcreate_ff(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
+   MPI 1.9.170 hid_t H5Fopen_ff(const char *name, unsigned flags, hid_t fapl_id, hid_t rcntxt_id, hid_t es_id) 
+
+
 hdf5_hl:
 # === H5DS - Dimension Scales API =============================================
 

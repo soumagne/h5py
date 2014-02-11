@@ -752,3 +752,22 @@ cdef extern from "hdf5_hl.h":
 # === H5DS - Dimension Scales API =============================================
 
   ctypedef herr_t  (*H5DS_iterate_t)(hid_t dset, unsigned dim, hid_t scale, void *visitor_data) except 2
+
+
+
+#=========================================================================
+# Exascale FastForward
+#=========================================================================
+
+# === H5ES - Event Stack API =============================================
+
+cdef extern from "H5ESpublic.h":
+   # Asynchronous operation status
+   ctypedef enum H5ES_status_t:
+      H5ES_STATUS_IN_PROGRESS,   # Operation has not yet completed
+      H5ES_STATUS_SUCCEED,       # Operation has completed, successfully
+      H5ES_STATUS_FAIL,          # Operation has completed, but failed
+      H5ES_STATUS_CANCEL         # Operation has not completed and has been cancelled
+
+   int H5_REQUEST_NULL     # NULL
+   int H5_EVENT_STACK_NULL # -1

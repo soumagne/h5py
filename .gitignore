@@ -8,11 +8,9 @@ h5py/config.pxi
 h5py/_hdf5.*
 *.hdf5
 *.pickle
+*.sw?
 h5py/defs.*
 build/
 *.pyc
 dist/
 MANIFEST
-.DS_Store
-/docs/_build
-/docs_api/_build
