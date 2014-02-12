@@ -540,6 +540,12 @@ hdf5:
 # Exascale FastForward
 #=========================================================================
 
+# === Init and finalize functions ========================================
+
+MPI 1.9.170 herr_t EFF_init(MPI_Comm comm, MPI_Info info)
+MPI 1.9.170 herr_t EFF_finalize(void)
+
+
 # === H5ES - Event Stack API =============================================
 
    MPI 1.9.170 hid_t H5EScreate(void)

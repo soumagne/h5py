@@ -151,7 +151,7 @@ cdef class EventStackID(ObjectID):
        """
        with _objects.registry.lock:
            self.locked = False
-            H5FESclose(self.id)
+            H5ESclose(self.id)
             _objects.registry.cleanup()
 
 
