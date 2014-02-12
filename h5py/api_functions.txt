@@ -553,10 +553,16 @@ hdf5:
 
 # === H5F API New Additions ==============================================
 
-   MPI 1.9.170 hid_t H5Fclose_ff(hid_t file_id, hid_t es_id) 
+   MPI 1.9.170 hid_t H5Fclose_ff(hid_t file_id, hid_t es_id)
    MPI 1.9.170 hid_t H5Fcreate_ff(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
    MPI 1.9.170 hid_t H5Fopen_ff(const char *name, unsigned flags, hid_t fapl_id, hid_t *rcntxt_id, hid_t es_id)
 
+# === H5P API ============================================================
+
+   MPI 1.9.170 herr_t H5Pset_fapl_iod(hid_t fapl_id, MPI_Comm comm, MPI_Info info)
+
+#=========================================================================
+#=========================================================================
 
 hdf5_hl:
 # === H5DS - Dimension Scales API =============================================

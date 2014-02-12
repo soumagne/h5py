@@ -960,6 +960,21 @@ cdef class PropFAID(PropInstanceID):
             """
             H5Pset_fapl_mpiposix(self.id, comm.ob_mpi, use_gpfs_hints)
 
+        if HDF5_VERSION >= (1, 9, 170):
+            # Exascale FastForward
+            def set_fapl_iod(self, Comm comm not None, Info info not None): 
+                """(Comm comm, Info info)
+
+                Specify that the IOD VOL plugin should be used to access the
+                HDF5 container.
+
+                Comm: An mpi4py.MPI.Comm instance
+                Info: An mpi4py.MPI.Info instance
+
+                Requires FastForward HDF5 (prereq.: MPI and Parallel HDF5)
+                """
+                H5Pset_fapl_iod(self.id, comm.ob_mpi, info.ob_mpi)
+
     def get_mdc_config(self):
         """() => CacheConfig
         Returns an object that stores all the information about the meta-data cache
