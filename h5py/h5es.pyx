@@ -4,12 +4,6 @@
 
 include "config.pxi"
 
-cdef class EventStackID(ObjectID):
-   """
-   Represents an HDF5 event stack identifier
-   """
-   pass
-
 
 # Helper function for the correct value of the event stack id.
 cdef hid_t esid_default(EventStackID es):
