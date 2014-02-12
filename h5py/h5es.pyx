@@ -11,6 +11,13 @@ cdef class EventStackID(ObjectID):
    pass
 
 
+# Helper function for default value of event stack id.
+cdef hid_t esid_default(EventStackID es):
+    if es is None:
+        return <hid_t>H5_EVENT_STACK_NULL
+    return <hid_t>es.id
+
+
 def create():
    """() => EventStackID
 

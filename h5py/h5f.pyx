@@ -25,7 +25,7 @@ from h5py import _objects
 import h5fd
 
 # For Exascale FastForward
-from h5es cimport EventStackID
+from h5es cimport EventStackID, esid_default
 
 # Initialization
 
@@ -126,12 +126,7 @@ IF MPI and HDF5_VERSION >= (1, 9, 170):
         Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
         """
         
-        cdef hid_t es_id
-        if es is None:
-           es_id = <hid_t>H5_EVENT_STACK_NULL
-        else:
-           es_id = <hid_t>es.id
-        return FileID.open(H5Fcreate_ff(name, flags, pdefault(fcpl), pdefault(fapl), es_id))
+        return FileID.open(H5Fcreate_ff(name, flags, pdefault(fcpl), pdefault(fapl), esid_default(es)))
 
 
     def open_ff(char* name, unsigned int flags=H5F_ACC_RDWR,
@@ -164,13 +159,8 @@ IF MPI and HDF5_VERSION >= (1, 9, 170):
         Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
         """
 
-        cdef hid_t es_id
         cdef hid_t *rcntxt_id = NULL
-        if es is None:
-           es_id = <hid_t>H5_EVENT_STACK_NULL
-        else:
-           es_id = <hid_t>es.id
-        return FileID.open(H5Fopen_ff(name, flags, pdefault(fapl), rcntxt_id, es_id))
+        return FileID.open(H5Fopen_ff(name, flags, pdefault(fapl), rcntxt_id, esid_default(es)))
 
 
 def flush(ObjectID obj not None, int scope=H5F_SCOPE_LOCAL):
@@ -475,14 +465,9 @@ cdef class FileID(GroupID):
               Requires HDF5 FastForward library.
               """
 
-              cdef hid_t es_id
-              if es is None:
-                 es_id = <hid_t>H5_EVENT_STACK_NULL
-              else:
-                 es_id = <hid_t>es.id
               with _objects.registry.lock:
                  self.locked = False
-                  H5Fclose_ff(self.id, es_id)
+                  H5Fclose_ff(self.id, esid_default(es_id))
                   _objects.registry.cleanup()
 
 
