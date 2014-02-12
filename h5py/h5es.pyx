@@ -11,7 +11,7 @@ cdef class EventStackID(ObjectID):
    pass
 
 
-# Helper function for default value of event stack id.
+# Helper function for the correct value of the event stack id.
 cdef hid_t esid_default(EventStackID es):
     if es is None:
         return <hid_t>H5_EVENT_STACK_NULL
@@ -64,24 +64,24 @@ def clear(EventStackID es not None):
    H5ESclear(es.id)
 
 
-def close(EventStackID es not None):
-   """(EventStackID es)
+#def close(EventStackID es not None):
+#   """(EventStackID es)
+#
+#   Closes an event stack specified by es.
+#   """
+#
+#   H5ESclose(es.id)
 
-   Closes an event stack specified by es.
-   """
 
-   H5ESclose(es.id)
-
-
-def get_count(EventStackID es):
-   """(EventStackID es) => INT count
-
-   Returns the number of events in the event stack specified by es.
-   """
-
-   cdef size_t count
-   H5ESget_count(es.id, &count)
-   return count
+#def get_count(EventStackID es not None):
+#   """(EventStackID es) => INT count
+#
+#   Returns the number of events in the event stack specified by es.
+#   """
+#
+#   cdef size_t count
+#   H5ESget_count(es.id, &count)
+#   return count
 
 
 def test(EventStackID es not None, int event_idx not None):
@@ -133,3 +133,34 @@ def wait_all(EventStackID es not None):
    cdef H5ES_status_t status
    H5ESwait_all(es.id, &status)
    return status
+
+
+cdef class EventStackID(ObjectID):
+   """
+   Represents an HDF5 event stack identifier
+   """
+   
+   def __cinit__(self, id):
+       self.locked = True
+
+
+   def close(self):
+       """()
+
+       Closes the event stack.
+       """
+       with _objects.registry.lock:
+           self.locked = False
+            H5FESclose(self.id)
+            _objects.registry.cleanup()
+
+
+    def get_count(self):
+       """() => INT count
+
+       Returns the number of events in the event stack.
+       """
+
+       cdef size_t count
+       H5ESget_count(es.id, &count)
+       return count
