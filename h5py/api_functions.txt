@@ -567,6 +567,18 @@ MPI 1.9.170 herr_t EFF_finalize(void)
 
    MPI 1.9.170 herr_t H5Pset_fapl_iod(hid_t fapl_id, MPI_Comm comm, MPI_Info info)
 
+# === H5TR - Transaction Operation API ===================================
+
+   MPI 1.9.170 hid_t H5TRcreate(hid_t file_id, hid_t rc_id, uint64_t trans_num)
+   MPI 1.9.170 herr_t H5TRget_trans_num(hid_t trans_id, uint64_t *trans_num)
+   MPI 1.9.170 herr_t H5TRget_version(hid_t trans_id, uint64_t *c_version)
+   MPI 1.9.170 herr_t H5TRstart(hid_t trans_id, hid_t trspl_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5TRfinish(hid_t trans_id, hid_t trfpl_id, hid_t *rcntxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5TRskip(hid_t file_id, uint64_t start_trans_num, uint64_t count, hid_t estack_id)
+   MPI 1.9.170 herr_t H5TRset_dependency(hid_t trans_id, uint64_t trans_num, hid_t estack_id)
+   MPI 1.9.170 herr_t H5TRabort(hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5TRclose(hid_t trans_id)
+
 #=========================================================================
 #=========================================================================
 
