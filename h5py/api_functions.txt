@@ -579,6 +579,18 @@ MPI 1.9.170 herr_t EFF_finalize(void)
    MPI 1.9.170 herr_t H5TRabort(hid_t trans_id, hid_t estack_id)
    MPI 1.9.170 herr_t H5TRclose(hid_t trans_id)
 
+# === H5RC - Read Context API ============================================
+
+   MPI 1.9.170 hid_t H5RCcreate(hid_t file_id, uint64_t container_version)
+   MPI 1.9.170 herr_t H5RCget_version(hid_t rcxt_id, uint64_t *c_version)
+   MPI 1.9.170 hid_t H5RCacquire(hid_t file_id, uint64_t *container_version, hid_t rcapl_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5RCrelease(hid_t rcxt_id , hid_t estack_id)
+   MPI 1.9.170 herr_t H5RCpersist(hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5RCsnapshot(hid_t rcxt_id, const char *snapshot_name, hid_t estack_id)
+   MPI 1.9.170 herr_t H5RCclose(hid_t rcxt_id)
+   MPI 1.9.170 herr_t H5Pset_rcapl_version_request(hid_t rcapl_id, H5RC_request_t acquire_req)
+   MPI 1.9.170 herr_t H5Pget_rcapl_version_request(hid_t rcapl_id, H5RC_request_t *acquire_req)
+
 #=========================================================================
 #=========================================================================
 
