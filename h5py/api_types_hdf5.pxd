@@ -771,3 +771,19 @@ cdef extern from "H5ESpublic.h":
 
    int H5_REQUEST_NULL     # NULL
    int H5_EVENT_STACK_NULL # -1
+
+# === H5TR API ===========================================================
+
+cdef extern from "H5TRpublic.h":
+    cdef char* H5TR_START_NUM_PEERS_NAME
+
+# === H5RC API ===========================================================
+
+cdef extern from "H5RCpublic.h":
+    ctypedef enum H5RC_request_t:
+        H5RC_EXACT, # default
+        H5RC_PREV,
+        H5RC_NEXT,
+        H5RC_LAST
+
+    cdef char* H5RC_ACQUIRE_CV_REQUEST_NAME
