@@ -54,19 +54,33 @@ cdef class EventStackID(ObjectID):
    Represents an HDF5 event stack identifier
    """
    
-   def __cinit__(self, id):
-       self.locked = True
+#   def __cinit__(self, id):
+#       self.locked = True
 
 
-   def close(self):
-       """()
+#   def close(self):
+#       """()
+#
+#       Closes the event stack.
+#       """
+#       with _objects.registry.lock:
+#           self.locked = False
+#            H5ESclose(self.id)
+#            _objects.registry.cleanup()
 
-       Closes the event stack.
-       """
-       with _objects.registry.lock:
-           self.locked = False
+
+    # Let's first trust Python to clean up correctly.
+    def _close(self):
+        """()
+
+        Terminate access through this identifier. You shouldn't have to
+        call this manually; event stack identifiers are automatically released
+        when their Python wrappers are freed.
+        """
+        with _objects.registry.lock:
             H5ESclose(self.id)
-            _objects.registry.cleanup()
+            if not self.valid:
+                del _objects.registry[self.id]
 
 
     def get_count(self):
