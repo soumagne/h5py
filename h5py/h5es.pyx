@@ -4,6 +4,7 @@
 
 include "config.pxi"
 
+from h5py import _objects
 
 # Helper function for the correct value of the event stack id.
 cdef hid_t esid_default(EventStackID es):
@@ -11,6 +12,7 @@ cdef hid_t esid_default(EventStackID es):
         return <hid_t>H5_EVENT_STACK_NULL
     return <hid_t>es.id
 
+# Event stack operations
 
 def create():
    """() => EventStackID
@@ -45,89 +47,7 @@ def create():
 #    H5EScancel_all(es.id, &status)
 #    return status
 
-
-def clear(EventStackID es not None):
-   """(EventStackID es)
-
-   Clear all events from an event stack specified by es after first confirming
-   that no in-progress events remain in the stack. If the stack does contain
-   one or more in-progress events, no events are cleared and the call fails (a
-   negative value is returned).
-   """
-
-   H5ESclear(es.id)
-
-
-#def close(EventStackID es not None):
-#   """(EventStackID es)
-#
-#   Closes an event stack specified by es.
-#   """
-#
-#   H5ESclose(es.id)
-
-
-#def get_count(EventStackID es not None):
-#   """(EventStackID es) => INT count
-#
-#   Returns the number of events in the event stack specified by es.
-#   """
-#
-#   cdef size_t count
-#   H5ESget_count(es.id, &count)
-#   return count
-
-
-def test(EventStackID es not None, int event_idx not None):
-   """(EventStackID es) => INT status
-
-   Reports the completion status of the event specified by event_idx in the
-   event stack specified by es.
-   """
-
-   cdef H5ES_status_t status
-   H5EStest(es.id, event_idx, &status)
-   return status
-
-
-def test_all(EventStackID es):
-   """(EventStackID es) => INT status
-
-   Reports an overall completion status for all events in the event stack
-   specified by es.
-   """
-
-   cdef H5ES_status_t status
-   H5EStest_all(es.id, &status)
-   return status
-
-
-def wait(EventStackID es not None, int event_idx not None):
-   """(EventStackID es, INT event_idx) => INT status
-
-   Waits for the completion or cancellation of the event specified by
-   event_idx in the event stack specified by es and reports the event’s
-   completion status.  The call does not return until the event being waited
-   on completes or is cancelled.
-   """
-
-   cdef H5ES_status_t status
-   H5ESwait(es.id, event_idx, &status)
-   return status
-
-
-def wait_all(EventStackID es not None):
-   """(EventStackID es) => INT status
-
-   Waits for the completion or cancellation of all events in the event stack
-   specified by es and reports an overall completion status.  The call does
-   not return until all events in the event stack complete or are cancelled.
-   """
-
-   cdef H5ES_status_t status
-   H5ESwait_all(es.id, &status)
-   return status
-
+# EventStackID implementation
 
 cdef class EventStackID(ObjectID):
    """
@@ -156,5 +76,66 @@ cdef class EventStackID(ObjectID):
        """
 
        cdef size_t count
-       H5ESget_count(es.id, &count)
+       H5ESget_count(self.id, &count)
        return count
+
+
+    def clear(self):
+       """()
+
+       Clear all events from the event stack after first confirming that no
+       in-progress events remain in the stack. If the stack does contain one
+       or more in-progress events, no events are cleared and the call fails.
+       """
+
+       H5ESclear(self.id)
+
+
+    def test(self, int event_idx not None):
+       """(INT event_idx) => INT status
+
+       Reports the completion status of the event specified by event_idx in the
+       event stack.
+       """
+
+       cdef H5ES_status_t status
+       H5EStest(self.id, event_idx, &status)
+       return status
+
+
+    def test_all(self):
+       """() => INT status
+
+       Reports an overall completion status for all events in the event stack.
+       """
+
+       cdef H5ES_status_t status
+       H5EStest_all(self.id, &status)
+       return status
+
+
+    def wait(int event_idx not None):
+       """(INT event_idx) => INT status
+
+       Waits for the completion or cancellation of the event specified by
+       event_idx in the event stack and reports the event’s completion status.
+       The call does not return until the event being waited on completes or
+       is cancelled.
+       """
+
+       cdef H5ES_status_t status
+       H5ESwait(self.id, event_idx, &status)
+       return status
+
+
+    def wait_all():
+       """() => INT status
+
+       Waits for the completion or cancellation of all events in the event
+       stack and reports an overall completion status. The call does not
+       return until all events in the event stack complete or are cancelled.
+       """
+
+       cdef H5ES_status_t status
+       H5ESwait_all(self.id, &status)
+       return status

@@ -781,9 +781,11 @@ cdef extern from "H5TRpublic.h":
 
 cdef extern from "H5RCpublic.h":
     ctypedef enum H5RC_request_t:
-        H5RC_EXACT, # default
-        H5RC_PREV,
-        H5RC_NEXT,
-        H5RC_LAST
+        H5RC_EXACT, # Acquire a read handle for the exact container version specified (Default)
+        H5RC_PREV,  # Acquire a read handle for the container version specified, or the highest
+                    # previous version if the specified version is not available
+        H5RC_NEXT,  # Acquire a read handle for the container version specified, or the lowest
+                    # next version if the specified version is not available
+        H5RC_LAST   # Acquire a read handle for the last (highest) container version possible
 
     cdef char* H5RC_ACQUIRE_CV_REQUEST_NAME
