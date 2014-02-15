@@ -15,4 +15,7 @@ from _hl.dataset import Dataset
 from _hl.datatype import Datatype
 from _hl.attrs import AttributeManager
 
+# Exascale FastForward
+from _hl.event_stack import EventStack
+
 
