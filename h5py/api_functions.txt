@@ -543,12 +543,12 @@ hdf5:
 # === Init and finalize functions ========================================
 
    MPI 1.9.170 herr_t EFF_init(MPI_Comm comm, MPI_Info info)
-   MPI 1.9.170 herr_t EFF_finalize(void)
+   MPI 1.9.170 herr_t EFF_finalize()
 
 
 # === H5ES - Event Stack API =============================================
 
-   MPI 1.9.170 hid_t H5EScreate(void)
+   MPI 1.9.170 hid_t H5EScreate()
    MPI 1.9.170 herr_t H5ESget_count(hid_t es_id, size_t *count)
    MPI 1.9.170 herr_t H5EStest(hid_t es_id, size_t event_idx, H5ES_status_t *status)
    MPI 1.9.170 herr_t H5EStest_all(hid_t es_id,  H5ES_status_t *status)
