@@ -50,9 +50,9 @@ def create():
 # EventStackID implementation
 
 cdef class EventStackID(ObjectID):
-   """
-   Represents an HDF5 event stack identifier
-   """
+    """
+    Represents an HDF5 event stack identifier
+    """
    
 #   def __cinit__(self, id):
 #       self.locked = True
@@ -105,8 +105,8 @@ cdef class EventStackID(ObjectID):
        H5ESclear(self.id)
 
 
-    def test(self, int event_idx not None):
-       """(INT event_idx) => INT status
+    def test(self, size_t event_idx=0):
+       """(INT event_idx=0) => INT status
 
        Reports the completion status of the event specified by event_idx in the
        event stack.
@@ -128,8 +128,8 @@ cdef class EventStackID(ObjectID):
        return status
 
 
-    def wait(int event_idx not None):
-       """(INT event_idx) => INT status
+    def wait(self, size_t event_idx=0):
+       """(INT event_idx=0) => INT status
 
        Waits for the completion or cancellation of the event specified by
        event_idx in the event stack and reports the event’s completion status.
@@ -142,7 +142,7 @@ cdef class EventStackID(ObjectID):
        return status
 
 
-    def wait_all():
+    def wait_all(self):
        """() => INT status
 
        Waits for the completion or cancellation of all events in the event
