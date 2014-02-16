@@ -560,8 +560,8 @@ hdf5:
 # === H5F API New Additions ==============================================
 
    MPI 1.9.170 hid_t H5Fclose_ff(hid_t file_id, hid_t es_id)
-   MPI 1.9.170 hid_t H5Fcreate_ff(const char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
-   MPI 1.9.170 hid_t H5Fopen_ff(const char *name, unsigned flags, hid_t fapl_id, hid_t *rcntxt_id, hid_t es_id)
+   MPI 1.9.170 hid_t H5Fcreate_ff(char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
+   MPI 1.9.170 hid_t H5Fopen_ff(char *name, unsigned flags, hid_t fapl_id, hid_t *rcntxt_id, hid_t es_id)
 
 # === H5P API ============================================================
 
@@ -588,7 +588,7 @@ hdf5:
    MPI 1.9.170 herr_t H5RCget_version(hid_t rcxt_id, uint64_t *c_version)
    MPI 1.9.170 herr_t H5RCrelease(hid_t rcxt_id , hid_t estack_id)
    MPI 1.9.170 herr_t H5RCpersist(hid_t rcxt_id, hid_t estack_id)
-   MPI 1.9.170 herr_t H5RCsnapshot(hid_t rcxt_id, const char *snapshot_name, hid_t estack_id)
+   MPI 1.9.170 herr_t H5RCsnapshot(hid_t rcxt_id, char *snapshot_name, hid_t estack_id)
    MPI 1.9.170 herr_t H5RCclose(hid_t rcxt_id)
 
 #=========================================================================
