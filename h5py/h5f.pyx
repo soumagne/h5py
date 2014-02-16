@@ -466,7 +466,7 @@ cdef class FileID(GroupID):
               """
 
               with _objects.registry.lock:
-                 self.locked = False
+                  self.locked = False
                   H5Fclose_ff(self.id, esid_default(es_id))
                   _objects.registry.cleanup()
 
