@@ -53,6 +53,9 @@ def make_fapl(driver, libver, **kwds):
     elif(driver == 'mpio'):
         kwds.setdefault('info', mpi4py.MPI.Info())
         plist.set_fapl_mpio(**kwds)
+    elif(driver == 'iod'):
+        kwds.setdefault('info', mpi4py.MPI.Info())
+        plist.set_fapl_iod(**kwds)
     else:
         raise ValueError('Unknown driver type "%s"' % driver)
 
@@ -376,7 +379,7 @@ class File_ff(Group):
             driver, HDF5 still requires this be non-empty.
         driver
             Name of the driver to use.  Legal values are None (default,
-            recommended), 'core', 'sec2', 'stdio', 'mpio'.
+            recommended), 'core', 'sec2', 'stdio', 'mpio', 'iod'.
         libver
             Library version bounds.  Currently only the strings 'earliest'
             and 'latest' are defined.
