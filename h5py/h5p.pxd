@@ -91,3 +91,5 @@ cdef class PropRCAID(PropInstanceID):
 cdef class PropTSID(PropInstanceID):
     """ Transaction start property list """
     pass
+
+cdef hid_t tsdefault(PropTSID tsid)

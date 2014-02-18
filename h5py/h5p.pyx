@@ -1260,3 +1260,14 @@ cdef class PropTSID(PropInstanceID):
         unsigned num_peers
         H5Pget_trspl_num_peers(self.id, &num_peers)
         return num_peers
+
+# PropTSID default value helper function
+cdef hid_t tsdefault(PropTSID tsid):
+    cdef unsigned num_peers
+    if tsid is None:
+        return <hid_t>H5P_DEFAULT
+    num_peers = tsid.get_trspl_num_peers()
+    if num_peers == 1:
+        return <hid_t>H5P_DEFAULT
+    return tsid.id
+    num_peers = tsid.get_trspl_num_peers()

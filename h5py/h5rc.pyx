@@ -5,7 +5,7 @@
 include "config.pxi"
 
 from h5f cimport FileID
-from h5p cimport pdefault
+from h5p cimport pdefault, PropRCAID
 from h5es cimport EventStackID, esid_default
 from h5py import _objects
 
