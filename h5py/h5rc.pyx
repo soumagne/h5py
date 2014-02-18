@@ -5,6 +5,7 @@
 include "config.pxi"
 
 from h5f cimport FileID
+from h5p cimport pdefault
 from h5es cimport EventStackID, esid_default
 from h5py import _objects
 
@@ -15,29 +16,54 @@ def create(FileID fid not None, int container_version):
 
     Create a read context associated with a container and version.
     """
-    return RCntxtID.open(fid.id, <uint64_t>container_version)
+    return RCntxtID.open(H5RCcreate(fid.id, <uint64_t>container_version))
 
 
-# Read Context ID implementation
+def acquire(FileID fid not None, PropRCAID rcapl=None, EventStackID es=None,
+            unit64_t container_version=0):
+    """(FileID fid, PropRCAID rcapl=None, EventStack es=None, UINT container_version=0) => TUPLE (RCntxtID, UINT container_version)
 
+    Acquire a read handle for a container at a given version and create a
+    read context associated with the container and version.
+    """
+    cdef uint64_t cv = container_version
+    cdef RCntxtID rcid
+    rcid = RCntxtID.open(H5RCacquire(fid.id, &cv, pdefault(rcapl), esid_default(es)))
+    return (rcid, cv)
+
+# Read Context ID implementation for Exascale FastForward
 cdef class RCntxtID(ObjectID):
     """
     Represents an HDF5 read context identifier
     """
 
-    def __cinit__(self, id):
-        self.locked = True
+#    def __cinit__(self, id):
+#        self.locked = True
+#
+#
+#    def close(self):
+#        """()
+#
+#        Close a read context associated with this identifier.
+#        """
+#       with _objects.registry.lock:
+#           self.locked = False
+#            H5RCclose(self.id)
+#            _objects.registry.cleanup()
 
 
-    def close(self):
+    # Let's first trust Python to clean up correctly.
+    def _close(self):
         """()
 
-        Close a read context associated with this identifier.
+        Terminate access through this identifier. You shouldn't have to
+        call this manually; event stack identifiers are automatically released
+        when their Python wrappers are freed.
         """
-       with _objects.registry.lock:
-           self.locked = False
+        with _objects.registry.lock:
             H5RCclose(self.id)
-            _objects.registry.cleanup()
+            if not self.valid:
+                del _objects.registry[self.id]
 
 
     def get_version(self):
@@ -46,10 +72,18 @@ cdef class RCntxtID(ObjectID):
         Retrieve the container version associated with this read context
         identifier.
         """
-
         cdef uint64_t container_version
         H5RCget_version(self.id, &container_version)
         return container_version
+
+
+    def persist(self, EventStackID es=None):
+        """(EventStack es=None)
+
+        Copy data for a container from IOD to DAOS, bringing DAOS up to
+        specified container version.
+        """
+        H5RCpersist(self.id, esid_default(es))
 
 
     def release(self, EventStackID es=None):
@@ -58,7 +92,13 @@ cdef class RCntxtID(ObjectID):
         Close the read context and release a read handle for the
         associated container version.
         """
-
         H5RCrelease (self.id, esid_default(es))
 
 
+    def snapshot(self, char* snapshot_name, EventStackID es=None):
+        """(STRING snapshot_name, EventStackID es=None)
+
+        Make a snapshot of a container on DAOS and give it the indicated
+        snapshot name.
+        """
+        H5RCsnapshot(self.id, snapshot_name, esid_default(es))
