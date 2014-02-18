@@ -399,6 +399,20 @@ cdef extern from "hdf5.h":
   hid_t H5P_CRT_ORDER_TRACKED
   hid_t H5P_CRT_ORDER_INDEXED
 
+  # Additional property list classes from Exascale FastForward's H5Ppublic.h
+  hid_t H5P_ROOT
+  hid_t H5P_FILE_MOUNT
+  hid_t H5P_GROUP_ACCESS
+  hid_t H5P_MAP_CREATE
+  hid_t H5P_MAP_ACCESS
+  hid_t H5P_DATATYPE_CREATE
+  hid_t H5P_DATATYPE_ACCESS
+  hid_t H5P_STRING_CREATE
+  hid_t H5P_ATTRIBUTE_CREATE
+  hid_t H5P_RC_ACQUIRE
+  hid_t H5P_TR_START
+  hid_t H5P_TR_FINISH
+
 # === H5R - Reference API =====================================================
 
   size_t H5R_DSET_REG_REF_BUF_SIZE
