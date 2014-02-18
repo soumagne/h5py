@@ -57,6 +57,8 @@ cdef object propwrap(hid_t id_in):
             pcls = PropDAID
         elif H5Pequal(clsid, H5P_OBJECT_CREATE):
             pcls = PropOCID
+        elif H5Pequal(clsid, H5P_RC_ACQUIRE):
+            pcls = PropRCAID
 
         else:
             raise ValueError("No class found for ID %d" % id_in)
@@ -100,6 +102,9 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
                  # is to make them all None, to better match the Python style
                  # for keyword arguments.
 
+# For Exascale FastForward, not sure (yet) if these need to be locked
+RC_AQUIRE = H5P_RC_ACQUIRE
+
 
 # === Property list functional API ============================================
 
@@ -118,6 +123,7 @@ def create(PropClassID cls not None):
     - GROUP_CREATE
     - OBJECT_COPY
     - OBJECT_CREATE
+    - RC_AQUIRE (Exascale FastForward)
     """
     cdef hid_t newid
     newid = H5Pcreate(cls.id)
@@ -1204,3 +1210,27 @@ cdef class PropDAID(PropInstanceID):
 
         H5Pget_chunk_cache(self.id, &rdcc_nslots, &rdcc_nbytes, &rdcc_w0 )
         return (rdcc_nslots,rdcc_nbytes,rdcc_w0)
+
+# Read Context Acquire property list
+cdef class PropRCAID(PropInstanceID):
+    """ Read Context Acquire property list """
+
+    def set_rcapl_version_request(self, H5RC_request_t acquire_req):
+        """(H5RC_request_t acquire_req)
+
+        Specify a version request modifier in a read context acquire
+        property list. Possible values are: H5RC_EXACT, H5RC_PREV,
+        H5RC_NEXT, H5RC_LAST.
+        """
+        H5Pset_rcapl_version_request(self.id, acquire_req)
+
+
+    def get_rcapl_version_request(self):
+        """ () => H5RC_request_t acquire_req
+
+        Retrieve a version request modifier from a read context acquire
+        property list.
+        """
+        H5RC_request_t acquire_req
+        H5Pget_rcapl_version_request(self.id, &acquire_req)
+        return acquire_req

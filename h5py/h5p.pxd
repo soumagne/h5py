@@ -81,3 +81,9 @@ cdef class PropGCID(PropOCID):
 
 cdef hid_t pdefault(PropID pid)
 cdef object propwrap(hid_t id_in)
+
+# For Exascale FastForward
+
+cdef class PropRCAID(PropInstanceID):
+    """ Read Context Acquire property list """
+    pass
