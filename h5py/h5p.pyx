@@ -1270,4 +1270,3 @@ cdef hid_t tsdefault(PropTSID tsid):
     if num_peers == 1:
         return <hid_t>H5P_DEFAULT
     return tsid.id
-    num_peers = tsid.get_trspl_num_peers()

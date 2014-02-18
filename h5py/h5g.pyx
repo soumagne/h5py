@@ -20,6 +20,11 @@ from _errors cimport set_error_handler, err_cookie
 
 from h5py import _objects
 
+# For Exascale FastForward
+from h5es cimport EventStackID, esid_default
+from h5tr cimport TransactionID
+from h5rc cimport RCntxtID
+
 # === Public constants and data structures ====================================
 
 # Enumerated object types for groups "H5G_obj_t"
@@ -148,6 +153,33 @@ def create(ObjectID loc not None, object name, PropID lcpl=None,
 
     return GroupID.open(gid)
 
+# For Exascale FastForward
+IF MPI and HDF5_VERSION >= (1, 9, 170):
+    def create_ff(ObjectID loc not None, object name, TransactionID tid,
+                  PropID lcpl=None, PropID gcpl=None, EventStackID esid=None):
+        """(ObjectID loc, STRING name, TransactionID tid=None, PropLCID lcpl=None,
+        PropGCID gcpl=None, EventStackID esid=None) => GroupID
+
+        Create a new group, under a given parent group. Requires FastForward HDF5
+        library.
+        """
+        cdef hid_t gid
+        cdef char* cname = NULL
+        cname = name
+        gid = H5Gcreate_ff(loc.id, cname, pdefault(lcpl), pdefault(gcpl),
+                           H5P_DEFAULT, tid.id, esid_default(esid)) 
+        return GroupID.open(gid)
+
+
+    def open_ff(ObjectID loc not None, char* name, RCntxtID rcid,
+                EventStackID esid=None):
+        """(ObjectID loc, STRING name, RCntxtID rcid, EventStackID esid=None) => GroupID
+
+        Open an existing HDF5 group, attached to some other group.
+        """
+        return GroupID.open(H5Gopen(loc.id, name, H5P_DEFAULT, rcid.id,
+                            esid_default(esid)))
+
 
 cdef class _GroupVisitor:
 
@@ -259,6 +291,20 @@ cdef class GroupID(ObjectID):
             H5Gclose(self.id)
             if not self.valid:
                 del _objects.registry[self.id]
+
+
+    IF MPI and HDF5_VERSION >= (1, 9, 170):
+        def _close_ff(self, EventStackID esid=None):
+            """(EventStackID esid=None)
+
+            Terminate access through this identifier.  You shouldn't have to
+            call this manually; group identifiers are automatically released
+            when their Python wrappers are freed.
+            """
+            with _objects.registry.lock:
+                H5Gclose_ff(self.id, esid_default(esid))
+                if not self.valid:
+                    del _objects.registry[self.id]
 
 
     def link(self, char* current_name, char* new_name,

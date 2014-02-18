@@ -563,6 +563,12 @@ hdf5:
    MPI 1.9.170 hid_t H5Fcreate_ff(char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
    MPI 1.9.170 hid_t H5Fopen_ff(char *name, unsigned flags, hid_t fapl_id, hid_t *rcntxt_id, hid_t es_id)
 
+# === H5G API New Additions ==============================================
+
+   MPI 1.9.170 hid_t H5Gcreate_ff(hid_t loc_id, const char *name, hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t trans_id, hid_t es_id) 
+   MPI 1.9.170 hid_t H5Gopen_ff(hid_t loc_id, const char * name, hid_t gapl_id, hid_t rcntxt_id, hid_t es_id)
+   MPI 1.9.170 hid_t H5Gclose_ff(hid_t group_id, hid_t es_id)
+
 # === H5P API ============================================================
 
    MPI 1.9.170 herr_t H5Pset_fapl_iod(hid_t fapl_id, MPI_Comm comm, MPI_Info info)
