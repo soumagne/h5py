@@ -59,6 +59,8 @@ cdef object propwrap(hid_t id_in):
             pcls = PropOCID
         elif H5Pequal(clsid, H5P_RC_ACQUIRE):
             pcls = PropRCAID
+        elif H5Pequal(clsid, H5P_TR_START):
+            pcls = PropTSID
 
         else:
             raise ValueError("No class found for ID %d" % id_in)
@@ -104,6 +106,7 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
 
 # For Exascale FastForward, not sure (yet) if these need to be locked
 RC_AQUIRE = H5P_RC_ACQUIRE
+TR_START = H5P_TR_START
 
 
 # === Property list functional API ============================================
@@ -124,6 +127,7 @@ def create(PropClassID cls not None):
     - OBJECT_COPY
     - OBJECT_CREATE
     - RC_AQUIRE (Exascale FastForward)
+    - TR_START (Exascale FastForward)
     """
     cdef hid_t newid
     newid = H5Pcreate(cls.id)
@@ -1234,3 +1238,25 @@ cdef class PropRCAID(PropInstanceID):
         H5RC_request_t acquire_req
         H5Pget_rcapl_version_request(self.id, &acquire_req)
         return acquire_req
+
+
+# Transaction start property list
+cdef class PropTSID(PropInstanceID):
+    """ Transaction start property list """
+
+    def set_trspl_num_peers(self, unsigned num_peers):
+        """(UINT num_peers)
+
+        Set the leader count in the transaction start property list.
+        """
+        H5Pset_trspl_num_peers(self.id, num_peers)
+
+
+    def get_trspl_num_peers(self):
+        """() => UINT num_peers
+
+        Retrieve the leader count from the transaction start property list.
+        """
+        unsigned num_peers
+        H5Pget_trspl_num_peers(self.id, &num_peers)
+        return num_peers

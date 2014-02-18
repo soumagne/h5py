@@ -87,3 +87,7 @@ cdef object propwrap(hid_t id_in)
 cdef class PropRCAID(PropInstanceID):
     """ Read Context Acquire property list """
     pass
+
+cdef class PropTSID(PropInstanceID):
+    """ Transaction start property list """
+    pass
