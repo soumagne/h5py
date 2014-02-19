@@ -44,7 +44,7 @@ cdef class TransactionID(ObjectID):
         H5TRstart(self.id, tsdefault(tspl), esid_default(esid))
 
 
-    def finish(self, PropTSID tspl=None, bool rcid_flag=False, EventStackID esid=None):
+    def finish(self, PropTSID tspl=None, bint rcid_flag=False, EventStackID esid=None):
         """(PropTSID tspl=None, BOOL rcid_flag=False, EventStackID esid=None) => RCntxtID
 
         Finish the transaction. If rcid_flag is set to True, new read context
