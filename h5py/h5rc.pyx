@@ -26,10 +26,13 @@ def acquire(FileID fid not None, PropRCAID rcapl=None, EventStackID es=None,
     Acquire a read handle for a container at a given version and create a
     read context associated with the container and version.
     """
-    cdef uint64_t cv = container_version
-    cdef RCntxtID rcid
-    rcid = RCntxtID.open(H5RCacquire(fid.id, &cv, pdefault(rcapl), esid_default(es)))
-    return (rcid, cv)
+    cdef uint64_t cv
+    cdef hid_t rcid
+    cv = container_version
+    rcid = H5RCacquire(fid.id, &cv, pdefault(rcapl), esid_default(es))
+    container_version = cv
+    return (RCntxtID.open(rcid), container_version
+
 
 # Read Context ID implementation for Exascale FastForward
 cdef class RCntxtID(ObjectID):
