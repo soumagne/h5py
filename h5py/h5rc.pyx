@@ -20,7 +20,7 @@ def create(FileID fid not None, int container_version):
 
 
 def acquire(FileID fid not None, PropRCAID rcapl=None, EventStackID es=None,
-            unit64_t container_version=0):
+            uint64_t container_version=0):
     """(FileID fid, PropRCAID rcapl=None, EventStack es=None, UINT container_version=0) => TUPLE (RCntxtID, UINT container_version)
 
     Acquire a read handle for a container at a given version and create a
@@ -31,7 +31,7 @@ def acquire(FileID fid not None, PropRCAID rcapl=None, EventStackID es=None,
     cv = container_version
     rcid = H5RCacquire(fid.id, &cv, pdefault(rcapl), esid_default(es))
     container_version = cv
-    return (RCntxtID.open(rcid), container_version
+    return (RCntxtID.open(rcid), container_version)
 
 
 # Read Context ID implementation for Exascale FastForward
