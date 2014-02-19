@@ -125,37 +125,37 @@ cdef class GroupIter:
 # === Basic group management ==================================================
 
 
-def open(ObjectID loc not None, char* name):
-    """(ObjectID loc, STRING name) => GroupID
+#def open(ObjectID loc not None, char* name):
+#    """(ObjectID loc, STRING name) => GroupID
+#
+#    Open an existing HDF5 group, attached to some other group.
+#    """
+#    return GroupID.open(H5Gopen(loc.id, name))
+#
+#def create(ObjectID loc not None, object name, PropID lcpl=None,
+#           PropID gcpl=None):
+#    """(ObjectID loc, STRING name or None, PropLCID lcpl=None,
+#        PropGCID gcpl=None)
+#    => GroupID
+#
+#    Create a new group, under a given parent group.  If name is None,
+#    an anonymous group will be created in the file.
+#    """
+#    cdef hid_t gid
+#    cdef char* cname = NULL
+#    if name is not None:
+#        cname = name
+#
+#    if cname != NULL:
+#        gid = H5Gcreate2(loc.id, cname, pdefault(lcpl), pdefault(gcpl), H5P_DEFAULT)
+#    else:
+#        gid = H5Gcreate_anon(loc.id, pdefault(gcpl), H5P_DEFAULT)
+#
+#    return GroupID.open(gid)
 
-    Open an existing HDF5 group, attached to some other group.
-    """
-    return GroupID.open(H5Gopen(loc.id, name))
-
-def create(ObjectID loc not None, object name, PropID lcpl=None,
-           PropID gcpl=None):
-    """(ObjectID loc, STRING name or None, PropLCID lcpl=None,
-        PropGCID gcpl=None)
-    => GroupID
-
-    Create a new group, under a given parent group.  If name is None,
-    an anonymous group will be created in the file.
-    """
-    cdef hid_t gid
-    cdef char* cname = NULL
-    if name is not None:
-        cname = name
-
-    if cname != NULL:
-        gid = H5Gcreate2(loc.id, cname, pdefault(lcpl), pdefault(gcpl), H5P_DEFAULT)
-    else:
-        gid = H5Gcreate_anon(loc.id, pdefault(gcpl), H5P_DEFAULT)
-
-    return GroupID.open(gid)
-
-# For Exascale FastForward
+# For Exascale FastForward (replacements for above open() and create())
 IF MPI and HDF5_VERSION >= (1, 9, 170):
-    def create_ff(ObjectID loc not None, object name, TransactionID tid,
+    def create(ObjectID loc not None, object name, TransactionID tid,
                   PropID lcpl=None, PropID gcpl=None, EventStackID esid=None):
         """(ObjectID loc, STRING name, TransactionID tid=None, PropLCID lcpl=None,
         PropGCID gcpl=None, EventStackID esid=None) => GroupID
@@ -171,11 +171,12 @@ IF MPI and HDF5_VERSION >= (1, 9, 170):
         return GroupID.open(gid)
 
 
-    def open_ff(ObjectID loc not None, char* name, RCntxtID rcid,
+    def open(ObjectID loc not None, char* name, RCntxtID rcid,
                 EventStackID esid=None):
         """(ObjectID loc, STRING name, RCntxtID rcid, EventStackID esid=None) => GroupID
 
-        Open an existing HDF5 group, attached to some other group.
+        Open an existing HDF5 group, attached to some other group. Requires
+        FastForward HDF5 library.
         """
         return GroupID.open(H5Gopen(loc.id, name, H5P_DEFAULT, rcid.id,
                             esid_default(esid)))
@@ -280,21 +281,23 @@ cdef class GroupID(ObjectID):
         self.links = h5l.LinkProxy(id_)
 
 
-    def _close(self):
-        """()
+#    def _close(self):
+#        """()
+#
+#        Terminate access through this identifier.  You shouldn't have to
+#        call this manually; group identifiers are automatically released
+#        when their Python wrappers are freed.
+#        """
+#        with _objects.registry.lock:
+#            H5Gclose(self.id)
+#            if not self.valid:
+#                del _objects.registry[self.id]
 
-        Terminate access through this identifier.  You shouldn't have to
-        call this manually; group identifiers are automatically released
-        when their Python wrappers are freed.
-        """
-        with _objects.registry.lock:
-            H5Gclose(self.id)
-            if not self.valid:
-                del _objects.registry[self.id]
 
-
+    # For Exascale FastForward
     IF MPI and HDF5_VERSION >= (1, 9, 170):
-        def _close_ff(self, EventStackID esid=None):
+        # Replacement for the above _close() method.
+        def _close(self, EventStackID esid=None):
             """(EventStackID esid=None)
 
             Terminate access through this identifier.  You shouldn't have to
