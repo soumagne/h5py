@@ -11,6 +11,8 @@
     Low-level HDF5 "H5G" group interface.
 """
 
+include "config.pxi"
+
 # Compile-time imports
 from _objects cimport pdefault
 from utils cimport emalloc, efree
@@ -178,8 +180,8 @@ IF MPI and HDF5_VERSION >= (1, 9, 170):
         Open an existing HDF5 group, attached to some other group. Requires
         FastForward HDF5 library.
         """
-        return GroupID.open(H5Gopen(loc.id, name, H5P_DEFAULT, rcid.id,
-                            esid_default(esid)))
+        return GroupID.open(H5Gopen_ff(loc.id, name, H5P_DEFAULT, rcid.id,
+                                       esid_default(esid)))
 
 
 cdef class _GroupVisitor:

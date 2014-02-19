@@ -1235,7 +1235,7 @@ cdef class PropRCAID(PropInstanceID):
         Retrieve a version request modifier from a read context acquire
         property list.
         """
-        H5RC_request_t acquire_req
+        cdef H5RC_request_t acquire_req
         H5Pget_rcapl_version_request(self.id, &acquire_req)
         return acquire_req
 
@@ -1257,7 +1257,7 @@ cdef class PropTSID(PropInstanceID):
 
         Retrieve the leader count from the transaction start property list.
         """
-        unsigned num_peers
+        cdef unsigned num_peers
         H5Pget_trspl_num_peers(self.id, &num_peers)
         return num_peers
 
