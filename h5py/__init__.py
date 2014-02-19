@@ -16,7 +16,7 @@ _conv.register_converters()
 from h5py import h5a, h5d, h5ds, h5f, h5fd, h5g, h5r, h5s, h5t, h5p, h5z
 
 # Exascale FastForward
-from h5py import h5es
+from h5py import h5es, h5rc, h5tr
 
 h5s.NULL = h5s._NULL  # NULL is a reserved name at the Cython layer
 h5z._register_lzf()

@@ -104,9 +104,6 @@ IF MPI and HDF5_VERSION >= (1, 9, 170):
         primary function for creating HDF5 containers on the Exascale
         FastForward storage system.
 
-        Note: The fapl.set_fapl_iod() must be called prior to call to this
-        method.
-
         Keyword "flags" may be:
 
         ACC_TRUNC
@@ -137,9 +134,6 @@ IF MPI and HDF5_VERSION >= (1, 9, 170):
         Open an existing HDF5 file (container), possibly asynchronously.
         This is the primary function for accessing existing HDF5 containers
         on the Exascale FastForward storage system.
-
-        Note: The fapl.set_fapl_iod() must be called prior to call to this
-        method.
 
         Keyword "flags" may be:
 
