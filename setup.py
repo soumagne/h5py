@@ -173,7 +173,7 @@ MODULES =  ['defs','_errors','_objects','_proxy', 'h5fd', 'h5z',
             'h5l', 'h5o',
             'h5ds', 'h5ac',
             # Exascale FastForward
-            'h5es', 'eff_control']
+            'h5es', 'eff_control', 'h5rc', 'h5tr']
 
 # No Cython, no point in configuring
 if HAVE_CYTHON:     
