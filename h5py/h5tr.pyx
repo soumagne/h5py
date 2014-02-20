@@ -4,16 +4,14 @@
 
 include "config.pxi"
 
-from h5f cimport FileID
-from h5rc cimport RCntxtID
 from h5es cimport esid_default, EventStackID
 from h5p cimport tsdefault, PropTSID
 from h5py import _objects
 
 # Transaction operations
 
-def create(FileID fid not None, RCntxtID rcid not None, uint64_t trans_num):
-    """(FileID fid, RCntxtID rcid, UINT trans_num) => TransactionID
+def create(ObjectID fid not None, RCntxtID rcid not None, uint64_t trans_num):
+    """(ObjectID fid, RCntxtID rcid, UINT trans_num) => TransactionID
 
     Create a transaction associated with a specified container, read context,
     and number.
@@ -21,9 +19,9 @@ def create(FileID fid not None, RCntxtID rcid not None, uint64_t trans_num):
     return TransactionID.open(H5TRcreate(fid.id, rcid.id, trans_num))
 
 
-def skip(FileID fid not None, uint64_t start_trans_num, uint64_t count=1,
+def skip(ObjectID fid not None, uint64_t start_trans_num, uint64_t count=1,
          EventStackID esid=None):
-    """(FileID fid, UINT start_trans_num, UINT count, EventStackID esid=None)
+    """(ObjectID fid, UINT start_trans_num, UINT count, EventStackID esid=None)
 
     Explicitly skip one or more transaction numbers for a container.
     """

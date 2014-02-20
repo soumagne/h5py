@@ -4,24 +4,24 @@
 
 include "config.pxi"
 
-from h5f cimport FileID
+#from h5f cimport FileID
 from h5p cimport pdefault, PropRCAID
 from h5es cimport EventStackID, esid_default
 from h5py import _objects
 
 # Read Context operations
 
-def create(FileID fid not None, int container_version):
-    """(FileID fid, int container_version) => RCntxtID
+def create(ObjectID fid not None, int container_version):
+    """(ObjectID fid, int container_version) => RCntxtID
 
     Create a read context associated with a container and version.
     """
     return RCntxtID.open(H5RCcreate(fid.id, <uint64_t>container_version))
 
 
-def acquire(FileID fid not None, PropRCAID rcapl=None, EventStackID es=None,
+def acquire(ObjectID fid not None, PropRCAID rcapl=None, EventStackID es=None,
             uint64_t container_version=0):
-    """(FileID fid, PropRCAID rcapl=None, EventStack es=None, UINT container_version=0) => TUPLE (RCntxtID, UINT container_version)
+    """(ObjectID fid, PropRCAID rcapl=None, EventStack es=None, UINT container_version=0) => TUPLE (RCntxtID, UINT container_version)
 
     Acquire a read handle for a container at a given version and create a
     read context associated with the container and version.
