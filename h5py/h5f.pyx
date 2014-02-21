@@ -130,7 +130,7 @@ def create(char *name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
 def open(char* name, unsigned int flags=H5F_ACC_RDWR,
             PropFAID fapl=None, bint rc=False, EventStackID es=None):
     """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None,
-    BOOL rc=False, EventStackID es=None) => FileID
+    BOOL rc=False, EventStackID es=None) => TUPLE(FileID, RCntxtID/None)
 
     Open an existing HDF5 file (container), possibly asynchronously.
     This is the primary function for accessing existing HDF5 containers
@@ -338,17 +338,40 @@ cdef class FileID(GroupID):
         self.locked = True
 
 
-    def close(self):
-        """()
+#    def close(self):
+#        """()
+#
+#        Terminate access through this identifier.  Note that depending on
+#        what property list settings were used to open the file, the
+#        physical file might not be closed until all remaining open
+#        identifiers are freed.
+#        """
+#        with _objects.registry.lock:
+#            self.locked = False
+#            H5Fclose(self.id)
+#            _objects.registry.cleanup()
+
+
+    # For Exascale FastForward
+    def close(self, EventStackID es=None):
+        """(EventStackID es=None)
 
         Terminate access through this identifier.  Note that depending on
         what property list settings were used to open the file, the
         physical file might not be closed until all remaining open
         identifiers are freed.
+
+        The es parameter indicates the event stack the event object
+        for this call should be pushed onto when the function is
+        executed asynchronously. The function may be executed
+        synchronously by not passing this parameter.
+
+        Requires HDF5 FastForward library.
         """
+
         with _objects.registry.lock:
             self.locked = False
-            H5Fclose(self.id)
+            H5Fclose_ff(self.id, esid_default(es))
             _objects.registry.cleanup()
 
 
@@ -453,29 +476,6 @@ cdef class FileID(GroupID):
 
                H5Fget_mpi_atomicity(self.id, &atom)
                return <bint>atom
-
-       IF HDF5_VERSION >= (1, 9, 170):
-          # For Exascale FastForward
-          def close_ff(self, EventStackID es=None):
-              """(EventStackID es=None)
-
-              Terminate access through this identifier.  Note that depending on
-              what property list settings were used to open the file, the
-              physical file might not be closed until all remaining open
-              identifiers are freed.
-
-              The es parameter indicates the event stack the event object
-              for this call should be pushed onto when the function is
-              executed asynchronously. The function may be executed
-              synchronously by not passing this parameter.
-
-              Requires HDF5 FastForward library.
-              """
-
-              with _objects.registry.lock:
-                  self.locked = False
-                  H5Fclose_ff(self.id, esid_default(es))
-                  _objects.registry.cleanup()
 
 
     def get_mdc_hit_rate(self):
