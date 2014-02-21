@@ -58,28 +58,52 @@ LIBVER_LATEST = H5F_LIBVER_LATEST
 # === File operations =========================================================
 
 
-def open(char* name, unsigned int flags=H5F_ACC_RDWR, PropFAID fapl=None):
-    """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None) => FileID
+#def open(char* name, unsigned int flags=H5F_ACC_RDWR, PropFAID fapl=None):
+#    """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None) => FileID
+#
+#    Open an existing HDF5 file.  Keyword "flags" may be:
+#
+#    ACC_RDWR
+#        Open in read-write mode
+#
+#    ACC_RDONLY
+#        Open in readonly mode
+#
+#    Keyword fapl may be a file access property list.
+#    """
+#    return FileID.open(H5Fopen(name, flags, pdefault(fapl)))
+#
+#
+#def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
+#                                                PropFAID fapl=None):
+#    """(STRING name, INT flags=ACC_TRUNC, PropFCID fcpl=None,
+#    PropFAID fapl=None) => FileID
+#    
+#    Create a new HDF5 file.  Keyword "flags" may be:
+#
+#    ACC_TRUNC
+#        Truncate an existing file, discarding its data
+#
+#    ACC_EXCL
+#        Fail if a conflicting file exists
+#
+#    To keep the behavior in line with that of Python's built-in functions,
+#    the default is ACC_TRUNC.  Be careful!
+#    """
+#    return FileID.open(H5Fcreate(name, flags, pdefault(fcpl), pdefault(fapl)))
 
-    Open an existing HDF5 file.  Keyword "flags" may be:
 
-    ACC_RDWR
-        Open in read-write mode
-
-    ACC_RDONLY
-        Open in readonly mode
-
-    Keyword fapl may be a file access property list.
-    """
-    return FileID.open(H5Fopen(name, flags, pdefault(fapl)))
-
-
-def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
-                                                PropFAID fapl=None):
+# FastForward replacement for create()
+def create(char *name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
+              PropFAID fapl=None, EventStackID es=None):
     """(STRING name, INT flags=ACC_TRUNC, PropFCID fcpl=None,
-    PropFAID fapl=None) => FileID
-    
-    Create a new HDF5 file.  Keyword "flags" may be:
+    PropFAID fapl=None, EventStackID es=None) => FileID
+
+    Create an HDF5 file (container), possibly asynchronously. This is the
+    primary function for creating HDF5 containers on the Exascale
+    FastForward storage system.
+
+    Keyword "flags" may be:
 
     ACC_TRUNC
         Truncate an existing file, discarding its data
@@ -89,72 +113,48 @@ def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
 
     To keep the behavior in line with that of Python's built-in functions,
     the default is ACC_TRUNC.  Be careful!
+
+    The es parameter indicates the event stack the event object
+    for this call should be pushed onto when the function is
+    executed asynchronously. The function may be executed
+    synchronously by not passing this parameter.
+
+    Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
     """
-    return FileID.open(H5Fcreate(name, flags, pdefault(fcpl), pdefault(fapl)))
+    
+    return FileID.open(H5Fcreate_ff(name, flags, pdefault(fcpl), pdefault(fapl), esid_default(es)))
 
 
-# For Exascale FastForward
-IF MPI and HDF5_VERSION >= (1, 9, 170):
-    def create_ff(char *name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
-                  PropFAID fapl=None, EventStackID es=None):
-        """(STRING name, INT flags=ACC_TRUNC, PropFCID fcpl=None,
-        PropFAID fapl=None, EventStackID es=None) => FileID
+# FastForward replacement for open()
+def open(char* name, unsigned int flags=H5F_ACC_RDWR,
+            PropFAID fapl=None, rcntxt=None, EventStackID es=None):
+    """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None,
+    rcntxt=None, EventStackID es=None) => FileID
 
-        Create an HDF5 file (container), possibly asynchronously. This is the
-        primary function for creating HDF5 containers on the Exascale
-        FastForward storage system.
+    Open an existing HDF5 file (container), possibly asynchronously.
+    This is the primary function for accessing existing HDF5 containers
+    on the Exascale FastForward storage system.
 
-        Keyword "flags" may be:
+    Keyword "flags" may be:
 
-        ACC_TRUNC
-            Truncate an existing file, discarding its data
+    ACC_RDWR
+        Open in read-write mode
 
-        ACC_EXCL
-            Fail if a conflicting file exists
+    ACC_RDONLY
+        Open in readonly mode
 
-        To keep the behavior in line with that of Python's built-in functions,
-        the default is ACC_TRUNC.  Be careful!
+    Keyword fapl may be a file access property list.
 
-        The es parameter indicates the event stack the event object
-        for this call should be pushed onto when the function is
-        executed asynchronously. The function may be executed
-        synchronously by not passing this parameter.
+    The es parameter indicates the event stack the event object for
+    this call should be pushed onto when the function is executed
+    asynchronously. The function may be executed synchronously by not
+    passing this parameter.
 
-        Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
-        """
-        
-        return FileID.open(H5Fcreate_ff(name, flags, pdefault(fcpl), pdefault(fapl), esid_default(es)))
+    Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
+    """
 
-
-    def open_ff(char* name, unsigned int flags=H5F_ACC_RDWR,
-                PropFAID fapl=None, rcntxt=None, EventStackID es=None):
-        """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None,
-        rcntxt=None, EventStackID es=None) => FileID
-
-        Open an existing HDF5 file (container), possibly asynchronously.
-        This is the primary function for accessing existing HDF5 containers
-        on the Exascale FastForward storage system.
-
-        Keyword "flags" may be:
-
-        ACC_RDWR
-            Open in read-write mode
-
-        ACC_RDONLY
-            Open in readonly mode
-
-        Keyword fapl may be a file access property list.
-
-        The es parameter indicates the event stack the event object for
-        this call should be pushed onto when the function is executed
-        asynchronously. The function may be executed synchronously by not
-        passing this parameter.
-
-        Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
-        """
-
-        cdef hid_t *rcntxt_id = NULL
-        return FileID.open(H5Fopen_ff(name, flags, pdefault(fapl), rcntxt_id, esid_default(es)))
+    cdef hid_t *rcntxt_id = NULL
+    return FileID.open(H5Fopen_ff(name, flags, pdefault(fapl), rcntxt_id, esid_default(es)))
 
 
 def flush(ObjectID obj not None, int scope=H5F_SCOPE_LOCAL):
