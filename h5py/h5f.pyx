@@ -26,6 +26,7 @@ import h5fd
 
 # For Exascale FastForward
 from h5es cimport EventStackID, esid_default
+from h5rc cimport RCntxtID
 
 # Initialization
 
@@ -127,9 +128,9 @@ def create(char *name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
 
 # FastForward replacement for open()
 def open(char* name, unsigned int flags=H5F_ACC_RDWR,
-            PropFAID fapl=None, rcntxt=None, EventStackID es=None):
+            PropFAID fapl=None, bint rc=False, EventStackID es=None):
     """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None,
-    rcntxt=None, EventStackID es=None) => FileID
+    BOOL rc=False, EventStackID es=None) => FileID
 
     Open an existing HDF5 file (container), possibly asynchronously.
     This is the primary function for accessing existing HDF5 containers
@@ -145,6 +146,12 @@ def open(char* name, unsigned int flags=H5F_ACC_RDWR,
 
     Keyword fapl may be a file access property list.
 
+    The rc flag indicates whether the function should acquire a read
+    context for the last (highest) container version of the successfully
+    opened container as well. If the flag is False (default) no read
+    context will be acquired and the return value in the tuple will be
+    None.
+
     The es parameter indicates the event stack the event object for
     this call should be pushed onto when the function is executed
     asynchronously. The function may be executed synchronously by not
@@ -153,8 +160,14 @@ def open(char* name, unsigned int flags=H5F_ACC_RDWR,
     Requires FastForward HDF5  (prereq.: MPI, Parallel HDF5).
     """
 
-    cdef hid_t *rcntxt_id = NULL
-    return FileID.open(H5Fopen_ff(name, flags, pdefault(fapl), rcntxt_id, esid_default(es)))
+    cdef hid_t rcid
+    cdef hid_t fid
+    if rc:
+        fid = H5Fopen_ff(name, flags, pdefault(fapl), &rcid, esid_default(es))
+        return (FileID.open(fid), RCntxtID.open(rcid))
+    else:
+        fid = H5Fopen_ff(name, flags, pdefault(fapl), NULL, esid_default(es))
+        return (FileID.open(fid), None)
 
 
 def flush(ObjectID obj not None, int scope=H5F_SCOPE_LOCAL):
