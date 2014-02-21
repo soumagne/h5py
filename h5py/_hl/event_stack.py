@@ -3,13 +3,12 @@
 
 from h5py import h5, version, h5es
 
-# Currently does not work because mpi is false and version reported is 1.8.12.
 # Check if this module can be used
-#mpi = h5.get_config().mpi
-#hdf5_ver = version.hdf5_version_tuple[0:3]
-#if not mpi or hdf5_ver < (1, 9, 170):
-#    raise RuntimeError('This module requires h5py to be built with MPI and HDF5 '
-#                       'FastForward library')
+mpi = h5.get_config().mpi
+hdf5_ver = version.hdf5_version_tuple[0:3]
+if not mpi or hdf5_ver < (1, 9, 170):
+    raise RuntimeError('This module requires h5py to be built with MPI and HDF5 '
+                       'FastForward library')
 
 class EventStack:
     """
@@ -27,5 +26,13 @@ class EventStack:
 
     @property
     def id(self):
-        """Event stack ID"""
+        """Event stack ID object"""
         return self._id
+
+
+    def close(self):
+        """Closes an event stack.
+        
+        At this point the event stack identifier becomes invalid.
+        """
+        self._id.close()

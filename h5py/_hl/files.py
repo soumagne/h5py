@@ -62,14 +62,13 @@ def make_fapl(driver, libver, **kwds):
     return plist
 
 
-def make_fid(name, mode, userblock_size, fapl, fcpl=None, es=None, with_rc=False):
+def make_fid(name, mode, userblock_size, fapl, fcpl=None, esid=None, with_rc=False):
     """ Get a new FileID by opening or creating a file.
     Also validates mode argument.
     
-    This is the Exascale FastForward version with one extra
-    named argument: es is for the EventStack object. Also other arguments
-    can be passed. One of them is the with_rc flag that will indicate
-    whether to acquire a read context when opening a file. Its default
+    This is the Exascale FastForward version with one extra named argument:
+    esid is for the EventStackID object. The with_rc flag indicates whether to
+    acquire a read context when opening a file. Its default
     value is False.
     """
 
@@ -90,18 +89,18 @@ def make_fid(name, mode, userblock_size, fapl, fcpl=None, es=None, with_rc=False
     rcid = None
 
     if mode == 'r':
-        (fid, rcid) = h5f.open(name, h5f.ACC_RDONLY, fapl=fapl, rc=with_rc, es=es)
+        (fid, rcid) = h5f.open(name, h5f.ACC_RDONLY, fapl=fapl, rc=with_rc, es=esid)
     elif mode == 'r+':
-        (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=es)
+        (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=esid)
     elif mode == 'w-':
         with_rc = False # This flag is meaningless for create()
-        fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=es)
+        fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=esid)
     elif mode == 'w':
         with_rc = False # This flag is meaningless for create()
-        fid = h5f.create(name, h5f.ACC_TRUNC, fapl=fapl, fcpl=fcpl, es=es)
+        fid = h5f.create(name, h5f.ACC_TRUNC, fapl=fapl, fcpl=fcpl, es=esid)
     elif mode == 'a' or mode is None:
         try:
-            (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=es)
+            (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=esid)
             try:
                 existing_fcpl = fid.get_create_plist()
                 if (userblock_size is not None and
@@ -112,8 +111,7 @@ def make_fid(name, mode, userblock_size, fapl, fcpl=None, es=None, with_rc=False
                 raise
         except IOError:
             with_rc = False # This flag is meaningless for create()
-            fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl,
-                             es=es)
+            fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=esid)
     else:
         raise ValueError("Invalid mode; must be one of r, r+, w, w-, a")
 
@@ -180,9 +178,9 @@ class File(Group):
         return fcpl.get_userblock()
 
     @property
-    def read_context(self):
+    def rcid(self):
         """ Stores the RCntxtID object associated with the file """
-        return self._rc
+        return self._rcid
 
 
     if mpi and hdf5_version >= (1, 8, 9):
@@ -236,17 +234,27 @@ class File(Group):
                 pass
 
             fapl = make_fapl(driver, libver, **kwds)
-            (fid, rcid) = make_fid(name, mode, userblock_size, fapl, es=es, with_rc=with_rc)
-            self._rc = rcid
+
+            # EventStackID object (can be None)
+            esid = None
+            if es is not None:
+                esid = es.id
+
+            (fid, rcid) = make_fid(name, mode, userblock_size, fapl, esid=esid, with_rc=with_rc)
+            self._rcid = rcid
 
         Group.__init__(self, fid)
 
-    def close(self, es=es):
-        """ Close the file.  All open objects become invalid """
+    def close(self, esid=None):
+        """ Close the file.  All open objects become invalid.
+
+        Optional argument es represents an EventStackID object. Default
+        value is None.
+        """
         # TODO: find a way to square this with having issue 140
         # Not clearing shared state introduces a tiny memory leak, but
         # it goes like the number of files opened in a session.
-        self.id.close(es=es.id)
+        self.id.close(es=esid)
 
     def flush(self):
         """ Tell the HDF5 library to flush its buffers.

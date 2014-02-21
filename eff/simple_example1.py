@@ -23,7 +23,7 @@ comm = MPI.COMM_WORLD
 EFF_init(comm, MPI.INFO_NULL)
 print 'size = %d; rank = %d' % (comm.Get_size(), comm.Get_rank())
 es = EventStack()
-f = File_ff('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
 f.close()
 EFF_finalize()
 
