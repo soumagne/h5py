@@ -9,7 +9,7 @@ from mpi4py import rc
 rc.initialize = False
 
 from mpi4py import MPI
-from h5py import h5, File_ff, EventStack
+from h5py import h5, File, EventStack
 from h5py.eff_control import eff_init as EFF_init, eff_finalize as EFF_finalize
 
 print "mpi = ", h5.get_config().mpi
