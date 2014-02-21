@@ -17,5 +17,3 @@ from _hl.attrs import AttributeManager
 
 # Exascale FastForward
 from _hl.event_stack import EventStack
-from _hl.files import File_ff
-
