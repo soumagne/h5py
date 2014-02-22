@@ -13,7 +13,7 @@ import os
 
 from .base import HLObject, py3
 from .group import Group
-from h5py import h5, h5f, h5p, h5i, h5fd, h5t, _objects
+from h5py import h5, h5f, h5p, h5i, h5fd, h5t, h5rc, h5tr, _objects
 from h5py import version
 
 mpi = h5.get_config().mpi
@@ -122,6 +122,13 @@ def make_fid(name, mode, userblock_size, fapl, fcpl=None, esid=None, with_rc=Fal
     return (fid, rcid)
 
 
+# Helper function for supplying id values of various objects
+def objid_default(obj):
+    if obj is not None:
+        return obj.id
+    return None
+
+
 class File(Group):
 
     """
@@ -178,9 +185,15 @@ class File(Group):
         return fcpl.get_userblock()
 
     @property
-    def rcid(self):
+    def rc(self):
         """ Stores the RCntxtID object associated with the file """
         return self._rcid
+
+
+    @property
+    def tr(self):
+        """ Stores the TransactionID object associated with the file """
+        return self._trid
 
 
     if mpi and hdf5_version >= (1, 8, 9):
@@ -236,14 +249,13 @@ class File(Group):
             fapl = make_fapl(driver, libver, **kwds)
 
             # EventStackID object (can be None)
-            esid = None
-            if es is not None:
-                esid = es.id
+            esid = objid_default(es)
 
             (fid, rcid) = make_fid(name, mode, userblock_size, fapl, esid=esid, with_rc=with_rc)
             self._rcid = rcid
 
         Group.__init__(self, fid)
+
 
     def close(self, esid=None):
         """ Close the file.  All open objects become invalid.
@@ -256,17 +268,52 @@ class File(Group):
         # it goes like the number of files opened in a session.
         self.id.close(es=esid)
 
+
     def flush(self):
         """ Tell the HDF5 library to flush its buffers.
         """
         h5f.flush(self.fid)
 
+
+    def create_context(self, version):
+        """ Create a read context on the container and requested version.
+        """
+        self._rcid = h5rc.create(self.id, version)
+
+
+    def acquire_context(self, version, rcapl=None, es=None):
+        """Acquire a read handle for the container at a given version and
+        create a read context associated with the container and version.
+        Returns the acquired container version.
+        """
+        esid = objid_default(es)
+        (rcid, ver) = h5rc.acquire(self.id, version, rcapl=rcapl, es=esid)
+        self._rcid = rcid
+        return ver
+
+
+    def create_transaction(self, transaction_number):
+        """Create a transaction associated with the container, read
+        context, and transaction number.
+        """
+        self._trid = h5tr.create(self.id, self._rcid, transaction_number)
+
+
+    def skip_transaction(self, start_trans_number, skip=1, es=None):
+        """Explicitly skip one or more transactions for the container. The
+        default skip count is 1. EventStack object is an optional argument.
+        """
+        h5tr.skip(self.id, start_trans_num, count=skip, es=objid_defaul(es)) 
+
+
     def __enter__(self):
         return self
+
 
     def __exit__(self, *args):
         if self.id:
             self.close()
+
 
     def __repr__(self):
         if not self.id:

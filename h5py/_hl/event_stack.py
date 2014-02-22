@@ -35,4 +35,4 @@ class EventStack:
         
         At this point the event stack identifier becomes invalid.
         """
-        self._id.close()
+        self._id._close()
