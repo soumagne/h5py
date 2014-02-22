@@ -9,6 +9,12 @@ from h5p cimport pdefault, PropRCAID
 from h5es cimport EventStackID, esid_default
 from h5py import _objects
 
+# Public constants
+EXACT = H5RC_EXACT
+PREV = H5RC_PREV
+NEXT = H5RC_NEXT,
+LAST = H5RC_LAST
+
 # Read Context operations
 
 def create(ObjectID fid not None, int container_version):
