@@ -252,11 +252,8 @@ class File(Group):
             esid = objid_default(es)
 
             (fid, rcid) = make_fid(name, mode, userblock_size, fapl, esid=esid, with_rc=with_rc)
-            self._rcid = rcid
-
-        # For FastForward
-        self._rcid = None # Read context identifier object
-        self._trid = None # Transaction identifier object
+            self._rcid = rcid # Holds read context identifier object
+            self._trid = None # Holds transaction identifier object
 
         Group.__init__(self, fid)
 
