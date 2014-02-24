@@ -12,7 +12,7 @@ from h5py import _objects
 # Public constants
 EXACT = H5RC_EXACT
 PREV = H5RC_PREV
-NEXT = H5RC_NEXT,
+NEXT = H5RC_NEXT
 LAST = H5RC_LAST
 
 # Read Context operations
