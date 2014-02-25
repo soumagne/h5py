@@ -282,7 +282,7 @@ class File(Group):
         self._rcid = h5rc.create(self.id, version)
 
 
-    def acquire_context(self, version, rcapl=None, es=None):
+    def acquire_context(self, version=0, rcapl=None, es=None):
         """Acquire a read handle for the container at a given version and
         create a read context associated with the container and version.
         Returns the acquired container version.

@@ -25,9 +25,8 @@ def create(ObjectID fid not None, int container_version):
     return RCntxtID.open(H5RCcreate(fid.id, <uint64_t>container_version))
 
 
-def acquire(ObjectID fid not None, PropRCAID rcapl=None, EventStackID es=None,
-            uint64_t container_version=0):
-    """(ObjectID fid, PropRCAID rcapl=None, EventStack es=None, UINT container_version=0) => TUPLE (RCntxtID, UINT container_version)
+def acquire(ObjectID fid not None, uint64_t container_version, PropRCAID rcapl=None, EventStackID es=None):
+    """(ObjectID fid, UINT container_version, PropRCAID rcapl=None, EventStack es=None) => TUPLE (RCntxtID, UINT container_version)
 
     Acquire a read handle for a container at a given version and create a
     read context associated with the container and version.
