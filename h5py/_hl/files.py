@@ -122,13 +122,6 @@ def make_fid(name, mode, userblock_size, fapl, fcpl=None, esid=None, with_rc=Fal
     return (fid, rcid)
 
 
-# Helper function for supplying id values of various objects
-def objid_default(obj):
-    if obj is not None:
-        return obj.id
-    return None
-
-
 class File(Group):
 
     """
@@ -210,7 +203,7 @@ class File(Group):
 
 
     def __init__(self, name, mode=None, driver=None, 
-                 libver=None, userblock_size=None, es=None, with_rc=False, **kwds):
+                 libver=None, userblock_size=None, esid=None, with_rc=False, **kwds):
         """Create a new file object.
 
         See the h5py user guide for a detailed explanation of the options.
@@ -227,8 +220,9 @@ class File(Group):
         userblock
             Desired size of user block.  Only allowed when creating a new
             file (mode w or w-).
-        es
-            Exascale FastForward event stack. Default None.
+        esid
+            Exascale FastForward event stack identifier object
+            (EventStackID). Default None.
         with_rc
             A flag requesting a read context handle at the same time when
             opening a file. Default False.
@@ -247,9 +241,6 @@ class File(Group):
                 pass
 
             fapl = make_fapl(driver, libver, **kwds)
-
-            # EventStackID object (can be None)
-            esid = objid_default(es)
 
             (fid, rcid) = make_fid(name, mode, userblock_size, fapl, esid=esid, with_rc=with_rc)
             self._rcid = rcid # Holds read context identifier object
@@ -282,12 +273,11 @@ class File(Group):
         self._rcid = h5rc.create(self.id, version)
 
 
-    def acquire_context(self, version=0, rcapl=None, es=None):
+    def acquire_context(self, version=0, rcapl=None, esid=None):
         """Acquire a read handle for the container at a given version and
         create a read context associated with the container and version.
         Returns the acquired container version.
         """
-        esid = objid_default(es)
         (rcid, ver) = h5rc.acquire(self.id, version, rcapl=rcapl, es=esid)
         self._rcid = rcid
         return ver
@@ -300,11 +290,11 @@ class File(Group):
         self._trid = h5tr.create(self.id, self._rcid, transaction_number)
 
 
-    def skip_transaction(self, start_trans_number, skip=1, es=None):
+    def skip_transaction(self, start_trans_number, skip=1, esid=None):
         """Explicitly skip one or more transactions for the container. The
-        default skip count is 1. EventStack object is an optional argument.
+        default skip count is 1. EventStackID object is an optional argument.
         """
-        h5tr.skip(self.id, start_trans_num, count=skip, es=objid_defaul(es)) 
+        h5tr.skip(self.id, start_trans_num, count=skip, es=esid) 
 
 
     def __enter__(self):
