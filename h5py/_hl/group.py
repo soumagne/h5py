@@ -31,14 +31,14 @@ class Group(HLObject, DictCompat):
             raise ValueError("%s is not a GroupID" % bind)
         HLObject.__init__(self, bind)
 
-    def create_group(self, name):
+    def create_group(self, name, trid):
         """ Create and return a new subgroup.
 
         Name may be absolute or relative.  Fails if the target name already
         exists.
         """
         name, lcpl = self._e(name, lcpl=True)
-        gid = h5g.create(self.id, name, self.file.tr, lcpl=lcpl)
+        gid = h5g.create(self.id, name, trid, lcpl=lcpl)
         return Group(gid)
 
     def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):

@@ -38,8 +38,8 @@ if my_rank == 0:
     f.create_transaction(1)
     f.tr.start(h5p.DEFAULT)
 
-    grp1 = f.create_group("G1")
-    grp2 = grp1.create_group("G2")
+    grp1 = f.create_group("G1", f.tr)
+    grp2 = grp1.create_group("G2", f.tr)
 
     f.tr.finish()
 
