@@ -470,6 +470,15 @@ cdef class TypeID(ObjectID):
             H5Tclose(self.id)
 
 
+    def _close_ff(self, EventStackID es=None):
+        """(EventStackID es=None)
+
+        Releases a datatype, possibly asynchronously.
+        """
+        if not self.locked:
+            H5Tclose_ff(self.id, esid_default(es))
+
+
     def encode(self):
         """() => STRING
 
