@@ -42,18 +42,21 @@ if my_rank == 0:
     grp2 = grp1.create_group("G2", f.tr)
 
     f.tr.finish()
-
-    # H5TRclose() skipped
+#    f.tr._close()
 
 
 f.rc.release()
 
 comm.Barrier()
 
-# H5Gclose_ff() skipped
-# H5RCclose() skipped
+if my_rank == 0:
+    grp1.close()
+    grp2.close()
 
+#f.rc._close()
 f.close()
+#es.close()
+#comm.Barrier()
 EFF_finalize()
 
 print 'The End'
