@@ -258,7 +258,7 @@ def open_ff(ObjectID group not None, char *name, RCntxtID rc,
     Both group and name must be in scope for the read context identified by
     rc. es is an EventStackID identifier object.
     """
-    return typewrap(H5Topen_ff(group.id, name, h5p_default(tapl), rcid.id, esid_default(es)))
+    return typewrap(H5Topen_ff(group.id, name, h5p_default(tapl), rc.id, esid_default(es)))
 
 
 def array_create(TypeID base not None, object dims_tpl):
@@ -369,8 +369,8 @@ cdef class TypeID(ObjectID):
         H5Tcommit2(group.id, name, self.id, pdefault(lcpl),
             H5P_DEFAULT, H5P_DEFAULT)
 
-    def commit_ff(self, ObjectID group, char* name, self.id, TransactionID tr,
-                  PropID lcpl=None, PropTCID tcpl=None, PropTAID tapl=None,
+    def commit_ff(self, ObjectID group, char* name, TransactionID tr,
+                  ObjectID lcpl=None, PropTCID tcpl=None, PropTAID tapl=None,
                   EventStackID es=None):
         """(ObjectID group, STRING name, TransactionID tr, PropID lcpl=None,
             PropTCID tcpl=None, PropTAID tapl=None, EventStackID es=None)

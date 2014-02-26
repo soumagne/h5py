@@ -93,3 +93,12 @@ cdef class PropTSID(PropInstanceID):
     pass
 
 cdef hid_t tsdefault(PropTSID tsid)
+
+cdef class PropTAID(PropInstanceID):
+    """ Datatype access property list """
+    pass
+
+# Datatype creation property list
+cdef class PropTCID(PropInstanceID):
+    """ Datatype creation property list """
+    pass
