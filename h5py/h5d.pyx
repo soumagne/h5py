@@ -102,6 +102,20 @@ def open(ObjectID loc not None, char* name, PropID dapl=None):
     """
     return DatasetID.open(H5Dopen2(loc.id, name, pdefault(dapl)))
 
+
+def open_ff(ObjectID loc not None, char *name, RCntxtID rc not None,
+            PropID dapl=None, EventStackID es=None):
+    """(ObjectID loc, STRING name, RCntxtID rc, PropID dapl=None, EventStackID
+    es=None) => DatasetID
+
+    Open the existing dataset specified by loc and name. loc may be a file
+    identifier or a group identifier. name may be either an absolute path in
+    the file or a relative path from loc naming the dataset. Both loc and name
+    must be in scope for the read context identified by rc.
+    """
+    return DatasetID.open(H5Dopen_ff(loc.id, name, pdefault(dapl), rc.id,
+                          esid_default(es)))
+
 # --- Proxy functions for safe(r) threading -----------------------------------
 
 
