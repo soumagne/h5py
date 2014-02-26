@@ -8,7 +8,7 @@
 #           and contributor agreement.
 
 """
-    HDF5 "H5T" data-type API
+    HDF5 "H5T" data-type API with FastForward Additions
 
     This module contains the datatype identifier class TypeID, and its
     subclasses which represent things like integer/float/compound identifiers.
@@ -23,6 +23,9 @@ from h5r cimport Reference, RegionReference
 
 from utils cimport  emalloc, efree, \
                     require_tuple, convert_dims, convert_tuple
+from h5p cimport pdefault as h5p_default, PropTAID
+from h5rc cimport RCntxtID
+from h5es cimport esid_default, EventStackID
 
 # Runtime imports
 import sys
@@ -239,6 +242,22 @@ def open(ObjectID group not None, char* name):
     Open a named datatype from a file.
     """
     return typewrap(H5Topen(group.id, name))
+
+def open_ff(ObjectID group not None, char *name, RCntxtID rc,
+            PropTAID tapl=None, EventStackID es=None):
+    """(ObjectID group, STRING name, RCntxtID rc, PropTAID tapl=None, EventStackID es=None) => TypeID
+
+    Open a named datatype at the location specified and return an
+    identifier for the datatype.
+    
+    group: either a file or group identifier
+
+    name: is the path to the named datatype object relative to group.
+    
+    Both group and name must be in scope for the read context identified by
+    rc. es is an EventStackID identifier object.
+    """
+    return typewrap(H5Topen_ff(group.id, name, h5p_default(tapl), rcid.id, esid_default(es)))
 
 
 def array_create(TypeID base not None, object dims_tpl):

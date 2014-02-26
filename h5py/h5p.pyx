@@ -61,6 +61,8 @@ cdef object propwrap(hid_t id_in):
             pcls = PropRCAID
         elif H5Pequal(clsid, H5P_TR_START):
             pcls = PropTSID
+        elif H5Pequal(clsid, H5P_DATATYPE_ACCESS):
+            pcls = PropTAID
 
         else:
             raise ValueError("No class found for ID %d" % id_in)
@@ -107,7 +109,7 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
 # For Exascale FastForward, not sure (yet) if these need to be locked
 RC_AQUIRE = H5P_RC_ACQUIRE
 TR_START = H5P_TR_START
-
+DATATYPE_ACCESS = H5P_DATATYPE_ACCESS
 
 # === Property list functional API ============================================
 
@@ -128,6 +130,7 @@ def create(PropClassID cls not None):
     - OBJECT_CREATE
     - RC_AQUIRE (Exascale FastForward)
     - TR_START (Exascale FastForward)
+    - DATATYPE_ACCESS (Exascale FastForward)
     """
     cdef hid_t newid
     newid = H5Pcreate(cls.id)
@@ -1270,3 +1273,8 @@ cdef hid_t tsdefault(PropTSID tsid):
     if num_peers == 1:
         return <hid_t>H5P_DEFAULT
     return tsid.id
+
+# Datatype access property list
+cdef class PropTAID(PropInstanceID):
+    """ Datatype access property list """
+    pass
