@@ -23,9 +23,10 @@ from h5r cimport Reference, RegionReference
 
 from utils cimport  emalloc, efree, \
                     require_tuple, convert_dims, convert_tuple
-from h5p cimport pdefault as h5p_default, PropTAID
+from h5p cimport pdefault as h5p_default, PropTAID, PropTCID
 from h5rc cimport RCntxtID
 from h5es cimport esid_default, EventStackID
+from h5tr cimport TransactionID
 
 # Runtime imports
 import sys
@@ -367,7 +368,20 @@ cdef class TypeID(ObjectID):
         """
         H5Tcommit2(group.id, name, self.id, pdefault(lcpl),
             H5P_DEFAULT, H5P_DEFAULT)
-    
+
+    def commit_ff(self, ObjectID group, char* name, self.id, TransactionID tr,
+                  PropID lcpl=None, PropTCID tcpl=None, PropTAID tapl=None,
+                  EventStackID es=None):
+        """(ObjectID group, STRING name, TransactionID tr, PropID lcpl=None,
+            PropTCID tcpl=None, PropTAID tapl=None, EventStackID es=None)
+
+        Commit a transient datatype, linking it into the file and creating a
+        new named datatype, possibly asynchronously.
+        """
+        H5Tcommit_ff(group.id, name, self.id, pdefault(lcpl), h5p_default(tcpl),
+                     h5p_default(tapl), tr.id, esid_default(es))
+
+
     def committed(self):
         """() => BOOL is_comitted
 

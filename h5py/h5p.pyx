@@ -63,6 +63,8 @@ cdef object propwrap(hid_t id_in):
             pcls = PropTSID
         elif H5Pequal(clsid, H5P_DATATYPE_ACCESS):
             pcls = PropTAID
+        elif H5Pequal(clsid, H5P_DATATYPE_CREATE):
+            pcls = PropTCID
 
         else:
             raise ValueError("No class found for ID %d" % id_in)
@@ -110,6 +112,7 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
 RC_AQUIRE = H5P_RC_ACQUIRE
 TR_START = H5P_TR_START
 DATATYPE_ACCESS = H5P_DATATYPE_ACCESS
+DATATYPE_CREATE = H5P_DATATYPE_CREATE
 
 # === Property list functional API ============================================
 
@@ -1277,4 +1280,9 @@ cdef hid_t tsdefault(PropTSID tsid):
 # Datatype access property list
 cdef class PropTAID(PropInstanceID):
     """ Datatype access property list """
+    pass
+
+# Datatype creation property list
+cdef class PropTCID(PropInstanceID):
+    """ Datatype creation property list """
     pass
