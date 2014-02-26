@@ -41,6 +41,12 @@ class Group(HLObject, DictCompat):
         gid = h5g.create(self.id, name, trid, lcpl=lcpl, esid=esid)
         return Group(gid)
 
+
+    def close(self, esid=None):
+        """Close the group. Named argument esid (default: None) holds the
+        EventStackID identifier."""
+        self.id._close(esid=None)
+
     def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):
         """ Create a new HDF5 dataset
 
