@@ -599,6 +599,12 @@ hdf5:
    MPI 1.9.170 herr_t H5RCsnapshot(hid_t rcxt_id, char *snapshot_name, hid_t estack_id)
    MPI 1.9.170 herr_t H5RCclose(hid_t rcxt_id)
 
+# === H5T API Additions ==================================================
+
+   MPI 1.9.170 herr_t H5Tcommit_ff(hid_t loc_id, char *name, hid_t type_id, hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 hid_t H5Topen_ff(hid_t loc_id, char *name, hid_t tapl_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Tclose_ff(hid_t type_id, hid_t estack_id)
+
 #=========================================================================
 #=========================================================================
 
