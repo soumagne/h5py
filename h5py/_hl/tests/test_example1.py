@@ -44,7 +44,9 @@ class TestSimple(BaseTest):
 
         print "before import MPI"
         from mpi4py import MPI
-        print "after import MPI, before MPI.Init_thread()"
+        print "after import MPI"
+        print "Is initialized?", MPI.Is_initialized()
+        print "before MPI.Init_thread()"
         provided = MPI.Init_thread(required=MPI.THREAD_MULTIPLE)
         print "after MPI.Init_thread()"
         self.assertEqual(provided, MPI.THREAD_MULTIPLE)
