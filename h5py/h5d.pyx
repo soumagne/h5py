@@ -22,6 +22,11 @@ from _proxy cimport dset_rw
 
 from h5py import _objects
 
+# For Exascale FastForward
+from h5tr cimport TransactionID
+from h5es cimport esid_default, EventStackID
+from h5rc cimport RCntxtID
+
 # Initialization
 import_array()
 
@@ -71,6 +76,22 @@ def create(ObjectID loc not None, object name, TypeID tid not None,
             dsid = H5Dcreate_anon(loc.id, tid.id, space.id,
                      pdefault(dcpl), pdefault(dapl))
         return DatasetID.open(dsid)
+
+
+def create_ff(ObjectID loc not None, char* name, TypeID tid not None,
+              SpaceID space not None, TransactionID tr not None, PropID dcpl=None,
+              PropID lcpl=None, PropID dapl=None, EventStackID es=None):
+        """ (objectID loc, STRING name or None, TypeID tid, SpaceID space,
+             TransactionID tr, PropDCID dcpl=None, PropID lcpl=None,
+             EventStackID es=None) => DatasetID
+
+        Create a new dataset in Exascale FastForward.
+        """
+        cdef hid_t dsid
+        dsid = H5Dcreate_ff(loc.id, name, tid.id, space.id, pdefault(lcpl), 
+                            pdefault(dcpl), pdefault(dapl), tr.id, esid_default(es))
+        return DatasetID.open(dsid)
+
 
 def open(ObjectID loc not None, char* name, PropID dapl=None):
     """ (ObjectID loc, STRING name, PropID dapl=None) => DatasetID
