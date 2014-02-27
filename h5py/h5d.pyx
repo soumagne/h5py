@@ -309,6 +309,34 @@ cdef class DatasetID(ObjectID):
                 H5Sclose(space_id)
 
 
+    def set_extent_ff(self, tuple shape, TransactionID tr not None,
+                      EventStackID es=None):
+        """ (TUPLE shape, TransactionID tr, EventStackID es=None)
+
+            Set the size of the dataspace to match the given shape.  If the new
+            size is larger in any dimension, it must be compatible with the
+            maximum dataspace size.
+        """
+        cdef int rank
+        cdef hid_t space_id = 0
+        cdef hsize_t* dims = NULL
+
+        try:
+            space_id = H5Dget_space(self.id)
+            rank = H5Sget_simple_extent_ndims(space_id)
+
+            if len(shape) != rank:
+                raise TypeError("New shape length (%d) must match dataset rank (%d)" % (len(shape), rank))
+
+            dims = <hsize_t*>emalloc(sizeof(hsize_t)*rank)
+            convert_tuple(shape, dims, rank)
+            H5Dset_extent_ff(self.id, dims, tr.id, esid_default(es))
+
+        finally:
+            efree(dims)
+            if space_id:
+                H5Sclose(space_id)
+
 
     def get_space(self):
         """ () => SpaceID
