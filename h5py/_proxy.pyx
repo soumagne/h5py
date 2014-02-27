@@ -95,6 +95,26 @@ cdef herr_t H5PY_H5Dwrite(hid_t dset, hid_t mtype, hid_t mspace,
         return -1
     return retval
 
+cdef herr_t H5PY_H5Dread_ff(hid_t dset, hid_t mtype, hid_t mspace,
+                            hid_t fspace, hid_t dxpl, void* buf, hid_t rcid,
+                            hid_t esid) except -1:
+    cdef herr_t retval
+    #with nogil:
+    retval = H5Dread_ff(dset, mtype, mspace, fspace, dxpl, buf, rcid, esid)
+    if retval < 0:
+        return -1
+    return retval
+
+cdef herr_t H5PY_H5Dwrite_ff(hid_t dset, hid_t mtype, hid_t mspace,
+                             hid_t fspace, hid_t dxpl, void* buf, hid_t trid,
+                             hid_t esid) except -1:
+    cdef herr_t retval
+    #with nogil:
+    retval = H5Dwrite_ff(dset, mtype, mspace, fspace, dxpl, buf, trid, esid)
+    if retval < 0:
+        return -1
+    return retval
+
 # =============================================================================
 # Proxy for vlen buf workaround
 
@@ -169,6 +189,92 @@ cdef herr_t dset_rw(hid_t dset, hid_t mtype, hid_t mspace, hid_t fspace,
         free(conv_buf)
         if dstype > 0:
             H5Tclose(dstype)
+        if dspace > 0:
+            H5Sclose(dspace)
+        if cspace > 0:
+            H5Sclose(cspace)
+
+    return 0
+
+
+# Version for Exascale FastForward
+cdef herr_t dset_rw_ff(hid_t dset, hid_t mtype, hid_t mspace, hid_t fspace,
+                       hid_t dxpl, void* progbuf, int read, hid_t objid,
+                       hid_t esid) except -1:
+    # objid holds either a read context or transaction id, depending on read
+    # or write operation
+
+    cdef htri_t need_bkg
+    cdef hid_t dstype = -1      # Dataset datatype
+    cdef hid_t rawdstype = -1
+    cdef hid_t dspace = -1      # Dataset dataspace
+    cdef hid_t cspace = -1      # Temporary contiguous dataspaces
+
+    cdef void* back_buf = NULL
+    cdef void* conv_buf = NULL
+    cdef hsize_t npoints
+
+    try:
+        # Issue 372: when a compound type is involved, using the dataset type
+        # may result in uninitialized data being sent to H5Tconvert for fields
+        # not present in the memory type.  Limit the type used for the dataset
+        # to only those fields present in the memory type.  We can't use the
+        # memory type directly because of course that triggers HDFFV-1063.
+        if (H5Tget_class(mtype) == H5T_COMPOUND) and (not read):
+            rawdstype = H5Dget_type(dset)
+            dstype = make_reduced_type(mtype, rawdstype)
+            H5Tclose(rawdstype)
+        else:
+            dstype = H5Dget_type(dset)
+
+        if not (needs_proxy(dstype) or needs_proxy(mtype)):
+            if read:
+                H5PY_H5Dread_ff(dset, mtype, mspace, fspace, dxpl, progbuf,
+                                objid, esid)
+            else:
+                H5PY_H5Dwrite_ff(dset, mtype, mspace, fspace, dxpl, progbuf,
+                                 objid, esid)
+        else:
+
+            if mspace == H5S_ALL and fspace != H5S_ALL:
+                mspace = fspace
+            elif mspace != H5S_ALL and fspace == H5S_ALL:
+                fspace = mspace
+            elif mspace == H5S_ALL and fspace == H5S_ALL:
+                fspace = mspace = dspace = H5Dget_space(dset)
+
+            npoints = H5Sget_select_npoints(mspace)
+            cspace = H5Screate_simple(1, &npoints, NULL)
+
+            conv_buf = create_buffer(H5Tget_size(dstype), H5Tget_size(mtype), npoints)
+
+            # Only create a (contiguous) backing buffer if absolutely
+            # necessary. Note this buffer always has memory type.
+            if read:
+                need_bkg = needs_bkg_buffer(dstype, mtype)
+            else:
+                need_bkg = needs_bkg_buffer(mtype, dstype)
+            if need_bkg:
+                back_buf = create_buffer(H5Tget_size(dstype), H5Tget_size(mtype), npoints)
+                h5py_copy(mtype, mspace, back_buf, progbuf, H5PY_GATHER)
+
+            if read:
+                H5PY_H5Dread_ff(dset, dstype, cspace, fspace, dxpl, conv_buf,
+                                objid, esid)
+                H5Tconvert(dstype, mtype, npoints, conv_buf, back_buf, dxpl)
+                h5py_copy(mtype, mspace, conv_buf, progbuf, H5PY_SCATTER)
+            else:
+                h5py_copy(mtype, mspace, conv_buf, progbuf, H5PY_GATHER)
+                H5Tconvert(mtype, dstype, npoints, conv_buf, back_buf, dxpl)
+                H5PY_H5Dwrite_ff(dset, dstype, cspace, fspace, dxpl, conv_buf,
+                                 objid, esid)
+                H5Dvlen_reclaim(dstype, cspace, H5P_DEFAULT, conv_buf)
+ 
+    finally:
+        free(back_buf)
+        free(conv_buf)
+        if dstype > 0:
+            H5Tclose_ff(dstype, esid)
         if dspace > 0:
             H5Sclose(dspace)
         if cspace > 0:

@@ -230,6 +230,52 @@ cdef class DatasetID(ObjectID):
 
         dset_rw(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, 1)
 
+
+    def read_ff(self, SpaceID mspace not None, SpaceID fspace not None,
+                   ndarray arr_obj not None, RCntxtID rc not None, TypeID mtype=None,
+                   PropID dxpl=None, EventStackID es=None):
+        """ (SpaceID mspace, SpaceID fspace, NDARRAY arr_obj, RCntxtID rc,
+             TypeID mtype=None, PropDXID dxpl=None, EventStackID es=None)
+
+            Read data from an HDF5 dataset into a Numpy array.
+
+            It is your responsibility to ensure that the memory dataspace
+            provided is compatible with the shape of the Numpy array.  Since a
+            wide variety of dataspace configurations are possible, this is not
+            checked.  You can easily crash Python by reading in data from too
+            large a dataspace.
+
+            If a memory datatype is not specified, one will be auto-created
+            based on the array's dtype.
+
+            The provided Numpy array must be writable and C-contiguous.  If
+            this is not the case, ValueError will be raised and the read will
+            fail.  Keyword dxpl may be a dataset transfer property list.
+
+            For Exascale FastForward.
+        """
+        cdef hid_t self_id, mtype_id, mspace_id, fspace_id, plist_id
+        cdef hid_t rcid, esid
+        cdef void* data
+        cdef int oldflags
+
+        if mtype is None:
+            mtype = py_create(arr_obj.dtype)
+        check_numpy_write(arr_obj, -1)
+
+        self_id = self.id
+        mtype_id = mtype.id
+        mspace_id = mspace.id
+        fspace_id = fspace.id
+        plist_id = pdefault(dxpl)
+        data = PyArray_DATA(arr_obj)
+        rcid = rc.id
+        esid = esid_default(es)
+
+        dset_rw_ff(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, 1,
+                   rcid, esid)
+
+
     def write(self, SpaceID mspace not None, SpaceID fspace not None,
                     ndarray arr_obj not None, TypeID mtype=None,
                     PropID dxpl=None):
@@ -267,6 +313,52 @@ cdef class DatasetID(ObjectID):
         data = PyArray_DATA(arr_obj)
 
         dset_rw(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, 0)
+
+
+    def write_ff(self, SpaceID mspace not None, SpaceID fspace not None,
+                    ndarray arr_obj not None, TransactionID tr not None,
+                    TypeID mtype=None, PropID dxpl=None, EventStackID es=None):
+        """ (SpaceID mspace, SpaceID fspace, NDARRAY arr_obj, TransactionID tr,
+             TypeID mtype=None, PropDXID dxpl=None, EventStackID es=None)
+
+            Write data from a Numpy array to an HDF5 dataset. Keyword dxpl may
+            be a dataset transfer property list.
+
+            It is your responsibility to ensure that the memory dataspace
+            provided is compatible with the shape of the Numpy array.  Since a
+            wide variety of dataspace configurations are possible, this is not
+            checked.  You can easily crash Python by writing data from too
+            large a dataspace.
+
+            If a memory datatype is not specified, one will be auto-created
+            based on the array's dtype.
+
+            The provided Numpy array must be C-contiguous.  If this is not the
+            case, ValueError will be raised and the read will fail.
+
+            For Exascale FastForward.
+        """
+        cdef hid_t self_id, mtype_id, mspace_id, fspace_id, plist_id
+        cdef hid_t trid, esid
+        cdef void* data
+        cdef int oldflags
+
+        if mtype is None:
+            mtype = py_create(arr_obj.dtype)
+        check_numpy_read(arr_obj, -1)
+
+        self_id = self.id
+        mtype_id = mtype.id
+        mspace_id = mspace.id
+        fspace_id = fspace.id
+        plist_id = pdefault(dxpl)
+        data = PyArray_DATA(arr_obj)
+        trid = tr.id
+        esid = esid_default(es)
+
+        dset_rw_ff(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, 0,
+                   trid, esid)
+
 
     def extend(self, tuple shape):
         """ (TUPLE shape)
