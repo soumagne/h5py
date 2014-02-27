@@ -177,6 +177,21 @@ cdef class DatasetID(ObjectID):
                 del _objects.registry[self.id]
 
 
+    def _close_ff(self, EventStackID es=None):
+        """ (EventStackID es=None)
+
+            Terminate access through this identifier.  You shouldn't have to
+            call this manually; Dataset objects are automatically destroyed
+            when their Python wrappers are freed.
+
+            For Exascale FastForward.
+        """
+        with _objects.registry.lock:
+            H5Dclose_ff(self.id, esid_default(es))
+            if not self.valid:
+                del _objects.registry[self.id]
+
+
     def read(self, SpaceID mspace not None, SpaceID fspace not None,
                    ndarray arr_obj not None, TypeID mtype=None,
                    PropID dxpl=None):
