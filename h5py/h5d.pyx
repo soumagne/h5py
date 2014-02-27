@@ -26,6 +26,7 @@ from h5py import _objects
 from h5tr cimport TransactionID
 from h5es cimport esid_default, EventStackID
 from h5rc cimport RCntxtID
+from _proxy cimport dset_rw_ff
 
 # Initialization
 import_array()
