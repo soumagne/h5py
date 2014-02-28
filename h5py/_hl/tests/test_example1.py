@@ -27,6 +27,7 @@ class BaseTest(TestCase_ff):
     def tearDown(self):
         self.ff_cleanup()
         os.chdir(self._old_dir)
+        print "back in = %s" % os.getcwd()
 
 
 class TestSimple(BaseTest):
@@ -35,12 +36,6 @@ class TestSimple(BaseTest):
         """ MPI_THREAD_MULTIPLE support """
         print "In test..."
         print "cwd = %s" % os.getcwd()
-        # Prevent MPI from automatically initializing at import
-        print "before import rc"
-        from mpi4py import rc
-        print "after import rc"
-        rc.initialize = False
-        print "after rc.initialize"
 
         print "before import MPI"
         from mpi4py import MPI
