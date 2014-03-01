@@ -16,9 +16,6 @@ class TestCase_ff(TestCase):
             os.system(sname)
         except (OSError, subprocess.CalledProcessError) as e:
             raise RuntimeError('%s: Failed to run' % sname)
-#        retcode = subprocess.call(sname)
-#        if retcode:
-#            raise RuntimeError('%s: Failed to run' % sname)
 
 
     @property
@@ -30,8 +27,7 @@ class TestCase_ff(TestCase):
     def run_h5ff_server(self):
         """ Runs the h5ff_server executable. """
 
-        cmd = ['set;',
-               '/scr/chaarawi/install/mpich3/bin/mpiexec',
+        cmd = ['/scr/chaarawi/install/mpich3/bin/mpiexec',
                '-np 1',
                self.exe_dir + '/h5ff_server &']
         cmdline = ' '.join(cmd)

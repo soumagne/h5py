@@ -19,7 +19,7 @@ class BaseTest(TestCase_ff):
         self.ff_cleanup()
         self._old_dir = os.getcwd()
         os.chdir(self.exe_dir)
-        #self.run_h5ff_server()
+        self.run_h5ff_server()
 
 
     def tearDown(self):
@@ -27,10 +27,34 @@ class BaseTest(TestCase_ff):
         os.chdir(self._old_dir)
 
 
-class TestSimple(BaseTest):
+class TestMPI(BaseTest):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
 
     def test_mpi_thread_multi(self):
         """ MPI_THREAD_MULTIPLE support """
         from mpi4py import MPI
-        provided = MPI.Init_thread(required=MPI.THREAD_MULTIPLE)
+        provided = MPI.Query_thread()
         self.assertEqual(provided, MPI.THREAD_MULTIPLE)
+
+
+    def test_mpi_auto_init(self):
+        """ MPI auto initialization """
+        from mpi4py import MPI
+        self.assertTrue(MPI.Is_initialized())
+
+
+class TestExample1(BaseTest):
+
+    def test_simple(self):
+        """ Simple Example1 """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        es = EventStack()
+        f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.close()
+        eff_finalize()
