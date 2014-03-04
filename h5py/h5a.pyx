@@ -59,6 +59,8 @@ def create_ff(ObjectID loc not None, char* name, TypeID tid not None,
               *, char* obj_name='.', PropID lapl=None):
     """(ObjectID loc, STRING name, TypeID tid, SpaceID space, TransactionID tr, EventStackID es=None, **kwds) => AttrID
 
+    For Exascale FastForward.
+
     Create a new attribute, possibly asynchronously, attached to an existing
     object. Keywords:
 
@@ -101,6 +103,48 @@ def open(ObjectID loc not None, char* name=NULL, int index=-1, *,
         return AttrID.open(H5Aopen_by_name(loc.id, obj_name, name,
                         H5P_DEFAULT, pdefault(lapl)))
     else:
+        return AttrID.open(H5Aopen_by_idx(loc.id, obj_name,
+            <H5_index_t>index_type, <H5_iter_order_t>order, index,
+            H5P_DEFAULT, pdefault(lapl)))
+
+
+# --- open_ff, open_by_name_ff, open_by_idx ---
+
+def open_ff(ObjectID loc not None, RCntxtID rc not None, char* name=NULL, int index=-1,
+            *, char* obj_name='.', int index_type=H5_INDEX_NAME, int order=H5_ITER_NATIVE,
+            PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, RCntxtID rc, STRING name=, INT index=, **kwds) => AttrID
+
+    For Exascale FastForward. H5Aopen_by_name_ff() is used here only.
+
+    Open an attribute attached to an existing objecti, possibly
+    asynchronously. You must specify exactly one of either name or idx.
+    Keywords are:
+
+    STRING obj_name (".")
+        Attribute is attached to this group member
+
+    PropID lapl (None)
+        Link access property list for obj_name
+
+    EventStackID es (None)
+        Event stack identifier object
+
+    INT index_type (h5.INDEX_NAME)
+
+    INT order (h5.ITER_NATIVE)
+
+    """
+    if (name == NULL and index < 0) or (name != NULL and index >= 0):
+        raise TypeError("Exactly one of name or idx must be specified")
+
+    if name != NULL:
+        return AttrID.open(H5Aopen_by_name_ff(loc.id, obj_name, name,
+                                              H5P_DEFAULT, pdefault(lapl),
+                                              rc.id, esid_default(es)))
+    else:
+        # The H5A function below is not part of the Exascale FastForward
+        # project so am nout sure if it will work but for this part stays.
         return AttrID.open(H5Aopen_by_idx(loc.id, obj_name,
             <H5_index_t>index_type, <H5_iter_order_t>order, index,
             H5P_DEFAULT, pdefault(lapl)))
