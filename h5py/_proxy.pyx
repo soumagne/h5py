@@ -74,6 +74,69 @@ cdef herr_t attr_rw(hid_t attr, hid_t mtype, void *progbuf, int read) except -1:
 
     return 0
 
+# For Exascale FastForward
+# objid argument holds either the read context or transaction identifier
+# depending on read or write operation
+cdef herr_t attr_rw_ff(hid_t attr, hid_t mtype, void *progbuf, int read,
+                       hid_t objid, hid_t esid) except -1:
+
+    cdef htri_t need_bkg
+    cdef hid_t atype = -1
+    cdef hid_t aspace = -1
+    cdef hsize_t npoints
+
+    cdef size_t msize, asize
+    cdef void* conv_buf = NULL
+    cdef void* back_buf = NULL
+
+    try:
+        atype = H5Aget_type(attr)
+
+        if not (needs_proxy(atype) or needs_proxy(mtype)):
+            if read:
+                # objid = read context id
+                H5Aread_ff(attr, mtype, progbuf, objid, esid)
+            else:
+                # objid = transaction id
+                H5Awrite_ff(attr, mtype, progbuf, objid, esid)
+
+        else:
+            
+            asize = H5Tget_size(atype)
+            msize = H5Tget_size(mtype)
+            aspace = H5Aget_space(attr)
+            npoints = H5Sget_select_npoints(aspace)
+
+            conv_buf = create_buffer(asize, msize, npoints)
+            
+            if read:
+                need_bkg = needs_bkg_buffer(atype, mtype)
+            else:
+                need_bkg = needs_bkg_buffer(mtype, atype)
+            if need_bkg:
+                back_buf = malloc(msize*npoints)
+                memcpy(back_buf, progbuf, msize*npoints)
+
+            if read:
+                H5Aread_ff(attr, atype, conv_buf, objid, esid)
+                H5Tconvert(atype, mtype, npoints, conv_buf, back_buf, H5P_DEFAULT)
+                memcpy(progbuf, conv_buf, msize*npoints)
+            else:
+                memcpy(conv_buf, progbuf, msize*npoints)
+                H5Tconvert(mtype, atype, npoints, conv_buf, back_buf, H5P_DEFAULT)
+                H5Awrite_ff(attr, atype, conv_buf, objid, esid)
+                H5Dvlen_reclaim(atype, aspace, H5P_DEFAULT, conv_buf)
+
+    finally:
+        free(conv_buf)
+        free(back_buf)
+        if atype > 0:
+            H5Tclose_ff(atype, esid)
+        if aspace > 0:
+            H5Sclose(aspace)
+
+    return 0
+
 # =============================================================================
 # Proxy functions to safely release the GIL around read/write operations
 

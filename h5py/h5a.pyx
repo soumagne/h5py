@@ -19,7 +19,7 @@ from h5s cimport SpaceID
 from h5p cimport PropID
 from numpy cimport import_array, ndarray, PyArray_DATA
 from utils cimport check_numpy_read, check_numpy_write, emalloc, efree
-from _proxy cimport attr_rw
+from _proxy cimport attr_rw, attr_rw_ff
 
 from h5py import _objects
 
@@ -182,6 +182,29 @@ def rename(ObjectID loc not None, char* name, char* new_name, *,
         Link access property list for obj_name
     """
     H5Arename_by_name(loc.id, obj_name, name, new_name, pdefault(lapl))
+
+
+# --- rename_ff, rename_by_name_ff ---
+
+def rename_ff(ObjectID loc not None, char* name, char* new_name, TransactionID tr not None,
+              *, char* obj_name='.', PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, STRING name, STRING new_name, TransactionID tr, **kwds)
+
+    For Exascale FastForward.
+
+    Rename an attribute, possibly asynchronously. Keywords:
+
+    STRING obj_name (".")
+        Attribute is attached to this group member
+
+    PropID lapl (None)
+        Link access property list for obj_name
+
+    EventStackID es (None)
+        Event stack identifier.
+    """
+    H5Arename_by_name_ff(loc.id, obj_name, name, new_name, pdefault(lapl),
+                         tr.id, esid_default(es))
 
 
 def delete(ObjectID loc not None, char* name=NULL, int index=-1, *,
@@ -429,6 +452,36 @@ cdef class AttrID(ObjectID):
                 H5Sclose(space_id)
 
 
+    def read_ff(self, ndarray arr not None, RCntxtID rc not None,
+                EventStackID es=None):
+        """(NDARRAY arr, RCntxtID rc, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Read the attribute data into the given Numpy array, possibly
+        asynchronously. Note that the Numpy array must have the same shape as
+        the HDF5 attribute, and a conversion-compatible datatype.
+
+        The Numpy array must be writable and C-contiguous.  If this is not
+        the case, the read will fail with an exception.
+        """
+        cdef TypeID mtype
+        cdef hid_t space_id
+        space_id = 0
+
+        try:
+            space_id = H5Aget_space(self.id)
+            check_numpy_write(arr, space_id)
+
+            mtype = py_create(arr.dtype)
+
+            attr_rw_ff(self.id, mtype.id, PyArray_DATA(arr), 1, rc.id, esid_default(es))
+
+        finally:
+            if space_id:
+                H5Sclose(space_id)
+
+
     def write(self, ndarray arr not None):
         """(NDARRAY arr)
 
@@ -449,6 +502,36 @@ cdef class AttrID(ObjectID):
             mtype = py_create(arr.dtype)
 
             attr_rw(self.id, mtype.id, PyArray_DATA(arr), 0)
+
+        finally:
+            if space_id:
+                H5Sclose(space_id)
+
+
+    # For Exascale FastForward
+    def write_ff(self, ndarray arr not None, TransactionID tr not None,
+                 EventStackID es=None):
+        """(NDARRAY arr, TransactionID tr, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Write the contents of a Numpy array too the attribute, possibly
+        asynchronously. Note that the Numpy array must have the same shape as
+        the HDF5 attribute, and a conversion-compatible datatype.
+
+        The Numpy array must be C-contiguous.  If this is not the case, the
+        write will fail with an exception.
+        """
+        cdef TypeID mtype
+        cdef hid_t space_id
+        space_id = 0
+
+        try:
+            space_id = H5Aget_space(self.id)
+            check_numpy_read(arr, space_id)
+            mtype = py_create(arr.dtype)
+
+            attr_rw_ff(self.id, mtype.id, PyArray_DATA(arr), 0, tr.id, esid_default(es))
 
         finally:
             if space_id:
