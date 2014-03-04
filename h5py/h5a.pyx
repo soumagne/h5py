@@ -9,6 +9,7 @@
 
 """
     Provides access to the low-level HDF5 "H5A" attribute interface.
+    With additions for the Exascale FastForward project.
 """
 
 # Compile-time imports
@@ -21,6 +22,11 @@ from utils cimport check_numpy_read, check_numpy_write, emalloc, efree
 from _proxy cimport attr_rw
 
 from h5py import _objects
+
+# For Exascale FastForward
+from h5es cimport esid_default, EventStackID
+from h5tr cimport TransactionID
+from h5rc cimport RCntxtID
 
 # Initialization
 import_array()
@@ -45,6 +51,27 @@ def create(ObjectID loc not None, char* name, TypeID tid not None,
     return AttrID.open(H5Acreate_by_name(loc.id, obj_name, name, tid.id,
             space.id, H5P_DEFAULT, H5P_DEFAULT, pdefault(lapl)))
 
+
+# --- create_ff, create_by_name_ff ---
+
+def create_ff(ObjectID loc not None, char* name, TypeID tid not None,
+              SpaceID space not None, TransactionID tr not None, EventStackID es=None,
+              *, char* obj_name='.', PropID lapl=None):
+    """(ObjectID loc, STRING name, TypeID tid, SpaceID space, TransactionID tr, EventStackID es=None, **kwds) => AttrID
+
+    Create a new attribute, possibly asynchronously, attached to an existing
+    object. Keywords:
+
+    STRING obj_name (".")
+        Attach attribute to this group member instead
+
+    PropID lapl
+        Link access property list for obj_name
+    """
+
+    return AttrID.open(H5Acreate_by_name_ff(loc.id, obj_name, name, tid.id,
+                                            space.id, H5P_DEFAULT, H5P_DEFAULT,
+                                            H5P_DEFAULT, tr.id, esid_default(es)))
 
 # --- open, open_by_name, open_by_idx ---
 
