@@ -614,6 +614,22 @@ hdf5:
    MPI 1.9.170 herr_t H5Dset_extent_ff(hid_t dset_id, hsize_t* size, hid_t trans_id, hid_t estack_id)
    MPI 1.9.170 herr_t H5Dclose_ff(hid_t dset_id, hid_t estack_id)
 
+# === H5A API Additions ==================================================
+
+   MPI 1.9.170 hid_t H5Acreate_ff(hid_t loc_id, char *attr_name, hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 hid_t H5Acreate_by_name_ff(hid_t loc_id, char *obj_name, char *attr_name, hid_t type_id, hid_t space_id, hid_t acpl_id, hid_t aapl_id, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 hid_t H5Aopen_ff(hid_t loc_id, char *attr_name, hid_t aapl_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 hid_t H5Aopen_by_name_ff(hid_t loc_id, char *obj_name, char *attr_name, hid_t aapl_id, hid_t lapl_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Awrite_ff(hid_t attr_id, hid_t dtype_id, void *buf, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Aread_ff(hid_t attr_id, hid_t dtype_id, void *buf, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Arename_ff(hid_t loc_id, char *old_name, char *new_name, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Arename_by_name_ff(hid_t loc_id, char *obj_name, char *old_attr_name, char *new_attr_name, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Adelete_ff(hid_t loc_id, char *name, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Adelete_by_name_ff(hid_t loc_id, char *obj_name, char *attr_name, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Aexists_by_name_ff(hid_t loc_id, char *obj_name, char *attr_name, hid_t lapl_id, hbool_t *ret, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Aexists_ff(hid_t obj_id, char *attr_name, hbool_t *ret, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Aclose_ff(hid_t attr_id, hid_t estack_id)
+
 #=========================================================================
 #=========================================================================
 
