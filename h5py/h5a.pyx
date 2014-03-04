@@ -167,6 +167,32 @@ def exists(ObjectID loc not None, char* name, *,
     return <bint>H5Aexists_by_name(loc.id, obj_name, name, pdefault(lapl))
 
 
+# --- exists_ff, exists_by_name_ff ---
+
+def exists_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
+              char* obj_name=".", PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, STRING name, RCntxtID rc, **kwds) => BOOL
+
+    For Exascale FastForward.
+
+    Determine if an attribute is attached to this object, possibly
+    asynchronously. Keywords:
+
+    STRING obj_name (".")
+        Look for attributes attached to this group member
+
+    PropID lapl (None):
+        Link access property list for obj_name
+
+    EventStackID es (None)
+        Event stack identifier
+    """
+    cdef hbool_t exists
+    H5Aexists_by_name_ff(loc.id, obj_name, name, pdefault(lapl), &exists, rc.id,
+                         esid_default(es))
+    return <bint>exists
+
+
 # --- rename, rename_by_name ---
 
 def rename(ObjectID loc not None, char* name, char* new_name, *,
