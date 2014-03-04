@@ -487,6 +487,21 @@ cdef class AttrID(ObjectID):
                 del _objects.registry[self.id]
 
 
+    def _close_ff(self, EventStackID es=None):
+        """(EventStackID es=None)
+
+        For Exactly FastForward.
+
+        Close this attribute and release resources, possibly asynchronously.
+        You don't need to call this manually; attributes are automatically
+        destroyed when their Python wrappers are freed.
+        """
+        with _objects.registry.lock:
+            H5Aclose_ff(self.id, esid_default(es))
+            if not self.valid:
+                del _objects.registry[self.id]
+
+
     def read(self, ndarray arr not None):
         """(NDARRAY arr)
 
