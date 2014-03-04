@@ -233,6 +233,42 @@ def delete(ObjectID loc not None, char* name=NULL, int index=-1, *,
     else:
         raise TypeError("Exactly one of index or name must be specified.")
 
+
+# For Exascale FastForward
+def delete_ff(ObjectID loc not None, TransactionID tr not None, char* name=NULL,
+              int index=-1, *, char* obj_name='.', int index_type=H5_INDEX_NAME,
+              int order=H5_ITER_NATIVE, PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, TransactionID tr, STRING name=, INT index=, **kwds)
+
+    For Exascale FastForward.
+
+    Remove an attribute from an object, possibly asynchronously. Specify
+    exactly one of "name" or "index". Keyword-only arguments:
+
+    STRING obj_name (".")
+        Attribute is attached to this group member
+
+    PropID lapl (None)
+        Link access property list for obj_name
+
+    EventStackID es (None)
+        Event stack identifier.
+
+    INT index_type (h5.INDEX_NAME)
+
+    INT order (h5.ITER_NATIVE)
+    """
+    if name != NULL and index < 0:
+        H5Adelete_by_name_ff(loc.id, obj_name, name, pdefault(lapl), tr.id, esid_default(es))
+    elif name == NULL and index >= 0:
+        # The function below has no FastForward version so am not sure how it
+        # will work but let's keep it for now.
+        H5Adelete_by_idx(loc.id, obj_name, <H5_index_t>index_type,
+            <H5_iter_order_t>order, index, pdefault(lapl))
+    else:
+        raise TypeError("Exactly one of index or name must be specified.")
+
+
 def get_num_attrs(ObjectID loc not None):
     """(ObjectID loc) => INT
 
