@@ -316,6 +316,8 @@ def set_comment_ff(ObjectID loc not None, char* comment, TransactionID tr,
                    *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
     """(ObjectID loc, STRING comment, TransactionID tr, **kwds)
 
+    For Exascale FastForward.
+
     Set the comment for any-file resident object, possibly asynchronously.
     Keywords:
 
@@ -351,6 +353,40 @@ def get_comment(ObjectID loc not None, char* comment, *, char* obj_name=".",
     buf = <char*>emalloc(size+1)
     try:
         H5Oget_comment_by_name(loc.id, obj_name, buf, size+1, pdefault(lapl))
+        pstring = buf
+    finally:
+        efree(buf)
+
+    return pstring
+
+
+def get_comment_ff(ObjectID loc not None, char* comment, RCntxtID rc not None,
+                   *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, STRING comment RCntxtID rc, **kwds)
+
+    For Exascale FastForward.
+
+    Get the comment for any-file resident object.  Keywords:
+
+    STRING obj_name (".")
+        Set comment on this group member instead
+
+    PropID lapl (None)
+        Link access property list
+
+    EventStackID es (None)
+        Event stack identifier
+    """
+    cdef size_t bufsize
+    cdef ssize_t comm_size
+    cdef char* buf
+
+    H5Oget_comment_by_name_ff(loc.id, obj_name, NULL, 0, &comm_size,
+                              pdefault(lapl), rc.id, esid_default(es))
+    buf = <char*>emalloc(comm_size+1)
+    try:
+        H5Oget_comment_by_name_ff(loc.id, obj_name, buf, comm_size+1, &comm_size,
+                                  pdefault(lapl), rc.id, esid_default(es))
         pstring = buf
     finally:
         efree(buf)
