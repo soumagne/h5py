@@ -645,6 +645,17 @@ hdf5:
    MPI 1.9.170 herr_t H5Oget_info_by_name_ff(hid_t loc_id, char *object_name, H5O_ff_info_t *object_info, hid_t lapl_id, hid_t rcxt_id, hid_t estack_id)
    MPI 1.9.170 herr_t H5Oclose_ff(hid_t object_id, hid_t estack_id)
 
+# === H5L API Additions ==================================================
+
+   MPI 1.9.170 herr_t H5Lmove_ff(hid_t src_loc_id, char *src_name, hid_t dst_loc_id, char *dst_name, hid_t lcpl_id, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Lcopy_ff(hid_t src_loc_id, char *src_name, hid_t dst_loc_id, char *dst_name, hid_t lcpl_id, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Lcreate_soft_ff(char *link_target, hid_t link_loc_id, char *link_name, hid_t lcpl_id, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Lcreate_hard_ff(hid_t cur_loc_id, char *cur_name, hid_t new_loc_id, char *new_name, hid_t lcpl_id, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Ldelete_ff(hid_t loc_id, char *name, hid_t lapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Lexists_ff(hid_t loc_id, char *name, hid_t lapl_id, hbool_t *ret, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Lget_info_ff(hid_t link_loc_id, char *link_name, H5L_ff_info_t *link_buff, hid_t lapl_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Lget_val_ff(hid_t link_loc_id, char *link_name, void *linkval_buff, size_t size, hid_t lapl_id, hid_t rcxt_id, hid_t estack_id)
+
 #=========================================================================
 #=========================================================================
 
