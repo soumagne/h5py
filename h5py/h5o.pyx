@@ -21,6 +21,8 @@ from utils cimport emalloc, efree
 
 # For Exascale FastForward
 from h5rc cimport RCntxtID
+from h5tr cimport TransactionID
+from h5es cimport esid_default, EventStackID
 
 # === Public constants ========================================================
 
@@ -248,6 +250,21 @@ def link(ObjectID obj not None, GroupID loc not None, char* name,
     h5g.create_anon() or h5d.create_anon().
     """
     H5Olink(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl))
+
+
+def link_ff(ObjectID obj not None, GroupID loc not None, char* name,
+            TransactionID tr not None, PropID lcpl=None, PropID lapl=None,
+            EventStackID es=None):
+    """(ObjectID obj, GroupID loc, STRING name, TransactionID tr, PropID lcpl=None,
+    PropID lapl=None, EventStackID es=None)
+
+    For Exascale FastForward.
+
+    Create a new hard link to an object, possibly asynchronously.  Useful for
+    objects created with h5g.create_anon() or h5d.create_anon().
+    """
+    H5Olink_ff(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl), tr.id,
+               esid_default(es))
 
 
 def copy(ObjectID src_loc not None, char* src_name, GroupID dst_loc not None,
