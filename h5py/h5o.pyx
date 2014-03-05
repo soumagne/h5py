@@ -266,6 +266,21 @@ def link_ff(ObjectID obj not None, GroupID loc not None, char* name,
     H5Olink_ff(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl), tr.id,
                esid_default(es))
 
+def exists_by_name_ff(GroupID loc not None, char* name, RCntxtID rc not None,
+                      PropID lapl=None, EventStackID es=None):
+    """(GroupID loc, STRING name, RCntxtID rc, PropID lapl=None,
+    EventStackID es=None) => BOOL
+
+    For Exascale FastForward.
+
+    Determine whether a link resolves to an actual object, possibly
+    asynchronously.
+    """
+    cdef hbool_t exists
+    H5Oexists_by_name_ff(loc.id, name, &exists, pdefault(lapl), rc.id,
+                         esid_default(es))
+    return <bint>exists
+
 
 def copy(ObjectID src_loc not None, char* src_name, GroupID dst_loc not None,
     char* dst_name, PropID copypl=None, PropID lcpl=None):
