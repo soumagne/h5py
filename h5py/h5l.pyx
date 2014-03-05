@@ -10,12 +10,18 @@
 """
     API for the "H5L" family of link-related operations.  Defines the class
     LinkProxy, which comes attached to GroupID objects as <obj>.links.
+    With additions for the Exascale FastForward project.
 """
 
 from _objects cimport pdefault
 from h5p cimport PropID
 from h5g cimport GroupID
 from utils cimport emalloc, efree
+
+# For Exascale FastForward
+from h5es cimport esid_default, EventStackID
+from h5tr cimport TransactionID
+from h5rc cimport RCntxtID
 
 # === Public constants ========================================================
 
@@ -191,6 +197,20 @@ cdef class LinkProxy:
         """
         H5Lmove(self.id, src_name, dst_loc.id, dst_name, pdefault(lcpl),
                 pdefault(lapl))
+
+
+    def move_ff(self, char* src_name, GroupID dst_loc not None, char* dst_name,
+                TransactionID tr not None, PropID lcpl=None, PropID lapl=None,
+                EventStackID es=None):
+        """ (STRING src_name, GroupID dst_loc, STRING dst_name, TransactionID tr,
+        PropID lcpl=None, PropID lapl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Move a link to a new location in the file, possibly asynchronously.
+        """
+        H5Lmove_ff(self.id, src_name, dst_loc.id, dst_name, pdefault(lcpl),
+                   pdefault(lapl), tr.id, esid_default(es))
 
 
     def exists(self, char* name):

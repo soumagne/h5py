@@ -815,3 +815,12 @@ cdef extern from "H5FFpublic.h":
         H5O_type_t          type       # Basic object type
         unsigned            rc         # Reference count of object
         hsize_t             num_attrs  # num of attributes attached to object
+
+    cdef union _ff_u:
+        haddr_ff_t address
+        size_t val_size
+
+    ctypedef struct H5L_ff_info_t:
+        H5L_type_t type
+        H5T_cset_t cset
+        _ff_u u
