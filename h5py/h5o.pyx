@@ -19,6 +19,8 @@ from h5i cimport wrap_identifier
 from h5p cimport PropID
 from utils cimport emalloc, efree
 
+from h5py import _objects
+
 # For Exascale FastForward
 from h5rc cimport RCntxtID
 from h5tr cimport TransactionID
@@ -264,6 +266,18 @@ def open_ff(ObjectID loc not None, char* name, RCntxtID rc not None, PropID lapl
     cdef hid_t objid
     objid = H5Oopen_ff(loc.id, name, pdefault(lapl), rc.id)
     return wrap_identifier(objid)
+
+def _close_ff(ObjectID obj not None, EventStackID es=None):
+    """(EventStackID es=None)
+
+    For Exascale FastForward.
+
+    Close an object in an HDF5 file, possibly asynchronously.
+    """
+    with _objects.registry.lock:
+        H5Oclose_ff(obj.id, esid_default(es))
+        if not obj.valid:
+            del _objects.registry[obj.id]
 
 
 def link(ObjectID obj not None, GroupID loc not None, char* name,
