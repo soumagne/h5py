@@ -213,6 +213,20 @@ cdef class LinkProxy:
                    pdefault(lapl), tr.id, esid_default(es))
 
 
+    def copy_ff(self, char* src_name, GroupID dst_loc not None, char* dst_name,
+                TransactionID tr not None, PropID lcpl=None, PropID lapl=None,
+                EventStackID es=None):
+        """ (STRING src_name, GroupID dst_loc, STRING dst_name, TransactionID tr,
+        PropID lcpl=None, PropID lapl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Copy a link to a new location in the file, possibly asynchronously.
+        """
+        H5Lcopy_ff(self.id, src_name, dst_loc.id, dst_name, pdefault(lcpl),
+                   pdefault(lapl), tr.id, esid_default(es))
+
+
     def exists(self, char* name):
         """ (STRING name) => BOOL
 
