@@ -312,6 +312,25 @@ def set_comment(ObjectID loc not None, char* comment, *, char* obj_name=".",
     H5Oset_comment_by_name(loc.id, obj_name, comment, pdefault(lapl))
 
 
+def set_comment_ff(ObjectID loc not None, char* comment, TransactionID tr,
+                   *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, STRING comment, TransactionID tr, **kwds)
+
+    Set the comment for any-file resident object, possibly asynchronously.
+    Keywords:
+
+    STRING obj_name (".")
+        Set comment on this group member instead
+
+    PropID lapl (None)
+        Link access property list
+
+    EventStackID es (None)
+        Event stack identifier
+    """
+    H5Oset_comment_by_name_ff(loc.id, obj_name, comment, pdefault(lapl),
+                              tr.id, esid_default(es))
+
 
 def get_comment(ObjectID loc not None, char* comment, *, char* obj_name=".",
     PropID lapl=None):
