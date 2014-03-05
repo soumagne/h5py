@@ -803,3 +803,15 @@ cdef extern from "H5RCpublic.h":
         H5RC_LAST   # Acquire a read handle for the last (highest) container version possible
 
     cdef char* H5RC_ACQUIRE_CV_REQUEST_NAME
+
+# === H5O API ============================================================
+
+cdef extern from "H5FFpublic.h":
+
+    ctypedef uint64_t haddr_ff_t
+
+    ctypedef struct H5O_ff_info_t:
+        haddr_ff_t          addr       # Object address in file
+        H5O_type_t          type       # Basic object type
+        unsigned            rc         # Reference count of object
+        hsize_t             num_attrs  # num of attributes attached to object

@@ -9,6 +9,7 @@
 
 """
     Module for HDF5 "H5O" functions.
+    With Exascale FastForward additions.
 """
 
 # Pyrex compile-time imports
@@ -17,6 +18,9 @@ from h5g cimport GroupID
 from h5i cimport wrap_identifier
 from h5p cimport PropID
 from utils cimport emalloc, efree
+
+# For Exascale FastForward
+from h5rc cimport RCntxtID
 
 # === Public constants ========================================================
 
@@ -128,6 +132,55 @@ cdef class ObjInfo(_ObjInfo):
         return newcopy
 
 
+# For Exascale FastForward
+cdef class _ObjInfoBase_ff:
+
+    cdef H5O_ff_info_t *istr
+
+cdef class _ObjInfo_ff(_ObjInfoBase_ff):
+
+#    property fileno:
+#        def __get__(self):
+#            return self.istr[0].fileno
+    property addr:
+        def __get__(self):
+            return self.istr[0].addr
+    property type:
+        def __get__(self):
+            return <int>self.istr[0].type
+    property rc:
+        def __get__(self):
+            return self.istr[0].rc
+
+    def _hash(self):
+        return hash((self.addr, self.type, self.rc))
+
+
+cdef class ObjInfo_ff(_ObjInfo_ff):
+
+    """
+        Represents the H5O_ff_info_t structure.
+        For Exascale FastForward.
+    """
+
+    cdef H5O_ff_info_t infostruct
+#    cdef public _OHdr hdr
+
+    def __init__(self):
+#        self.hdr = _OHdr()
+
+        self.istr = &self.infostruct
+#        self.hdr.istr = &self.infostruct
+#        self.hdr.space.istr = &self.infostruct
+#        self.hdr.mesg.istr = &self.infostruct
+
+    def __copy__(self):
+        cdef ObjInfo_ff newcopy
+        newcopy = ObjInfo_ff()
+        newcopy.infostruct = self.infostruct
+        return newcopy
+
+
 def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
         char* obj_name='.', int index_type=H5_INDEX_NAME, int order=H5_ITER_NATIVE,
         PropID lapl=None):
@@ -171,6 +224,19 @@ def open(ObjectID loc not None, char* name, PropID lapl=None):
     Open a group, dataset, or named datatype attached to an existing group.
     """
     return wrap_identifier(H5Oopen(loc.id, name, pdefault(lapl)))
+
+
+def open_ff(ObjectID loc not None, char* name, RCntxtID rc not None, PropID lapl=None):
+    """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None) => ObjectID
+
+    For Exascale FastForward. (TODO: Check h5i.wrap_identifier() if is still
+    useable.)
+
+    Open a group, dataset, or named datatype attached to an existing group.
+    """
+    cdef hid_t objid
+    objid = H5Oopen_ff(loc.id, name, pdefault(lapl), rc.id)
+    return wrap_identifier(objid)
 
 
 def link(ObjectID obj not None, GroupID loc not None, char* name,
