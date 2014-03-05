@@ -217,6 +217,31 @@ def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
 
     return info
 
+
+def get_info_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
+                char* obj_name='.', PropID lapl=None, EventStackID es=None):
+    """(ObjectID loc, STRING name=, RCntxtID rc, **kwds) => ObjInfo_ff
+
+    For Exascale FastForward.
+
+    Get information describing an object in an HDF5 file, possibly
+    asynchronously. Keywords:
+
+    STRING obj_name (".")
+
+    PropID lapl (None)
+        Link access property list
+
+    EventStackID es (None)
+        Event stack identifier
+    """
+    cdef ObjInfo_ff info
+    info = ObjInfo_ff()
+
+    H5Oget_info_by_name_ff(loc.id, name, &info.infostruct, pdefault(lapl), rc.id,
+                           esid_default(es))
+    return info
+
 # === General object operations ===============================================
 
 
@@ -377,15 +402,14 @@ def get_comment_ff(ObjectID loc not None, char* comment, RCntxtID rc not None,
     EventStackID es (None)
         Event stack identifier
     """
-    cdef size_t bufsize
-    cdef ssize_t comm_size
+    cdef ssize_t size
     cdef char* buf
 
-    H5Oget_comment_by_name_ff(loc.id, obj_name, NULL, 0, &comm_size,
-                              pdefault(lapl), rc.id, esid_default(es))
-    buf = <char*>emalloc(comm_size+1)
+    H5Oget_comment_by_name_ff(loc.id, obj_name, NULL, 0, &size, pdefault(lapl),
+                              rc.id, esid_default(es))
+    buf = <char*>emalloc(size+1)
     try:
-        H5Oget_comment_by_name_ff(loc.id, obj_name, buf, comm_size+1, &comm_size,
+        H5Oget_comment_by_name_ff(loc.id, obj_name, buf, size+1, &size,
                                   pdefault(lapl), rc.id, esid_default(es))
         pstring = buf
     finally:
