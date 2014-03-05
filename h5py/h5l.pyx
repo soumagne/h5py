@@ -134,6 +134,22 @@ cdef class LinkProxy:
             pdefault(lcpl), pdefault(lapl))
 
 
+    def create_hard_ff(self, char* new_name, GroupID cur_loc not None,
+                       char* cur_name, TransactionID tr, PropID lcpl=None,
+                       PropID lapl=None, EventStackID es=None):
+        """ (STRING new_name, GroupID cur_loc, STRING cur_name, TransactionID tr,
+        PropID lcpl=None, PropID lapl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Create a new hard link in this group pointing to an existing link
+        in another group, possibly asynchronously.
+        """
+        H5Lcreate_hard_ff(cur_loc.id, cur_name, self.id, new_name,
+                          pdefault(lcpl), pdefault(lapl), tr.id,
+                          esid_default(es))
+
+
     def create_soft(self, char* new_name, char* target,
         PropID lcpl=None, PropID lapl=None):
         """(STRING new_name, STRING target, PropID lcpl=None, PropID lapl=None)
