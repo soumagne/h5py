@@ -145,6 +145,20 @@ cdef class LinkProxy:
             pdefault(lcpl), pdefault(lapl))
 
 
+    def create_soft_ff(self, char* new_name, char* target, TransactionID tr not None,
+                       PropID lcpl=None, PropID lapl=None, EventStackID es=None):
+        """(STRING new_name, STRING target, TransactionID tr, PropID lcpl=None,
+        PropID lapl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Create a new soft link in this group, with the given string value.
+        The link target does not need to exist.
+        """
+        H5Lcreate_soft_ff(target, self.id, new_name, pdefault(lcpl),
+                          pdefault(lapl), tr.id, esid_default(es))
+
+
     def create_external(self, char* link_name, char* file_name, char* obj_name,
         PropID lcpl=None, PropID lapl=None):
         """(STRING link_name, STRING file_name, STRING obj_name,
