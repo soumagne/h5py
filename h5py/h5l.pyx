@@ -257,6 +257,17 @@ cdef class LinkProxy:
                    pdefault(lapl), tr.id, esid_default(es))
 
 
+    def delete_ff(self, char* name, TransactionID tr not None,
+                  PropID lapl=None, EventStackID es=None):
+        """(STRING name, TransactionID tr, PropID lapl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+
+        Removes a link from a group, possibly asynchronously.
+        """
+        H5Ldelete_ff(self.id, name, pdefault(lapl), tr.id, esid_default(es))
+
+
     def exists(self, char* name):
         """ (STRING name) => BOOL
 
