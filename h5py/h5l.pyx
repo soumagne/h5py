@@ -243,6 +243,44 @@ cdef class LinkProxy:
         return py_retval
 
 
+    def get_val_ff(self, char* name, RCntxtID rc not None, PropID lapl=None,
+                   EventStackID es=None):
+        """(STRING name, RCntxtID rc, PropLAID lapl=None, EventStackID es=None) => STRING or TUPLE(file, obj)
+
+        For Exascale FastForward. (TODO: This is done without man page. To be
+        verified.)
+
+        Get the string value of a soft link, or a 2-tuple representing
+        the contents of an external link.
+        """
+        cdef hid_t plist = pdefault(lapl)
+        cdef H5L_ff_info_t info
+        cdef size_t buf_size
+        cdef char* buf = NULL
+        cdef char* ext_file_name = NULL
+        cdef char* ext_obj_name = NULL
+        cdef unsigned int wtf = 0
+        cdef hid_t esid = esid_default(es)
+
+        H5Lget_info_ff(self.id, name, &info, plist, rc.id, esid)
+        if info.type != H5L_TYPE_SOFT and info.type != H5L_TYPE_EXTERNAL:
+            raise TypeError("Link must be either a soft or external link")
+
+        buf_size = info.u.val_size
+        buf = <char*>emalloc(buf_size)
+        try:
+            H5Lget_val_ff(self.id, name, buf, buf_size, plist, rc.id, esid)
+            if info.type == H5L_TYPE_SOFT:
+                py_retval = buf
+            else:
+                H5Lunpack_elink_val(buf, buf_size, &wtf, &ext_file_name, &ext_obj_name)
+                py_retval = (bytes(ext_file_name), bytes(ext_obj_name))
+        finally:
+            efree(buf)
+
+        return py_retval
+
+
     def move(self, char* src_name, GroupID dst_loc not None, char* dst_name,
         PropID lcpl=None, PropID lapl=None):
         """ (STRING src_name, GroupID dst_loc, STRING dst_name)
