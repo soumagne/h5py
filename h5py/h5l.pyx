@@ -57,6 +57,30 @@ cdef class LinkInfo:
             else:
                 return self.infostruct.u.val_size
 
+cdef class LinkInfo_ff:
+    """
+    Represent H5L_ff_info_t struct
+    For Exascale FastForward    
+    """
+
+    cdef H5L_ff_info_t infostruct
+
+    property type:
+        """ Integer type code for link (h5l.TYPE_*) """
+        def __get__(self):
+            return <int>self.infostruct.type
+    property cset:
+        """ Integer type code for character set (h5t.CSET_*) """
+        def __get__(self):
+            return self.infostruct.cset
+    property u:
+        """ Either the address of a hard link or the size of a soft/UD link """
+        def __get__(self):
+            if self.infostruct.type == H5L_TYPE_HARD:
+                return self.infostruct.u.address
+            else:
+                return self.infostruct.u.val_size
+
 cdef class _LinkVisitor:
 
     """ Helper class for iteration callback """
@@ -298,6 +322,20 @@ cdef class LinkProxy:
         """
         cdef LinkInfo info = LinkInfo()
         H5Lget_info(self.id, name, &info.infostruct, pdefault(lapl))
+        return info
+
+
+    def get_info_ff(self, char* name, RCntxtID rc not None, PropID lapl=None,
+                    EventStackID es=None):
+        """(STRING name=, RCntxtID rc, PropID lapl=None, EventStackID es=None) => LinkInfo_ff instance
+
+        For Exascale FastForward.
+
+        Get information about a link.
+        """
+        cdef LinkInfo_ff info = LinkInfo_ff()
+        H5Lget_info_ff(self.id, name, &info.infostruct, pdefault(lapl), rc.id,
+                       esid_default(es))
         return info
 
 
