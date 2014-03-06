@@ -276,6 +276,19 @@ cdef class LinkProxy:
         return <bint>(H5Lexists(self.id, name, H5P_DEFAULT))
 
 
+    def exists_ff(self, char* name, RCntxtID rc not None, PropID lapl=None,
+                  EventStackID es=None):
+        """ (STRING name, RCntxtID rc, PropID lapl=None, EventStackID es=None) => BOOL
+
+        For Exascale FastForward.
+
+        Check if a link of the specified name exists in this group.
+        """
+        cdef hbool_t exists
+        H5Lexists_ff(self.id, name, pdefault(lapl), &exists, rc.id, esid_default(es))
+        return <bint>exists
+
+
     def get_info(self, char* name, int index=-1, *, PropID lapl=None):
         """(STRING name=, INT index=, **kwds) => LinkInfo instance
 
