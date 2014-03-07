@@ -656,6 +656,19 @@ hdf5:
    MPI 1.9.170 herr_t H5Lget_info_ff(hid_t link_loc_id, char *link_name, H5L_ff_info_t *link_buff, hid_t lapl_id, hid_t rcxt_id, hid_t estack_id)
    MPI 1.9.170 herr_t H5Lget_val_ff(hid_t link_loc_id, char *link_name, void *linkval_buff, size_t size, hid_t lapl_id, hid_t rcxt_id, hid_t estack_id)
 
+# === H5M - Map Object API ============================================================
+
+   MPI 1.9.170 hid_t H5Mcreate_ff(hid_t loc_id, char *name, hid_t keytype, hid_t valtype, hid_t lcpl_id, hid_t mcpl_id, hid_t mapl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 hid_t H5Mopen_ff(hid_t loc_id, char *name, hid_t mapl_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Mset_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hid_t val_mem_type_id, void *value, hid_t dxpl_id, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Mget_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hid_t val_mem_type_id, void *value, hid_t dxpl_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Mget_types_ff(hid_t map_id, hid_t *key_type_id, hid_t *val_type_id, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Mget_count_ff(hid_t map_id, hsize_t *count, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Mexists_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hbool_t *exists, hid_t rcxt_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Miterate_ff(hid_t map_id, hid_t key_mem_type_id, hid_t value_mem_type_id, H5M_iterate_func_t callback_func, void *context, hid_t rcxt_id)
+   MPI 1.9.170 herr_t H5Mdelete_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hid_t trans_id, hid_t estack_id)
+   MPI 1.9.170 herr_t H5Mclose_ff(hid_t map_id, hid_t estack_id)
+
 #=========================================================================
 #=========================================================================
 
