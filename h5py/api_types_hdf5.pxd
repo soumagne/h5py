@@ -824,3 +824,8 @@ cdef extern from "H5FFpublic.h":
         H5L_type_t type
         H5T_cset_t cset
         _ff_u u
+
+# === H5M API ============================================================
+
+cdef extern from "H5Mpublic.h":
+    ctypedef herr_t (*H5M_iterate_func_t)(const void *key, const void *value, void *context)
