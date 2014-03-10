@@ -140,6 +140,7 @@ def scrape_cargs():
                 settings['eff'] = False
             else:
                 raise ValueError("Invalid option for --eff (--eff or --eff=[yes|no])")
+            sys.argv.remove(arg)
 
     savepickle('h5py_config.pickle', settings)
     return settings
