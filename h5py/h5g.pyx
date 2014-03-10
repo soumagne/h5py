@@ -156,7 +156,7 @@ cdef class GroupIter:
 #    return GroupID.open(gid)
 
 # For Exascale FastForward (replacements for above open() and create())
-IF MPI and HDF5_VERSION >= (1, 9, 170):
+IF EFF and MPI:
     def create(ObjectID loc not None, object name, TransactionID tid,
                   PropID lcpl=None, PropID gcpl=None, EventStackID esid=None):
         """(ObjectID loc, STRING name, TransactionID tid=None, PropLCID lcpl=None,
@@ -297,7 +297,7 @@ cdef class GroupID(ObjectID):
 
 
     # For Exascale FastForward
-    IF MPI and HDF5_VERSION >= (1, 9, 170):
+    IF EFF and MPI:
         # Replacement for the above _close() method.
         def _close(self, EventStackID esid=None):
             """(EventStackID esid=None)
