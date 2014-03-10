@@ -119,6 +119,7 @@ settings.update(configure.scrape_cargs())    # highest priority
 HDF5 = settings.get('hdf5')
 HDF5_VERSION = settings.get('hdf5_version')
 
+EFF = settings.setdefault('eff', False)
 MPI = settings.setdefault('mpi', False)
 if MPI:
     if not HAVE_CYTHON:
@@ -172,9 +173,11 @@ MODULES =  ['defs','_errors','_objects','_proxy', 'h5fd', 'h5z',
             'h5p',
             'h5d', 'h5a', 'h5f', 'h5g',
             'h5l', 'h5o',
-            'h5ds', 'h5ac',
-            # Exascale FastForward
-            'h5es', 'eff_control', 'h5rc', 'h5tr']
+            'h5ds', 'h5ac']
+
+# Exascale FastForward low-level modules
+if EFF:
+    MODULES += ['h5es', 'eff_control', 'h5rc', 'h5tr']
 
 # No Cython, no point in configuring
 if HAVE_CYTHON:     
