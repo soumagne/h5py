@@ -89,6 +89,7 @@ def configure_cython(settings, modules):
 
 DEF MPI = %(mpi)s
 DEF HDF5_VERSION = %(hdf5_version)s
+DEF EFF = %(eff)s
 """
     newcontents %= settings
     newcontents = newcontents.encode('utf-8')
