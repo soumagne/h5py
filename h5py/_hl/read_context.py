@@ -6,8 +6,8 @@ from h5py import h5, version, h5rc
 
 # Check if this module can be used
 mpi = h5.get_config().mpi
-hdf5_ver = version.hdf5_version_tuple[0:3]
-if not mpi or hdf5_ver < (1, 9, 170):
+eff = h5.get_config().eff
+if not (mpi and eff):
     raise RuntimeError('This module requires h5py to be built with MPI and HDF5 '
                        'FastForward library')
 

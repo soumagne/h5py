@@ -4,7 +4,7 @@ Exascale FastForward initialization and finalization functions
 
 include "config.pxi"
 
-IF MPI and HDF5_VERSION >= (1, 9, 170):
+IF EFF and MPI:
 
     def eff_init(Comm comm not None, Info info):
         """(Comm comm, Info info)

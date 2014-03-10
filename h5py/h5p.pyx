@@ -976,7 +976,7 @@ cdef class PropFAID(PropInstanceID):
             """
             H5Pset_fapl_mpiposix(self.id, comm.ob_mpi, use_gpfs_hints)
 
-        if HDF5_VERSION >= (1, 9, 170):
+        if EFF:
             # Exascale FastForward
             def set_fapl_iod(self, Comm comm not None, Info info not None): 
                 """(Comm comm, Info info)
