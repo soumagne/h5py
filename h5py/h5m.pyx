@@ -28,3 +28,13 @@ def create(GroupID loc not None, char* name, TypeID key_type not None,
     mid = H5Mcreate_ff(loc.id, name, key_type.id, val_type.id, pdefault(lcpl),
                        H5P_DEFAULT, H5P_DEFAULT, tr.id, esid_default(es))
     return MapID.open(mid)
+
+
+def open(GroupID loc not None, char* name, RCntxtID rc not None, EventStackID es=None):
+    """(GroupID loc, STRING name, RCntxtID rc, EventStackID es=None) => MapID
+
+    Open an existing map object possibly asynchronously.
+    """
+    cdef hid_t mid
+    mid = H5Mopen_ff(loc.id, name, H5P_DEFAULT, rc.id, esid_default(es))
+    return MapID.open(mid)
