@@ -10,7 +10,7 @@ from h5p cimport pdefault, PropID
 from h5g cimport GroupID
 from h5t cimport typewrap, TypeID, py_create
 from numpy cimport import_array, ndarray, PyArray_DATA
-from utils cimport check_numpy_read
+from utils cimport check_numpy_read, check_numpy_write
 from _proxy cimport map_del_ff, map_check_ff, map_gs_ff
 
 from h5es cimport esid_default, EventStackID
