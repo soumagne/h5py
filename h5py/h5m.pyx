@@ -8,7 +8,7 @@ include "config.pxi"
 
 from h5p cimport pdefault, PropID
 from h5g cimport GroupID
-from h5t cimport TypeID
+from h5t cimport typewrap, TypeID
 
 from h5es cimport esid_default, EventStackID
 from h5rc cimport RCntxtID
@@ -58,3 +58,25 @@ cdef class MapID(ObjectID):
             H5Mclose_ff(self.id, esid_default(es))
             if not self.valid:
                 del _objects.registry[self.id]
+
+
+    def get_count_ff(self, RCntxtID rc not None, EventStackID es=None):
+        """(RCntxtID rc, EventStackID es=None) => INT count
+
+        Retrieve the number of key/value pairs in the map object, possibly
+        asynchronously.
+        """
+        cdef hsize_t count
+        H5Mget_count_ff(self.id, &count, rc.id, esid_default(es))
+        return count
+
+
+    def get_types_ff(self, RCntxtID rc not None, EventStackID es=None):
+        """(RCntxtID rc, EventStackID es=None) => TUPLE (TypeID key_type, TypeID val_type)
+
+        Retrieve the datatypes for the keys and values of the map object,
+        possibly asynchronously.
+        """
+        cdef hid_t key_type_id, val_type_id
+        H5Mget_types_ff(self.id, &key_type_id, &val_type_id, rc.id, esid_default(es))
+        return typewrap(key_type_id), typewrap(val_type_id)
