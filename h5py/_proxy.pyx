@@ -138,6 +138,20 @@ cdef herr_t attr_rw_ff(hid_t attr, hid_t mtype, void *progbuf, int read,
     return 0
 
 # =============================================================================
+# For Exascale FastForward
+cdef herr_t map_del_ff(hid_t map, hid_t mtype, void *progbuf, hid_t trid, hid_t esid) except -1:
+
+    try:
+        if not needs_proxy(mtype):
+            H5Mdelete_ff(map, mtype, progbuf, trid, esid)
+        else:
+            raise NotImplementedError("Buffering not implemented for map objects")
+    finally:
+        pass
+
+    return 0
+
+# =============================================================================
 # Proxy functions to safely release the GIL around read/write operations
 
 cdef herr_t H5PY_H5Dread(hid_t dset, hid_t mtype, hid_t mspace,

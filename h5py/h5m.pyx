@@ -8,13 +8,19 @@ include "config.pxi"
 
 from h5p cimport pdefault, PropID
 from h5g cimport GroupID
-from h5t cimport typewrap, TypeID
+from h5t cimport typewrap, TypeID, py_create
+from numpy cimport import_array, ndarray, PyArray_DATA
+from utils cimport check_numpy_read
+from _proxy cimport map_del_ff
 
 from h5es cimport esid_default, EventStackID
 from h5rc cimport RCntxtID
 from h5tr cimport TransactionID
 
 from h5py import _objects
+
+# Initialize NumPy
+import_array()
 
 
 def create_ff(GroupID loc not None, char* name, TypeID key_type not None,
@@ -80,3 +86,20 @@ cdef class MapID(ObjectID):
         cdef hid_t key_type_id, val_type_id
         H5Mget_types_ff(self.id, &key_type_id, &val_type_id, rc.id, esid_default(es))
         return typewrap(key_type_id), typewrap(val_type_id)
+
+
+    def delete_ff(self, ndarray key not None, TransactionID tr not None,
+                  EventStackID es=None):
+        """(NDARRAY key, TransactionID tr, EventStackID es=None)
+
+        Delete a key/value pair from the map object.
+        """
+        cdef TypeID mem_type
+
+        try:
+            check_numpy_read(key)
+            mem_type = py_create(key.dtype)
+            map_del_ff(self.id, mem_type.id, PyArray_DATA(key), tr.id, 
+                       esid_default(es))
+        finally:
+            pass
