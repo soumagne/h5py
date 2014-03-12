@@ -11,7 +11,7 @@ from h5g cimport GroupID
 from h5t cimport typewrap, TypeID, py_create
 from numpy cimport import_array, ndarray, PyArray_DATA
 from utils cimport check_numpy_read
-from _proxy cimport map_del_ff
+from _proxy cimport map_del_ff, map_check_ff
 
 from h5es cimport esid_default, EventStackID
 from h5rc cimport RCntxtID
@@ -103,3 +103,24 @@ cdef class MapID(ObjectID):
                        esid_default(es))
         finally:
             pass
+
+
+    def exists_ff(self, ndarray key not None, RCntxtID rc not None,
+                  EventStackID es=None):
+        """(NDARRAY key, RCntxtID rc, EventStackID es=None) => BOOL
+
+        Determine whether a key exists in a map object, possibly
+        asynchronously.
+        """
+        cdef hbool_t exists
+        cdef TypeID mem_type
+
+        try:
+            check_numpy_read(key)
+            mem_type = py_create(key.dtype)
+            exists = map_check_ff(self.id, mem_type.id, PyArray_DATA(key),
+                                  rc.id, esid_default(es))
+        finally:
+            pass
+        
+        return <bint>exists

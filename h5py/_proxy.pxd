@@ -23,3 +23,6 @@ cdef herr_t attr_rw_ff(hid_t attr, hid_t mtype, void *progbuf, int read,
 
 cdef herr_t map_del_ff(hid_t map, hid_t mtype, void *progbuf, hid_t trid,
                        hid_t esid) except -1
+
+cdef hbool_t map_check_ff(hid_t map, hid_t mtype, void *progbuf, hid_t rcid,
+                          hid_t esid) except -1

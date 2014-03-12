@@ -145,11 +145,29 @@ cdef herr_t map_del_ff(hid_t map, hid_t mtype, void *progbuf, hid_t trid, hid_t 
         if not needs_proxy(mtype):
             H5Mdelete_ff(map, mtype, progbuf, trid, esid)
         else:
-            raise NotImplementedError("Buffering not implemented for map objects")
+            raise NotImplementedError("Proxy buffering not implemented for map "
+                                      "delete operation")
     finally:
         pass
 
     return 0
+
+# =============================================================================
+# For Exascale FastForward
+cdef hbool_t map_check_ff(hid_t map, hid_t mtype, void *progbuf, hid_t rcid, hid_t esid) except -1:
+
+    cdef hbool_t exists
+
+    try:
+        if not needs_proxy(mtype):
+            H5Mexists_ff(map, mtype, progbuf, &exists, rcid, esid)
+        else:
+            raise NotImplementedError("Proxy buffering not implemented for map "
+                                      " exists operation")
+    finally:
+        pass
+
+    return exists
 
 # =============================================================================
 # Proxy functions to safely release the GIL around read/write operations
