@@ -170,6 +170,30 @@ cdef hbool_t map_check_ff(hid_t map, hid_t mtype, void *progbuf, hid_t rcid, hid
     return exists
 
 # =============================================================================
+# For Exascale FastForward
+# objid argument holds either the read context or transaction identifier
+# depending on get or set operation
+cdef herr_t map_gs_ff(hid_t map, hid_t key_mtype, void* key_buf,
+                      hid_t val_mtype, void* val_buf, hid_t dxpl,
+                      hid_t objid, hid_t esid, int get) except -1:
+
+    try:
+        if not (needs_proxy(key_mtype) or needs_proxy(val_mtype)):
+            if get:
+                H5Mget_ff(map, key_mtype, key_buf, val_mtype, val_buf, dxpl,
+                          objid, esid)
+            else:
+                H5Mset_ff(map, key_mtype, key_buf, val_mtype, val_buf, dxpl,
+                          objid, esid)
+        else:
+            raise NotImplementedError("Proxy buffering not implemented for map "
+                                      "get/set operation")
+    finally:
+        pass
+
+    return 0
+
+# =============================================================================
 # Proxy functions to safely release the GIL around read/write operations
 
 cdef herr_t H5PY_H5Dread(hid_t dset, hid_t mtype, hid_t mspace,

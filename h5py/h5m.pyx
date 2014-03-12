@@ -11,7 +11,7 @@ from h5g cimport GroupID
 from h5t cimport typewrap, TypeID, py_create
 from numpy cimport import_array, ndarray, PyArray_DATA
 from utils cimport check_numpy_read
-from _proxy cimport map_del_ff, map_check_ff
+from _proxy cimport map_del_ff, map_check_ff, map_gs_ff
 
 from h5es cimport esid_default, EventStackID
 from h5rc cimport RCntxtID
@@ -124,3 +124,25 @@ cdef class MapID(ObjectID):
             pass
         
         return <bint>exists
+
+
+    def get_ff(self, ndarray key not None, ndarray val not None, RCntxtID rc not None,
+               PropID dxpl=None, EventStackID es=None):
+        """(NDARRAY key, NDARRAY val, RCntxtID rc, PropID dxpl=None,
+        EventStackID es=None)
+
+        Retrieve the value for a given key from the map object, possibly
+        asynchronously.
+        """
+        cdef TypeID key_mtype, val_mtype
+
+        try:
+            check_numpy_read(key)
+            check_numpy_write(val)
+            key_mtype = py_create(key.dtype)
+            val_mtype = py_create(val.dtype)
+            map_gs_ff(self.id, key_mtype.id, PyArray_DATA(key), val_mtype.id,
+                      PyArray_DATA(val), pdefault(dxpl), rc.id,
+                      esid_default(es), 1)
+        finally:
+            pass
