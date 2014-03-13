@@ -146,3 +146,25 @@ cdef class MapID(ObjectID):
                       esid_default(es), 1)
         finally:
             pass
+
+
+    def set_ff(self, ndarray key not None, ndarray val not None, TransactionID tr not None,
+               PropID dxpl=None, EventStackID es=None):
+        """(NDARRAY key, NDARRAY val, TransactionID tr, PropID dxpl=None,
+        EventStackID es=None)
+
+        Set the value for a given key in the map object, possibly
+        asynchronously.
+        """
+        cdef TypeID key_mtype, val_mtype
+
+        try:
+            check_numpy_read(key)
+            check_numpy_read(val)
+            key_mtype = py_create(key.dtype)
+            val_mtype = py_create(val.dtype)
+            map_gs_ff(self.id, key_mtype.id, PyArray_DATA(key), val_mtype.id,
+                      PyArray_DATA(val), pdefault(dxpl), tr.id,
+                      esid_default(es), 0)
+        finally:
+            pass
