@@ -1283,6 +1283,43 @@ cdef class PropTAID(PropInstanceID):
     pass
 
 # Datatype creation property list
-cdef class PropTCID(PropInstanceID):
+cdef class PropTCID(PropCreateID):
     """ Datatype creation property list """
     pass
+
+# Dataset transfer property list
+cdef class PropDXID(PropInstanceID):
+    """ Dataset transfer property list """
+
+    IF EFF:
+        def set_checksum(self, uint64_t value):
+            """(UINT value)
+
+            Specify a user-supplied checksum for a write data transfer.
+            """
+            H5Pset_dxpl_checksum(self.id, value)
+
+
+        def set_checksum_ptr(self):
+            """() => UINT value
+
+            Specify a memory location to receive the checksum from a read
+            data transfer.
+            """
+            cdef uint64_t value
+            H5Pset_dxpl_checksum_ptr(self.id, &value)
+            return <int>value
+
+
+        def set_inject_corruption(self, bint flag=True):
+            """(BOOL flag=True)
+
+            Specify that data should be corrupted prior to transfer so that
+            data integrity pipeline can be tested. This routine is for
+            TESTING PURPOSES ONLY and should not be used in a real
+            application.
+            """
+            H5Pset_dxpl_inject_corruption(self.id, <hbool_t>flag)
+
+    ELSE:
+        pass

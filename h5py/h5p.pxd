@@ -99,6 +99,6 @@ cdef class PropTAID(PropInstanceID):
     pass
 
 # Datatype creation property list
-cdef class PropTCID(PropInstanceID):
+cdef class PropTCID(PropCreateID):
     """ Datatype creation property list """
     pass
