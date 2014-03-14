@@ -246,10 +246,24 @@ class test(Command):
             # Make sure newly built h5py is found first...
             sys.path = [op.abspath(buildobj.build_lib)] + oldpath
 
-            # Discover only FastForward tests...
-            suite = unittest.TestLoader().discover(op.join(buildobj.build_lib,'h5py'),
-                                                   pattern='test_ff*.py')
+            # Import build options...
+            from configure import loadpickle
+            settings = loadpickle('h5py_config.pickle')
+            if settings is None:
+                raise RuntimeError("Failed to load build options from %s"
+                                   % 'h5py_config.pickle')
+            EFF = settings.setdefault('eff', False)
+            if EFF:
+                # Discover only FastForward tests...
+                suite = unittest.TestLoader().discover(op.join(buildobj.build_lib,'h5py'),
+                                                       pattern='test_ff*.py')
+            else:
+                # Discover only standard tests...
+                suite = unittest.TestLoader().discover(op.join(buildobj.build_lib,'h5py'))
+
+            # Run found tests...
             result = unittest.TextTestRunner(verbosity=self.verbosity+1).run(suite)
+
             if not result.wasSuccessful():
                 sys.exit(1)
         finally:
