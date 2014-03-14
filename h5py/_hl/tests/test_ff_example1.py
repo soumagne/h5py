@@ -47,14 +47,21 @@ class TestMPI(BaseTest):
         self.assertTrue(MPI.Is_initialized())
 
 
-class TestExample1(BaseTest):
-
-    def test_simple(self):
-        """ Simple Example1 """
-        from mpi4py import MPI
+    def test_comm_class(self):
+        """ Check MPI.COMM_WORLD class """
+        from  mpi4py import MPI
         comm = MPI.COMM_WORLD
-        eff_init(comm, MPI.INFO_NULL)
-        es = EventStack()
-        f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.close()
-        eff_finalize()
+        self.assertTrue(isinstance(comm, MPI.Intracomm))
+
+
+# class TestExample1(BaseTest):
+
+#     def test_simple(self):
+#         """ Simple Example1 """
+#         from mpi4py import MPI
+#         comm = MPI.COMM_WORLD
+#         eff_init(comm, MPI.INFO_NULL)
+#         es = EventStack()
+#         f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+#         f.close()
+#         eff_finalize()
