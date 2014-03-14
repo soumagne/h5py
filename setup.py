@@ -211,9 +211,9 @@ EXTENSIONS = [make_extension(m) for m in MODULES]
 
 class test(Command):
 
-    """Run the test suite."""
+    """Run the Exascale FastForward test suite."""
 
-    description = "Run the test suite"
+    description = "Run the Exascale FastForward test suite"
 
     user_options = [('verbosity=', 'V', 'set test report verbosity')]
 
@@ -243,8 +243,12 @@ class test(Command):
         buildobj.run()
         oldpath = sys.path
         try:
+            # Make sure newly built h5py is found first...
             sys.path = [op.abspath(buildobj.build_lib)] + oldpath
-            suite = unittest.TestLoader().discover(op.join(buildobj.build_lib,'h5py'))
+
+            # Discover only FastForward tests...
+            suite = unittest.TestLoader().discover(op.join(buildobj.build_lib,'h5py'),
+                                                   pattern='test_ff*.py')
             result = unittest.TextTestRunner(verbosity=self.verbosity+1).run(suite)
             if not result.wasSuccessful():
                 sys.exit(1)
