@@ -7,10 +7,13 @@ from h5py.eff_control import eff_init, eff_finalize
 
 from h5py.highlevel import EventStack, File
 
-# Check if this HDF5 is built with MPI...
+# Check if this HDF5 is built with MPI and for EFF...
 mpi = h5.get_config().mpi
 if not mpi:
     raise RuntimeError('This HDF5 does not appear to be built with MPI')
+eff = h5.get_config().eff
+if not eff:
+    raise RuntimeError('The h5py module was not built for Exascale FastForward') 
 
 
 class BaseTest(TestCase_ff):
@@ -28,6 +31,7 @@ class BaseTest(TestCase_ff):
 
 
 class TestMPI(BaseTest):
+
     def setUp(self):
         pass
 
@@ -51,10 +55,28 @@ class TestMPI(BaseTest):
         """ Check MPI.COMM_WORLD class """
         from  mpi4py import MPI
         comm = MPI.COMM_WORLD
-        self.assertTrue(isinstance(comm, MPI.Intracomm))
+        self.assertIsInstance(comm, MPI.Intracomm)
+
+
+class TestWorkEnv(BaseTest):
+
+    def setUp(self):
+        self._old_dir = os.getcwd()
+        os.chdir(self.exe_dir)
+
+
+    def tearDown(self):
+        os.chdir(self._old_dir)
+
+
+    def test_wrk_dir(self):
+        """ Work directory for running tests """
+        cwd = os.getcwd()
+        self.assertEqual(cwd, self.exe_dir)
 
 
 # class TestExample1(BaseTest):
+
 
 #     def test_simple(self):
 #         """ Simple Example1 """
