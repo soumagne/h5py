@@ -75,15 +75,18 @@ class TestWorkEnv(BaseTest):
         self.assertEqual(cwd, self.exe_dir)
 
 
-# class TestExample1(BaseTest):
+class TestExample1(BaseTest):
+
+    def test_example1(self):
+        """ Example1 """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        es = EventStack()
+        f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.close()
+        eff_finalize()
 
 
-#     def test_simple(self):
-#         """ Simple Example1 """
-#         from mpi4py import MPI
-#         comm = MPI.COMM_WORLD
-#         eff_init(comm, MPI.INFO_NULL)
-#         es = EventStack()
-#         f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-#         f.close()
-#         eff_finalize()
+    def test_example2(self):
+        pass

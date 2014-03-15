@@ -1,6 +1,7 @@
 from .common import ut, TestCase
 import os
 import subprocess
+import time
 
 
 class TestCase_ff(TestCase):
@@ -24,7 +25,7 @@ class TestCase_ff(TestCase):
         return r'/scr/ajelenak/hdf5ff_build/examples'
 
 
-    def run_h5ff_server(self):
+    def run_h5ff_server(self, sleep=0.2):
         """ Runs the h5ff_server executable. """
 
         cmd = ['/scr/chaarawi/install/mpich3/bin/mpiexec',
@@ -34,3 +35,4 @@ class TestCase_ff(TestCase):
         retcode = os.system(cmdline)
         if retcode:
             raise RuntimeError('h5ff_server: Failed to run')
+        time.sleep(sleep)
