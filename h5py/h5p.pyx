@@ -57,6 +57,14 @@ cdef object propwrap(hid_t id_in):
             pcls = PropDAID
         elif H5Pequal(clsid, H5P_OBJECT_CREATE):
             pcls = PropOCID
+        elif H5Pequal(clsid, H5P_RC_ACQUIRE):
+            pcls = PropRCAID
+        elif H5Pequal(clsid, H5P_TR_START):
+            pcls = PropTSID
+        elif H5Pequal(clsid, H5P_DATATYPE_ACCESS):
+            pcls = PropTAID
+        elif H5Pequal(clsid, H5P_DATATYPE_CREATE):
+            pcls = PropTCID
 
         else:
             raise ValueError("No class found for ID %d" % id_in)
@@ -100,6 +108,11 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
                  # is to make them all None, to better match the Python style
                  # for keyword arguments.
 
+# For Exascale FastForward, not sure (yet) if these need to be locked
+RC_AQUIRE = H5P_RC_ACQUIRE
+TR_START = H5P_TR_START
+DATATYPE_ACCESS = H5P_DATATYPE_ACCESS
+DATATYPE_CREATE = H5P_DATATYPE_CREATE
 
 # === Property list functional API ============================================
 
@@ -118,6 +131,9 @@ def create(PropClassID cls not None):
     - GROUP_CREATE
     - OBJECT_COPY
     - OBJECT_CREATE
+    - RC_AQUIRE (Exascale FastForward)
+    - TR_START (Exascale FastForward)
+    - DATATYPE_ACCESS (Exascale FastForward)
     """
     cdef hid_t newid
     newid = H5Pcreate(cls.id)
@@ -960,6 +976,21 @@ cdef class PropFAID(PropInstanceID):
             """
             H5Pset_fapl_mpiposix(self.id, comm.ob_mpi, use_gpfs_hints)
 
+        if EFF:
+            # Exascale FastForward
+            def set_fapl_iod(self, Comm comm not None, Info info not None): 
+                """(Comm comm, Info info)
+
+                Specify that the IOD VOL plugin should be used to access the
+                HDF5 container.
+
+                Comm: An mpi4py.MPI.Comm instance
+                Info: An mpi4py.MPI.Info instance
+
+                Requires FastForward HDF5 (prereq.: MPI and Parallel HDF5)
+                """
+                H5Pset_fapl_iod(self.id, comm.ob_mpi, info.ob_mpi)
+
     def get_mdc_config(self):
         """() => CacheConfig
         Returns an object that stores all the information about the meta-data cache
@@ -1189,3 +1220,106 @@ cdef class PropDAID(PropInstanceID):
 
         H5Pget_chunk_cache(self.id, &rdcc_nslots, &rdcc_nbytes, &rdcc_w0 )
         return (rdcc_nslots,rdcc_nbytes,rdcc_w0)
+
+# Read Context Acquire property list
+cdef class PropRCAID(PropInstanceID):
+    """ Read Context Acquire property list """
+
+    def set_rcapl_version_request(self, H5RC_request_t acquire_req):
+        """(H5RC_request_t acquire_req)
+
+        Specify a version request modifier in a read context acquire
+        property list. Possible values are: H5RC_EXACT, H5RC_PREV,
+        H5RC_NEXT, H5RC_LAST.
+        """
+        H5Pset_rcapl_version_request(self.id, acquire_req)
+
+
+    def get_rcapl_version_request(self):
+        """ () => H5RC_request_t acquire_req
+
+        Retrieve a version request modifier from a read context acquire
+        property list.
+        """
+        cdef H5RC_request_t acquire_req
+        H5Pget_rcapl_version_request(self.id, &acquire_req)
+        return acquire_req
+
+
+# Transaction start property list
+cdef class PropTSID(PropInstanceID):
+    """ Transaction start property list """
+
+    def set_trspl_num_peers(self, unsigned num_peers):
+        """(UINT num_peers)
+
+        Set the leader count in the transaction start property list.
+        """
+        H5Pset_trspl_num_peers(self.id, num_peers)
+
+
+    def get_trspl_num_peers(self):
+        """() => UINT num_peers
+
+        Retrieve the leader count from the transaction start property list.
+        """
+        cdef unsigned num_peers
+        H5Pget_trspl_num_peers(self.id, &num_peers)
+        return num_peers
+
+# PropTSID default value helper function
+cdef hid_t tsdefault(PropTSID tsid):
+    cdef unsigned num_peers
+    if tsid is None:
+        return <hid_t>H5P_DEFAULT
+    num_peers = tsid.get_trspl_num_peers()
+    if num_peers == 1:
+        return <hid_t>H5P_DEFAULT
+    return tsid.id
+
+# Datatype access property list
+cdef class PropTAID(PropInstanceID):
+    """ Datatype access property list """
+    pass
+
+# Datatype creation property list
+cdef class PropTCID(PropCreateID):
+    """ Datatype creation property list """
+    pass
+
+# Dataset transfer property list
+cdef class PropDXID(PropInstanceID):
+    """ Dataset transfer property list """
+
+    IF EFF:
+        def set_checksum(self, uint64_t value):
+            """(UINT value)
+
+            Specify a user-supplied checksum for a write data transfer.
+            """
+            H5Pset_dxpl_checksum(self.id, value)
+
+
+        def set_checksum_ptr(self):
+            """() => UINT value
+
+            Specify a memory location to receive the checksum from a read
+            data transfer.
+            """
+            cdef uint64_t value
+            H5Pset_dxpl_checksum_ptr(self.id, &value)
+            return <int>value
+
+
+        def set_inject_corruption(self, bint flag=True):
+            """(BOOL flag=True)
+
+            Specify that data should be corrupted prior to transfer so that
+            data integrity pipeline can be tested. This routine is for
+            TESTING PURPOSES ONLY and should not be used in a real
+            application.
+            """
+            H5Pset_dxpl_inject_corruption(self.id, <hbool_t>flag)
+
+    ELSE:
+        pass

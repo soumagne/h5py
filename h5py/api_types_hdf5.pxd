@@ -399,6 +399,20 @@ cdef extern from "hdf5.h":
   hid_t H5P_CRT_ORDER_TRACKED
   hid_t H5P_CRT_ORDER_INDEXED
 
+  # Additional property list classes from Exascale FastForward's H5Ppublic.h
+  hid_t H5P_ROOT
+  hid_t H5P_FILE_MOUNT
+  hid_t H5P_GROUP_ACCESS
+  hid_t H5P_MAP_CREATE
+  hid_t H5P_MAP_ACCESS
+  hid_t H5P_DATATYPE_CREATE
+  hid_t H5P_DATATYPE_ACCESS
+  hid_t H5P_STRING_CREATE
+  hid_t H5P_ATTRIBUTE_CREATE
+  hid_t H5P_RC_ACQUIRE
+  hid_t H5P_TR_START
+  hid_t H5P_TR_FINISH
+
 # === H5R - Reference API =====================================================
 
   size_t H5R_DSET_REG_REF_BUF_SIZE
@@ -752,3 +766,66 @@ cdef extern from "hdf5_hl.h":
 # === H5DS - Dimension Scales API =============================================
 
   ctypedef herr_t  (*H5DS_iterate_t)(hid_t dset, unsigned dim, hid_t scale, void *visitor_data) except 2
+
+
+
+#=========================================================================
+# Exascale FastForward
+#=========================================================================
+
+# === H5ES - Event Stack API =============================================
+
+cdef extern from "H5ESpublic.h":
+   # Asynchronous operation status
+   ctypedef enum H5ES_status_t:
+      H5ES_STATUS_IN_PROGRESS,   # Operation has not yet completed
+      H5ES_STATUS_SUCCEED,       # Operation has completed, successfully
+      H5ES_STATUS_FAIL,          # Operation has completed, but failed
+      H5ES_STATUS_CANCEL         # Operation has not completed and has been cancelled
+
+   int H5_REQUEST_NULL     # NULL
+   int H5_EVENT_STACK_NULL # -1
+
+# === H5TR API ===========================================================
+
+cdef extern from "H5TRpublic.h":
+    cdef char* H5TR_START_NUM_PEERS_NAME
+
+# === H5RC API ===========================================================
+
+cdef extern from "H5RCpublic.h":
+    ctypedef enum H5RC_request_t:
+        H5RC_EXACT, # Acquire a read handle for the exact container version specified (Default)
+        H5RC_PREV,  # Acquire a read handle for the container version specified, or the highest
+                    # previous version if the specified version is not available
+        H5RC_NEXT,  # Acquire a read handle for the container version specified, or the lowest
+                    # next version if the specified version is not available
+        H5RC_LAST   # Acquire a read handle for the last (highest) container version possible
+
+    cdef char* H5RC_ACQUIRE_CV_REQUEST_NAME
+
+# === H5O API ============================================================
+
+cdef extern from "H5FFpublic.h":
+
+    ctypedef uint64_t haddr_ff_t
+
+    ctypedef struct H5O_ff_info_t:
+        haddr_ff_t          addr       # Object address in file
+        H5O_type_t          type       # Basic object type
+        unsigned            rc         # Reference count of object
+        hsize_t             num_attrs  # num of attributes attached to object
+
+    cdef union _ff_u:
+        haddr_ff_t address
+        size_t val_size
+
+    ctypedef struct H5L_ff_info_t:
+        H5L_type_t type
+        H5T_cset_t cset
+        _ff_u u
+
+# === H5M API ============================================================
+
+cdef extern from "H5Mpublic.h":
+    ctypedef herr_t (*H5M_iterate_func_t)(const void *key, const void *value, void *context) except 2
