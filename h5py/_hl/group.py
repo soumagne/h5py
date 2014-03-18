@@ -45,14 +45,71 @@ class Group(HLObject, DictCompat):
     def close(self, esid=None):
         """Close the group. Named argument esid (default: None) holds the
         EventStackID identifier."""
-        self.id._close(esid=None)
+        self.id._close(esid=esid)
 
-    def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):
-        """ Create a new HDF5 dataset
+    # def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):
+    #     """ Create a new HDF5 dataset
+
+    #     name
+    #         Name of the dataset (absolute or relative).  Provide None to make
+    #         an anonymous dataset.
+    #     shape
+    #         Dataset shape.  Use "()" for scalar datasets.  Required if "data"
+    #         isn't provided.
+    #     dtype
+    #         Numpy dtype or string.  If omitted, dtype('f') will be used.
+    #         Required if "data" isn't provided; otherwise, overrides data
+    #         array's dtype.
+    #     data
+    #         Provide data to initialize the dataset.  If used, you can omit
+    #         shape and dtype arguments.
+
+    #     Keyword-only arguments:
+
+    #     chunks
+    #         (Tuple) Chunk shape, or True to enable auto-chunking.
+    #     maxshape
+    #         (Tuple) Make the dataset resizable up to this shape.  Use None for
+    #         axes you want to be unlimited.
+    #     compression
+    #         (String) Compression strategy.  Legal values are 'gzip', 'szip',
+    #         'lzf'.  Can also use an integer in range(10) indicating gzip.
+    #     compression_opts
+    #         Compression settings.  This is an integer for gzip, 2-tuple for
+    #         szip, etc.
+    #     scaleoffset
+    #         (Integer) Enable scale/offset filter for (usually) lossy
+    #         compression of integer or floating-point data. For integer
+    #         data, the value of scaleoffset is the number of bits to
+    #         retain (pass 0 to let HDF5 determine the minimum number of
+    #         bits necessary for lossless compression). For floating point
+    #         data, scaleoffset is the number of digits after the decimal
+    #         place to retain; stored values thus have absolute error
+    #         less than 0.5*10**(-scaleoffset).
+    #     shuffle
+    #         (T/F) Enable shuffle filter.
+    #     fletcher32
+    #         (T/F) Enable fletcher32 error detection. Not permitted in
+    #         conjunction with the scale/offset filter.
+    #     fillvalue
+    #         (Scalar) Use this value for uninitialized parts of the dataset.
+    #     track_times
+    #         (T/F) Enable dataset creation timestamps.
+    #     """
+
+    #     dsid = dataset.make_new_dset(self, shape, dtype, data, **kwds)
+    #     dset = dataset.Dataset(dsid)
+    #     if name is not None:
+    #         self[name] = dset
+    #     return dset
+
+    def create_dataset(self, name, trid, shape=None, dtype=None, data=None, **kwds):
+        """ Create a new Exascale FastForward HDF5 dataset
 
         name
-            Name of the dataset (absolute or relative).  Provide None to make
-            an anonymous dataset.
+            Name of the dataset (absolute or relative).
+        trid
+            Transaction identifier.
         shape
             Dataset shape.  Use "()" for scalar datasets.  Required if "data"
             isn't provided.
@@ -97,7 +154,7 @@ class Group(HLObject, DictCompat):
             (T/F) Enable dataset creation timestamps.
         """
 
-        dsid = dataset.make_new_dset(self, shape, dtype, data, **kwds)
+        dsid = dataset.make_new_dset_ff(self, name, trid, shape, dtype, data, **kwds)
         dset = dataset.Dataset(dsid)
         if name is not None:
             self[name] = dset
