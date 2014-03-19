@@ -132,6 +132,7 @@ class Map(HLObject):
             raise RuntimeError("Map is empty")
         vdt = readtime_dtype(self.val_dtype.dtype, [])
         val = numpy.ndarray(self.val_shape, dtype=vdt, order='C')
+        key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
         self.id.get_ff(key, val, rcid, es=esid)
         if len(val.shape) == 0:
             return val[()]
@@ -176,3 +177,11 @@ class Map(HLObject):
         """
         t = self.id.get_types_ff(rcid, es=esid)
         return datatype.Datatype(t[1])
+
+    def delete(self, key, trid, esid=None):
+        """Delete a key/value pair from the map object.
+
+        For Exascale FastForward.
+        """
+        key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
+        self.id.delete_ff(key, trid, es=esid)
