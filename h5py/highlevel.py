@@ -17,3 +17,4 @@ from _hl.attrs import AttributeManager
 
 # Exascale FastForward
 from _hl.event_stack import EventStack
+from _hl.maps import Map
