@@ -4,7 +4,7 @@ import numpy
 import h5py
 from h5py import h5s, h5t, h5m
 from .base import HLObject
-
+from . import datatype
 
 
 def make_new_map(parent, name, trid, kdt=None, vdt=None, esid=None):
@@ -77,7 +77,7 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        self.id._close(esid=esid
+        self.id._close(esid=esid)
 
     def count(self, rcid, esid=None):
         """Count of key/value pairs.
@@ -90,4 +90,15 @@ class Map(HLObject):
         """Count of key/value pairs."""
         return self.count(self._rcid, esid=self._esid)
 
+    @property
+    def key_dtype(self, rcid, esid=None):
+        """Key datatype"""
+        t = self.id.get_types_ff(rcid, es=esid)
+        return datatype.Datatype(t[0])
+
+    @property
+    def val_dtype(self, rcid, esid=None):
+        """Value datatype"""
+        t = self.id.get_types_ff(rcid, es=esid)
+        return datatype.Datatype(t[1])
 
