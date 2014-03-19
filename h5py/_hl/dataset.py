@@ -332,7 +332,10 @@ class Dataset(HLObject):
 
     def close(self, esid=None):
         """Close the dataset. Named argument esid (default: None) holds the
-        EventStackID identifier."""
+        EventStackID identifier.
+        
+        For Exascale FastForward.
+        """
         self.id._close(esid=esid)
 
     def resize(self, size, trid, axis=None, esid=None):

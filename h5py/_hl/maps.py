@@ -4,6 +4,7 @@ import numpy
 import h5py
 from h5py import h5s, h5t, h5m
 from .base import HLObject
+from .dataset import readtime_dtype
 from . import datatype
 
 
@@ -20,7 +21,6 @@ def make_new_map(parent, name, trid, kdt=None, vdt=None, esid=None):
             return dt.id
         else:
             # More work required to figure out datatype...
-            dtype = None
             if dt is None:
                 dtype = numpy.dtype("=f4")
             else:
@@ -36,12 +36,42 @@ def make_new_map(parent, name, trid, kdt=None, vdt=None, esid=None):
 class Map(HLObject):
     """ Represents an Exascale FastForward Map object """
 
+    @property
+    def key_dtype(self):
+        """Key datatype
+
+        For Exascale FastForward.
+        """
+        return datatype.Datatype(self.id.key_typeid)
+
+    @property
+    def val_dtype(self):
+        """Value datatype
+
+        For Exascale FastForward.
+        """
+        return datatype.Datatype(self.id.val_typeid)
+
+    @property
+    def key_shape(self):
+        """ Numpy ndarray shape tuple for map's keys """
+        return self._key_shape
+
+    @property
+    def val_shape(self):
+        """ Numpy ndarray shape tuple for map's values """
+        return self._val_shape
+
     def __init__(self, mapid):
         """ Initialize a new EFF map object for the MapID identifier object
         """
         if not isinstance(mapid, h5m.MapID):
             raise ValueError("%s is not a MapID object" % mapid)
         HLObject.__init__(self, mapid)
+
+        # Shapes for storing key and value data...
+        self._key_shape = None
+        self._val_shape = None
 
         # For Exascale FastForward. Holds current transaction, read
         # context, and event stack identifier objects.
@@ -87,18 +117,46 @@ class Map(HLObject):
         return self.id.get_count_ff(rcid, es=esid)
 
     def __len__(self):
-        """Count of key/value pairs."""
+        """Count of key/value pairs.
+
+        For Exascale FastForward.
+        """
         return self.count(self._rcid, esid=self._esid)
 
-    @property
-    def key_dtype(self, rcid, esid=None):
-        """Key datatype"""
-        t = self.id.get_types_ff(rcid, es=esid)
-        return datatype.Datatype(t[0])
+    def get(self, key, rcid, esid=None):
+        """Read the value for the given key.
 
-    @property
-    def val_dtype(self, rcid, esid=None):
-        """Value datatype"""
-        t = self.id.get_types_ff(rcid, es=esid)
-        return datatype.Datatype(t[1])
+        For Exascale FastForward.
+        """
+        if self.count(rcid, esid=esid) == 0:
+            raise RuntimeError("Map is empty")
+        vdt = readtime_dtype(self.val_dtype.dtype, [])
+        val = numpy.ndarray(self.val_shape, dtype=vdt, order='C')
+        self.id.get_ff(key, val, rcid, es=esid)
+        if len(val.shape) == 0:
+            return val[()]
+        return val
 
+    def set(self, key, value, trid, esid=None):
+        """Set the value for the given key of the map object.
+
+        For Exascale FastForward.
+        """
+        key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
+        value = numpy.asarray(value, order='C', dtype=self.val_dtype.dtype)
+
+        if self.key_shape is None:
+            # Remember the key's shape the first time
+            self._key_shape = key.shape
+        elif self._key_shape != key.shape:
+            raise ValueError("Key shape mismatch; got %s, expected %s" %
+                             (key.shape, self._key_shape))
+
+        if self.val_shape is None:
+            # Remember the value's shape the first time
+            self._val_shape = value.shape
+        elif self._val_shape != value.shape:
+            raise ValueError("Value shape mismatch; got %s, expected %s" %
+                             (value.shape, self._val_shape))
+
+        self.id.set_ff(key, value, trid, es=esid)
