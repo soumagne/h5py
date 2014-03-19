@@ -35,3 +35,36 @@ def make_new_map(parent, name, trid, kdt=None, vdt=None, esid=None):
 
 class Map(HLObject):
     """ Represents an Exascale FastForward Map object """
+
+    def __init__(self, mapid):
+        """ Initialize a new EFF map object for the MapID identifier object
+        """
+        if not isinstance(mapid, h5m.MapID):
+            raise ValueError("%s is not a MapID object" % mapid)
+        HLObject.__init__(self, mapid)
+
+        # For Exascale FastForward. Holds current transaction, read
+        # context, and event stack identifier objects.
+        self._trid = None
+        self._rcid = None
+        self._esid = None
+
+    # For Exascale FastForward.
+    def set_rc_env(self, rcid, esid=None):
+        """Set read context environment to be used. Event stack ID object
+        is optional argument, default set to None.
+
+        Note: This is very experimental and may change.
+        """
+        self._rcid = rcid
+        self._esid = esid
+
+    # For Exascale FastForward.
+    def set_tr_env(self, trid, esid=None):
+        """Set transaction environment to be used. Event stack ID object
+        is optional argument, default set to None.
+
+        Note: This is very experimental and may change.
+        """
+        self._trid = trid
+        self._esid = esid
