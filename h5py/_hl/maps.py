@@ -185,3 +185,11 @@ class Map(HLObject):
         """
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
         self.id.delete_ff(key, trid, es=esid)
+
+    def exists(self, key, rcid, esid=None):
+        """Determine whether a key exists in the map object.
+
+        For Exascale FastForward.
+        """
+        key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
+        return self.id.exists_ff(key, rcid, es=esid)
