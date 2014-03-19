@@ -33,9 +33,13 @@ def create_ff(GroupID loc not None, char* name, TypeID key_type not None,
     asynchronously.
     """
     cdef hid_t mid
+    cdef MapID mapid
     mid = H5Mcreate_ff(loc.id, name, key_type.id, val_type.id, pdefault(lcpl),
                        H5P_DEFAULT, H5P_DEFAULT, tr.id, esid_default(es))
-    return MapID.open(mid)
+    mapid = MapID.open(mid)
+    mapid.key_typeid = typewrap(key_type.id)
+    mapid.val_typeid = typewrap(val_type.id)
+    return mapid
 
 
 def open_ff(GroupID loc not None, char* name, RCntxtID rc not None, EventStackID es=None):
@@ -50,6 +54,28 @@ def open_ff(GroupID loc not None, char* name, RCntxtID rc not None, EventStackID
 
 cdef class MapID(ObjectID):
     """ Represents HDF5 map object identifier """
+
+    def __cinit__(self):
+        self._ktid = None
+        self._vtid = None
+
+    property key_typeid:
+        """ Stores key TypeID """
+
+        def __get__(self):
+            return self._ktid
+
+        def __set__(self, tid):
+            self._ktid = tid
+
+    property val_typeid:
+        """ Stores value TypeID """
+
+        def __get__(self):
+            return self._vtid
+
+        def __set__(self, tid):
+            self._vtid = tid
 
     def _close_ff(self, EventStackID es=None):
         """(EventStackID es=None)
