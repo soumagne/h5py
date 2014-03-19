@@ -160,3 +160,19 @@ class Map(HLObject):
                              (value.shape, self._val_shape))
 
         self.id.set_ff(key, value, trid, es=esid)
+
+    def key_type(rcid, esid=None):
+        """Return map's key datatype
+
+        For Exascale FastForward.
+        """
+        t = self.id.get_types_ff(rcid, es=esid)
+        return datatype.Datatype(t[0])
+
+    def value_type(rcid, esid=None):
+        """Return map's value datatype
+
+        For Exascale FastForward.
+        """
+        t = self.id.get_types_ff(rcid, es=esid)
+        return datatype.Datatype(t[1])
