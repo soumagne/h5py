@@ -20,6 +20,7 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
 
     """
         Allows dictionary-style access to an HDF5 object's attributes.
+        For Exascale FastForward.
 
         These are created exclusively by the library and are available as
         a Python attribute at <object>.attrs
@@ -42,10 +43,38 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         """
         self._id = parent.id
 
+        # For Exascale FastForward. Holds current transaction, read
+        # context, and event stack identifier objects.
+        self._trid = None
+        self._rcid = None
+        self._esid = None
+
+    # For Exascale FastForward.
+    def set_rc_env(self, rcid, esid=None):
+        """Set read context environment to be used. Event stack ID object
+        is optional argument, default set to None.
+
+        Note: This is very experimental and may change.
+        """
+        self._rcid = rcid
+        self._esid = esid
+
+    # For Exascale FastForward.
+    def set_tr_env(self, trid, esid=None):
+        """Set transaction environment to be used. Event stack ID object
+        is optional argument, default set to None.
+
+        Note: This is very experimental and may change.
+        """
+        self._trid = trid
+        self._esid = esid
+
     def __getitem__(self, name):
         """ Read the value of an attribute.
+
+        For Exascale FastForward.
         """
-        attr = h5a.open(self._id, self._e(name))
+        attr = h5a.open_ff(self._id, self._rcid, self._e(name), es=self._esid)
 
         if attr.get_space().get_simple_extent_type() == h5s.NULL:
             raise IOError("Empty attributes cannot be read")
@@ -55,7 +84,7 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         rtdt = readtime_dtype(attr.dtype, [])
 
         arr = numpy.ndarray(attr.shape, dtype=rtdt, order='C')
-        attr.read(arr)
+        attr.read_ff(arr, self._rcid, es=self._esid)
 
         if len(arr.shape) == 0:
             return arr[()]
@@ -68,25 +97,32 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         use a specific type or shape, or to preserve the type of an attribute,
         use the methods create() and modify().
         """
-        self.create(name, data=value, dtype=base.guess_dtype(value))
+        self.create(name, data=value, trid=self._trid, dtype=base.guess_dtype(value),
+                    esid=self._esid)
 
     def __delitem__(self, name):
         """ Delete an attribute (which must already exist). """
-        h5a.delete(self._id, self._e(name))
+        h5a.delete_ff(self._id, self._trid, self._e(name), es=self._esid)
 
-    def create(self, name, data, shape=None, dtype=None):
+    def create(self, name, data, trid, shape=None, dtype=None, esid=None):
         """ Create a new attribute, overwriting any existing attribute.
+
+        For Exascale FastForward.
 
         name
             Name of the new attribute (required)
         data
             An array to initialize the attribute (required)
+        trid
+            Transaction identifier object.
         shape
             Shape of the attribute.  Overrides data.shape if both are
             given, in which case the total number of points must be unchanged.
         dtype
             Data type of the attribute.  Overrides data.dtype if both
             are given.
+        esid (None)
+            Event stack identifier object.
         """
 
         if data is not None:
@@ -115,20 +151,25 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         space = h5s.create_simple(shape)
 
         if name in self:
-            h5a.delete(self._id, self._e(name))
+            h5a.delete_ff(self._id, trid, self._e(name), es=esid)
 
-        attr = h5a.create(self._id, self._e(name), htype, space)
+        attr = h5a.create_ff(self._id, self._e(name), htype, space, trid, es=esid)
 
         if data is not None:
             try:
-                attr.write(data)
+                attr.write_ff(data, trid, es=esid)
             except:
-                attr._close()
-                h5a.delete(self._id, self._e(name))
+                attr._close_ff(es=esid)
+                h5a.delete_ff(self._id, trid, self._e(name), es=esid)
                 raise
 
-    def modify(self, name, value):
+    def modify(self, name, value, trid, esid=None):
         """ Change the value of an attribute while preserving its type.
+
+        For Exascale FastForward. Note that in this method both a read
+        context and a transaction are required. For now, the transaction is
+        a required argument while the read context should be supplied via
+        the set_rc_env() method. This interface may change in the future.
 
         Differs from __setitem__ in that if the attribute already exists, its
         type is preserved.  This can be very useful for interacting with
@@ -141,7 +182,7 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         else:
             value = numpy.asarray(value, order='C')
 
-            attr = h5a.open(self._id, self._e(name))
+            attr = h5a.open_ff(self._id, self._rcid, self._e(name), es=esid)
 
             if attr.get_space().get_simple_extent_type() == h5s.NULL:
                 raise IOError("Empty attributes can't be modified")
@@ -150,10 +191,13 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
             if (value.shape != attr.shape) and not \
                (numpy.product(value.shape) == 1 and numpy.product(attr.shape) == 1):
                 raise TypeError("Shape of data is incompatible with existing attribute")
-            attr.write(value)
+            attr.write_ff(value, trid, es=esid)
 
     def __len__(self):
-        """ Number of attributes attached to the object. """
+        """ Number of attributes attached to the object. 
+        
+        For Exascale FastForward.
+        """
         # I expect we will not have more than 2**32 attributes
         return h5a.get_num_attrs(self._id)
 
@@ -169,8 +213,11 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
             yield name
 
     def __contains__(self, name):
-        """ Determine if an attribute exists, by name. """
-        return h5a.exists(self._id, self._e(name))
+        """ Determine if an attribute exists, by name.
+
+        For Exascale FastForward.
+        """
+        return h5a.exists_ff(self._id, self._e(name), self._rcid, es=self._esid)
 
     def __repr__(self):
         if not self._id:
