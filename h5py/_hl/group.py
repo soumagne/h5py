@@ -124,9 +124,8 @@ class Group(HLObject, DictCompat):
             raise ValueError("New map object requires a name")
         mapid = maps.make_new_map(self, self._e(name), trid, kdt=key_dtype,
                                   vdt=val_dtype, esid=esid, **kwds)
-        mp = map.Map(mapid)
-        if name is not None:
-            self[name] = mp
+        mp = maps.Map(mapid)
+        self[name] = mp
         return mp
 
     def require_dataset(self, name, shape, dtype, exact=False, **kwds):
