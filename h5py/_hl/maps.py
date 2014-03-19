@@ -49,22 +49,45 @@ class Map(HLObject):
         self._rcid = None
         self._esid = None
 
-    # For Exascale FastForward.
     def set_rc_env(self, rcid, esid=None):
         """Set read context environment to be used. Event stack ID object
         is optional argument, default set to None.
+
+        For Exascale FastForward.
 
         Note: This is very experimental and may change.
         """
         self._rcid = rcid
         self._esid = esid
 
-    # For Exascale FastForward.
     def set_tr_env(self, trid, esid=None):
         """Set transaction environment to be used. Event stack ID object
         is optional argument, default set to None.
+
+        For Exascale FastForward.
 
         Note: This is very experimental and may change.
         """
         self._trid = trid
         self._esid = esid
+
+    def close(self, esid=None):
+        """Close the map. Named argument esid (default: None) holds the
+        EventStackID identifier.
+
+        For Exascale FastForward.
+        """
+        self.id._close(esid=esid
+
+    def count(self, rcid, esid=None):
+        """Count of key/value pairs.
+
+        For Exascale FastForward.
+        """
+        return self.id.get_count_ff(rcid, es=esid)
+
+    def __len__(self):
+        """Count of key/value pairs."""
+        return self.count(self._rcid, esid=self._esid)
+
+
