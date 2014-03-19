@@ -17,6 +17,7 @@ from . import base
 from .base import HLObject, DictCompat, py3
 from . import dataset
 from . import datatype
+from . import maps
 
 
 class Group(HLObject, DictCompat):
@@ -102,6 +103,31 @@ class Group(HLObject, DictCompat):
         if name is not None:
             self[name] = dset
         return dset
+
+    def create_map(self, name, trid, key_dtype=None, val_dtype=None, esid=None,
+                   **kwds):
+        """ Create a new Exascale FastForward HDF5 map
+
+        name
+            Name of the map (absolute or relative). Required.
+        trid
+            Transaction identifier object. Required.
+        key_dtype
+            Numpy dtype or string.  If omitted, dtype('f') will be used.
+        val_dtype
+            Numpy dtype or string.  If omitted, dtype('f') will be used.
+        esid
+            Event stack identifier object.
+        """
+
+        if name is None:
+            raise ValueError("New map object requires a name")
+        mapid = maps.make_new_map(self, self._e(name), trid, kdt=key_dtype,
+                                  vdt=val_dtype, esid=esid, **kwds)
+        mp = map.Map(mapid)
+        if name is not None:
+            self[name] = mp
+        return mp
 
     def require_dataset(self, name, shape, dtype, exact=False, **kwds):
         """ Open a dataset, creating it if it doesn't exist.
