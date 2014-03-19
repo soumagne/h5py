@@ -116,7 +116,7 @@ def make_new_dset(parent, shape=None, dtype=None, data=None,
 #===========================================================================
 # For Exascale FastForward
 
-def make_new_dset_ff(parent, name, tr, shape=None, dtype=None, data=None,
+def make_new_dset_ff(parent, name, trid, shape=None, dtype=None, data=None,
                      chunks=None, compression=None, shuffle=None,
                      fletcher32=None, maxshape=None, compression_opts=None,
                      fillvalue=None, scaleoffset=None, track_times=None,
@@ -337,6 +337,8 @@ class Dataset(HLObject):
 
     def resize(self, size, trid, axis=None, esid=None):
         """ Resize the dataset, or the specified axis.
+
+        For Exascale FastForward.
 
         The dataset must be stored in chunked format; it can be resized up to
         the "maximum shape" (keyword maxshape) specified at creation time.
@@ -681,7 +683,7 @@ class Dataset(HLObject):
             dest_sel = sel.select(dest.shape, dest_sel, self.id)
 
         for mspace in dest_sel.broadcast(source_sel.mshape):
-            self.id.read(mspace, fspace, dest, rcid, es=esid)
+            self.id.read_ff(mspace, fspace, dest, rcid, es=esid)
 
     def write_direct(self, source, trid, source_sel=None, dest_sel=None, esid=None):
         """ Write data directly to HDF5 from a NumPy array.
@@ -705,7 +707,7 @@ class Dataset(HLObject):
             dest_sel = sel.select(self.shape, dest_sel, self.id)
 
         for fspace in dest_sel.broadcast(source_sel.mshape):
-            self.id.write(mspace, fspace, source, trid, es=esid)
+            self.id.write_ff(mspace, fspace, source, trid, es=esid)
 
     def __array__(self, dtype=None):
         """ Create a Numpy array containing the whole dataset.  DON'T THINK
