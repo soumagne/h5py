@@ -138,6 +138,13 @@ class Map(HLObject):
             return val[()]
         return val
 
+    def __getitem__(self, key):
+        """Get the value for the given map's key.
+
+        For Exascale FastForward.
+        """
+        return self.get(key, self._rcid, esid=self._esid)
+
     def set(self, key, value, trid, esid=None):
         """Set the value for the given key of the map object.
 
@@ -161,6 +168,10 @@ class Map(HLObject):
                              (value.shape, self._val_shape))
 
         self.id.set_ff(key, value, trid, es=esid)
+
+    def __setitem__(self, key, value):
+        """Set the value of the map's key"""
+        self.set(key, value, self._trid, esid=self._esid)
 
     def key_type(rcid, esid=None):
         """Return map's key datatype
@@ -186,6 +197,10 @@ class Map(HLObject):
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
         self.id.delete_ff(key, trid, es=esid)
 
+    def __delitem__(self, key):
+        """ Delete the map's key """
+        self.delete(key, self._trid, esid=self._esid)
+
     def exists(self, key, rcid, esid=None):
         """Determine whether a key exists in the map object.
 
@@ -193,3 +208,7 @@ class Map(HLObject):
         """
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
         return self.id.exists_ff(key, rcid, es=esid)
+
+    def __contains__(self, key):
+        """Test if key is in the map"""
+        return self.exists(key, self._rcid, esid=self._esid)
