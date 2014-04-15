@@ -121,7 +121,8 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        return self.count(self._rcid, esid=self._esid)
+        #return self.count(self._rcid, esid=self._esid)
+        raise NotImplementedError("__len__() not supported, use Map.count()")
 
     def get(self, key, rcid, esid=None):
         """Read the value for the given key.
@@ -143,7 +144,8 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        return self.get(key, self._rcid, esid=self._esid)
+        #return self.get(key, self._rcid, esid=self._esid)
+        raise NotImplementedError("__getitem__() not supported, use Map.get()")
 
     def set(self, key, value, trid, esid=None):
         """Set the value for the given key of the map object.
@@ -171,7 +173,8 @@ class Map(HLObject):
 
     def __setitem__(self, key, value):
         """Set the value of the map's key"""
-        self.set(key, value, self._trid, esid=self._esid)
+        # self.set(key, value, self._trid, esid=self._esid)
+        raise NotImplementedError("__setitem__ not supported, use Map.set()")
 
     def key_type(rcid, esid=None):
         """Return map's key datatype
@@ -199,7 +202,9 @@ class Map(HLObject):
 
     def __delitem__(self, key):
         """ Delete the map's key """
-        self.delete(key, self._trid, esid=self._esid)
+        # self.delete(key, self._trid, esid=self._esid)
+        raise \
+            NotImplementedError("__delitem__() not supported, use Map.delete()")
 
     def exists(self, key, rcid, esid=None):
         """Determine whether a key exists in the map object.
@@ -211,4 +216,6 @@ class Map(HLObject):
 
     def __contains__(self, key):
         """Test if key is in the map"""
-        return self.exists(key, self._rcid, esid=self._esid)
+        # return self.exists(key, self._rcid, esid=self._esid)
+        raise \
+            NotImplementedError("__contains__() not supported, use Map.exists()")
