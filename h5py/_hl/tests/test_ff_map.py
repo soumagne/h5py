@@ -74,6 +74,51 @@ class TestMap(BaseTest):
         eff_finalize()
 
 
+    def test_default_kv_types(self):
+        """ Default key/value datatypes """
+        from mpi4py import MPI
+        from h5py import h5p
+        from h5py.highlevel import Datatype
+        import numpy
+
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
+                 info=MPI.INFO_NULL)
+        my_version = 0
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
+        
+        comm.Barrier()
+        
+        if my_rank == 0:
+            f.create_transaction(1)
+            f.tr.start(h5p.DEFAULT)
+
+            m = f.create_map('empty_map', f.tr)
+
+            self.assertIsInstance(m.key_dtype, Datatype)
+            self.assertIsInstance(m.val_dtype, Datatype)
+            self.assertEqual(m.key_dtype.dtype, numpy.dtype('=f4'))
+            self.assertEqual(m.val_dtype.dtype, numpy.dtype('=f4'))
+
+            m.close()
+
+            f.tr.finish()
+            # f.tr._close()
+        
+        f.rc.release()
+        
+        comm.Barrier()
+        
+        #f.rc._close()
+        f.close()
+        #es.close()
+        eff_finalize()
+
+
     # def test_example2(self):
     #     """ Example 2 """
     #     from mpi4py import MPI

@@ -37,8 +37,12 @@ def create_ff(GroupID loc not None, char* name, TypeID key_type not None,
     mid = H5Mcreate_ff(loc.id, name, key_type.id, val_type.id, pdefault(lcpl),
                        H5P_DEFAULT, H5P_DEFAULT, tr.id, esid_default(es))
     mapid = MapID.open(mid)
-    mapid.key_typeid = typewrap(key_type.id)
-    mapid.val_typeid = typewrap(val_type.id)
+    # 2014-04-16: The typewrap() messes by producing new TypeID objects so they
+    # are commented out.
+    # mapid.key_typeid = typewrap(key_type.id)
+    # mapid.val_typeid = typewrap(val_type.id)
+    mapid.key_typeid = key_type
+    mapid.val_typeid = val_type
     return mapid
 
 
