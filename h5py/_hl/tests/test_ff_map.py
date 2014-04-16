@@ -30,7 +30,7 @@ class BaseTest(TestCase_ff):
         os.chdir(self._old_dir)
 
 
-@ut.skip("Known to fail")
+# @ut.skip("Known to fail")
 class TestMap(BaseTest):
 
     def test_create_map_root(self):
@@ -54,10 +54,12 @@ class TestMap(BaseTest):
             f.create_transaction(1)
             f.tr.start(h5p.DEFAULT)
 
-            m = f.create_map('map', f.tr)
+            m = f.create_map('empty_map', f.tr)
 
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
+
+            m.close()
 
             f.tr.finish()
             # f.tr._close()

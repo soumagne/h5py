@@ -107,7 +107,7 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        self.id._close(esid=esid)
+        self.id._close_ff(es=esid)
 
     def count(self, rcid, esid=None):
         """Count of key/value pairs.

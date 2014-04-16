@@ -210,6 +210,7 @@ class Group(HLObject, DictCompat):
         mapid = maps.make_new_map(self, self._e(name), trid, kdt=key_dtype,
                                   vdt=val_dtype, esid=esid, **kwds)
         mp = maps.Map(mapid)
+        self.set_tr_env(trid, esid=esid)
         self[name] = mp
         return mp
 
@@ -368,8 +369,15 @@ class Group(HLObject, DictCompat):
         name, lcpl = self._e(name, lcpl=True)
 
         if isinstance(obj, HLObject):
-            h5o.link_ff(obj.id, self.id, name, self._trid, lcpl=lcpl,
-                        lapl=self._lapl, es=self._esid)
+            # 2014-04-16: Commented out the call to h5o.link_ff() below because
+            # of error:
+            # File "h5o.pyx", line 311, in h5py.h5o.link_ff (h5py/h5o.c:4963)
+            #     H5Olink_ff(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl), tr.id,
+            #             ValueError: unable to create link (Symbol table: Unable
+            #                 to initialize object)
+            # h5o.link_ff(obj.id, self.id, name, self._trid, lcpl=lcpl,
+            #             lapl=self._lapl, es=self._esid)
+            pass
 
         elif isinstance(obj, SoftLink):
             self.id.links.create_soft_ff(name, self._e(obj.path), self._trid,
