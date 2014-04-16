@@ -12,6 +12,8 @@
     With Exascale FastForward additions.
 """
 
+include "config.pxi"
+
 # Pyrex compile-time imports
 from _objects cimport ObjectID, pdefault
 from h5g cimport GroupID
@@ -137,52 +139,53 @@ cdef class ObjInfo(_ObjInfo):
 
 
 # For Exascale FastForward
-cdef class _ObjInfoBase_ff:
+IF EFF:
+    cdef class _ObjInfoBase_ff:
 
-    cdef H5O_ff_info_t *istr
+        cdef H5O_ff_info_t *istr
 
-cdef class _ObjInfo_ff(_ObjInfoBase_ff):
+    cdef class _ObjInfo_ff(_ObjInfoBase_ff):
 
-#    property fileno:
-#        def __get__(self):
-#            return self.istr[0].fileno
-    property addr:
-        def __get__(self):
-            return self.istr[0].addr
-    property type:
-        def __get__(self):
-            return <int>self.istr[0].type
-    property rc:
-        def __get__(self):
-            return self.istr[0].rc
+       # property fileno:
+       #     def __get__(self):
+       #         return self.istr[0].fileno
+        property addr:
+            def __get__(self):
+                return self.istr[0].addr
+        property type:
+            def __get__(self):
+                return <int>self.istr[0].type
+        property rc:
+            def __get__(self):
+                return self.istr[0].rc
 
-    def _hash(self):
-        return hash((self.addr, self.type, self.rc))
+        def _hash(self):
+            return hash((self.addr, self.type, self.rc))
 
 
-cdef class ObjInfo_ff(_ObjInfo_ff):
+    cdef class ObjInfo_ff(_ObjInfo_ff):
 
-    """
-        Represents the H5O_ff_info_t structure.
-        For Exascale FastForward.
-    """
+        """
+            Represents the H5O_ff_info_t structure.
+            For Exascale FastForward.
+        """
 
-    cdef H5O_ff_info_t infostruct
-#    cdef public _OHdr hdr
+        cdef H5O_ff_info_t infostruct
+        # cdef public _OHdr hdr
 
-    def __init__(self):
-#        self.hdr = _OHdr()
+        def __init__(self):
+            # self.hdr = _OHdr()
 
-        self.istr = &self.infostruct
-#        self.hdr.istr = &self.infostruct
-#        self.hdr.space.istr = &self.infostruct
-#        self.hdr.mesg.istr = &self.infostruct
+            self.istr = &self.infostruct
+            # self.hdr.istr = &self.infostruct
+            # self.hdr.space.istr = &self.infostruct
+            # self.hdr.mesg.istr = &self.infostruct
 
-    def __copy__(self):
-        cdef ObjInfo_ff newcopy
-        newcopy = ObjInfo_ff()
-        newcopy.infostruct = self.infostruct
-        return newcopy
+        def __copy__(self):
+            cdef ObjInfo_ff newcopy
+            newcopy = ObjInfo_ff()
+            newcopy.infostruct = self.infostruct
+            return newcopy
 
 
 def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
@@ -220,29 +223,30 @@ def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
     return info
 
 
-def get_info_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
-                char* obj_name='.', PropID lapl=None, EventStackID es=None):
-    """(ObjectID loc, STRING name=, RCntxtID rc, **kwds) => ObjInfo_ff
+IF EFF:
+    def get_info_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
+                    char* obj_name='.', PropID lapl=None, EventStackID es=None):
+        """(ObjectID loc, STRING name=, RCntxtID rc, **kwds) => ObjInfo_ff
 
-    For Exascale FastForward.
+        For Exascale FastForward.
 
-    Get information describing an object in an HDF5 file, possibly
-    asynchronously. Keywords:
+        Get information describing an object in an HDF5 file, possibly
+        asynchronously. Keywords:
 
-    STRING obj_name (".")
+        STRING obj_name (".")
 
-    PropID lapl (None)
-        Link access property list
+        PropID lapl (None)
+            Link access property list
 
-    EventStackID es (None)
-        Event stack identifier
-    """
-    cdef ObjInfo_ff info
-    info = ObjInfo_ff()
+        EventStackID es (None)
+            Event stack identifier
+        """
+        cdef ObjInfo_ff info
+        info = ObjInfo_ff()
 
-    H5Oget_info_by_name_ff(loc.id, name, &info.infostruct, pdefault(lapl), rc.id,
-                           esid_default(es))
-    return info
+        H5Oget_info_by_name_ff(loc.id, name, &info.infostruct, pdefault(lapl), rc.id,
+                               esid_default(es))
+        return info
 
 # === General object operations ===============================================
 
@@ -255,29 +259,30 @@ def open(ObjectID loc not None, char* name, PropID lapl=None):
     return wrap_identifier(H5Oopen(loc.id, name, pdefault(lapl)))
 
 
-def open_ff(ObjectID loc not None, char* name, RCntxtID rc not None, PropID lapl=None):
-    """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None) => ObjectID
+IF EFF:
+    def open_ff(ObjectID loc not None, char* name, RCntxtID rc not None, PropID lapl=None):
+        """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None) => ObjectID
 
-    For Exascale FastForward. (TODO: Check h5i.wrap_identifier() if is still
-    useable.)
+        For Exascale FastForward. (TODO: Check h5i.wrap_identifier() if is still
+        useable.)
 
-    Open a group, dataset, or named datatype attached to an existing group.
-    """
-    cdef hid_t objid
-    objid = H5Oopen_ff(loc.id, name, pdefault(lapl), rc.id)
-    return wrap_identifier(objid)
+        Open a group, dataset, or named datatype attached to an existing group.
+        """
+        cdef hid_t objid
+        objid = H5Oopen_ff(loc.id, name, pdefault(lapl), rc.id)
+        return wrap_identifier(objid)
 
-def _close_ff(ObjectID obj not None, EventStackID es=None):
-    """(EventStackID es=None)
+    def _close_ff(ObjectID obj not None, EventStackID es=None):
+        """(EventStackID es=None)
 
-    For Exascale FastForward.
+        For Exascale FastForward.
 
-    Close an object in an HDF5 file, possibly asynchronously.
-    """
-    with _objects.registry.lock:
-        H5Oclose_ff(obj.id, esid_default(es))
-        if not obj.valid:
-            del _objects.registry[obj.id]
+        Close an object in an HDF5 file, possibly asynchronously.
+        """
+        with _objects.registry.lock:
+            H5Oclose_ff(obj.id, esid_default(es))
+            if not obj.valid:
+                del _objects.registry[obj.id]
 
 
 def link(ObjectID obj not None, GroupID loc not None, char* name,
@@ -291,34 +296,35 @@ def link(ObjectID obj not None, GroupID loc not None, char* name,
     H5Olink(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl))
 
 
-def link_ff(ObjectID obj not None, GroupID loc not None, char* name,
-            TransactionID tr not None, PropID lcpl=None, PropID lapl=None,
-            EventStackID es=None):
-    """(ObjectID obj, GroupID loc, STRING name, TransactionID tr, PropID lcpl=None,
-    PropID lapl=None, EventStackID es=None)
+IF EFF:
+    def link_ff(ObjectID obj not None, GroupID loc not None, char* name,
+                TransactionID tr not None, PropID lcpl=None, PropID lapl=None,
+                EventStackID es=None):
+        """(ObjectID obj, GroupID loc, STRING name, TransactionID tr, PropID lcpl=None,
+        PropID lapl=None, EventStackID es=None)
 
-    For Exascale FastForward.
+        For Exascale FastForward.
 
-    Create a new hard link to an object, possibly asynchronously.  Useful for
-    objects created with h5g.create_anon() or h5d.create_anon().
-    """
-    H5Olink_ff(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl), tr.id,
-               esid_default(es))
+        Create a new hard link to an object, possibly asynchronously.  Useful for
+        objects created with h5g.create_anon() or h5d.create_anon().
+        """
+        H5Olink_ff(obj.id, loc.id, name, pdefault(lcpl), pdefault(lapl), tr.id,
+                   esid_default(es))
 
-def exists_by_name_ff(GroupID loc not None, char* name, RCntxtID rc not None,
-                      PropID lapl=None, EventStackID es=None):
-    """(GroupID loc, STRING name, RCntxtID rc, PropID lapl=None,
-    EventStackID es=None) => BOOL
+    def exists_by_name_ff(GroupID loc not None, char* name, RCntxtID rc not None,
+                          PropID lapl=None, EventStackID es=None):
+        """(GroupID loc, STRING name, RCntxtID rc, PropID lapl=None,
+        EventStackID es=None) => BOOL
 
-    For Exascale FastForward.
+        For Exascale FastForward.
 
-    Determine whether a link resolves to an actual object, possibly
-    asynchronously.
-    """
-    cdef hbool_t exists
-    H5Oexists_by_name_ff(loc.id, name, &exists, pdefault(lapl), rc.id,
-                         esid_default(es))
-    return <bint>exists
+        Determine whether a link resolves to an actual object, possibly
+        asynchronously.
+        """
+        cdef hbool_t exists
+        H5Oexists_by_name_ff(loc.id, name, &exists, pdefault(lapl), rc.id,
+                             esid_default(es))
+        return <bint>exists
 
 
 def copy(ObjectID src_loc not None, char* src_name, GroupID dst_loc not None,
@@ -351,26 +357,27 @@ def set_comment(ObjectID loc not None, char* comment, *, char* obj_name=".",
     H5Oset_comment_by_name(loc.id, obj_name, comment, pdefault(lapl))
 
 
-def set_comment_ff(ObjectID loc not None, char* comment, TransactionID tr,
-                   *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
-    """(ObjectID loc, STRING comment, TransactionID tr, **kwds)
+IF EFF:
+    def set_comment_ff(ObjectID loc not None, char* comment, TransactionID tr,
+                       *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
+        """(ObjectID loc, STRING comment, TransactionID tr, **kwds)
 
-    For Exascale FastForward.
+        For Exascale FastForward.
 
-    Set the comment for any-file resident object, possibly asynchronously.
-    Keywords:
+        Set the comment for any-file resident object, possibly asynchronously.
+        Keywords:
 
-    STRING obj_name (".")
-        Set comment on this group member instead
+        STRING obj_name (".")
+            Set comment on this group member instead
 
-    PropID lapl (None)
-        Link access property list
+        PropID lapl (None)
+            Link access property list
 
-    EventStackID es (None)
-        Event stack identifier
-    """
-    H5Oset_comment_by_name_ff(loc.id, obj_name, comment, pdefault(lapl),
-                              tr.id, esid_default(es))
+        EventStackID es (None)
+            Event stack identifier
+        """
+        H5Oset_comment_by_name_ff(loc.id, obj_name, comment, pdefault(lapl),
+                                  tr.id, esid_default(es))
 
 
 def get_comment(ObjectID loc not None, char* comment, *, char* obj_name=".",
@@ -399,37 +406,38 @@ def get_comment(ObjectID loc not None, char* comment, *, char* obj_name=".",
     return pstring
 
 
-def get_comment_ff(ObjectID loc not None, char* comment, RCntxtID rc not None,
-                   *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
-    """(ObjectID loc, STRING comment RCntxtID rc, **kwds)
+IF EFF:
+    def get_comment_ff(ObjectID loc not None, char* comment, RCntxtID rc not None,
+                       *, char* obj_name=".", PropID lapl=None, EventStackID es=None):
+        """(ObjectID loc, STRING comment RCntxtID rc, **kwds)
 
-    For Exascale FastForward.
+        For Exascale FastForward.
 
-    Get the comment for any-file resident object.  Keywords:
+        Get the comment for any-file resident object.  Keywords:
 
-    STRING obj_name (".")
-        Set comment on this group member instead
+        STRING obj_name (".")
+            Set comment on this group member instead
 
-    PropID lapl (None)
-        Link access property list
+        PropID lapl (None)
+            Link access property list
 
-    EventStackID es (None)
-        Event stack identifier
-    """
-    cdef ssize_t size
-    cdef char* buf
+        EventStackID es (None)
+            Event stack identifier
+        """
+        cdef ssize_t size
+        cdef char* buf
 
-    H5Oget_comment_by_name_ff(loc.id, obj_name, NULL, 0, &size, pdefault(lapl),
-                              rc.id, esid_default(es))
-    buf = <char*>emalloc(size+1)
-    try:
-        H5Oget_comment_by_name_ff(loc.id, obj_name, buf, size+1, &size,
-                                  pdefault(lapl), rc.id, esid_default(es))
-        pstring = buf
-    finally:
-        efree(buf)
+        H5Oget_comment_by_name_ff(loc.id, obj_name, NULL, 0, &size, pdefault(lapl),
+                                  rc.id, esid_default(es))
+        buf = <char*>emalloc(size+1)
+        try:
+            H5Oget_comment_by_name_ff(loc.id, obj_name, buf, size+1, &size,
+                                      pdefault(lapl), rc.id, esid_default(es))
+            pstring = buf
+        finally:
+            efree(buf)
 
-    return pstring
+        return pstring
 
 # === Visit routines ==========================================================
 
@@ -525,11 +533,3 @@ def visit(ObjectID loc not None, object func, *,
         <H5_iter_order_t>order, cfunc, <void*>visit, pdefault(lapl))
 
     return visit.retval
-
-
-
-
-
-
-
-
