@@ -22,7 +22,7 @@ from . import maps
 
 class Group(HLObject, DictCompat):
 
-    """ Represents an HDF5 group.
+    """ Represents an Exascale FastForward HDF5 group.
     """
 
     def __init__(self, bind):
@@ -31,6 +31,34 @@ class Group(HLObject, DictCompat):
         if not isinstance(bind, h5g.GroupID):
             raise ValueError("%s is not a GroupID" % bind)
         HLObject.__init__(self, bind)
+
+        # For Exascale FastForward. Holds current transaction, read
+        # context, and event stack identifier objects.
+        self._trid = None
+        self._rcid = None
+        self._esid = None
+
+    def set_rc_env(self, rcid, esid=None):
+        """Set read context environment to be used. Event stack ID object
+        is optional argument, default set to None.
+
+        For Exascale FastForward.
+
+        Note: This is very experimental and may change.
+        """
+        self._rcid = rcid
+        self._esid = esid
+
+    def set_tr_env(self, trid, esid=None):
+        """Set transaction environment to be used. Event stack ID object
+        is optional argument, default set to None.
+
+        For Exascale FastForward.
+
+        Note: This is very experimental and may change.
+        """
+        self._trid = trid
+        self._esid = esid
 
     def create_group(self, name, trid, esid=None):
         """ Create and return a new subgroup.
@@ -340,10 +368,11 @@ class Group(HLObject, DictCompat):
         name, lcpl = self._e(name, lcpl=True)
 
         if isinstance(obj, HLObject):
-            h5o.link(obj.id, self.id, name, lcpl=lcpl, lapl=self._lapl)
+            h5o.link_ff(obj.id, self.id, name, self._trid, lcpl=lcpl,
+                        lapl=self._lapl, es=self._esid)
 
         elif isinstance(obj, SoftLink):
-            self.id.links.create_soft(name, self._e(obj.path),
+            self.id.links.create_soft_ff(name, self._e(obj.path), self._trid,
                           lcpl=lcpl, lapl=self._lapl)
 
         elif isinstance(obj, ExternalLink):
@@ -356,7 +385,8 @@ class Group(HLObject, DictCompat):
 
         else:
             ds = self.create_dataset(None, data=obj, dtype=base.guess_dtype(obj))
-            h5o.link(ds.id, self.id, name, lcpl=lcpl)
+            h5o.link_ff(obj.id, self.id, name, self._trid, lcpl=lcpl,
+                        lapl=self._lapl, es=self._esid)
 
     def __delitem__(self, name):
         """ Delete (unlink) an item from this group. """
