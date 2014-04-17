@@ -176,7 +176,7 @@ class Map(HLObject):
         # self.set(key, value, self._trid, esid=self._esid)
         raise NotImplementedError("__setitem__ not supported, use Map.set()")
 
-    def key_type(rcid, esid=None):
+    def key_type(self, rcid, esid=None):
         """Return map's key datatype
 
         For Exascale FastForward.
@@ -184,7 +184,7 @@ class Map(HLObject):
         t = self.id.get_types_ff(rcid, es=esid)
         return datatype.Datatype(t[0])
 
-    def value_type(rcid, esid=None):
+    def value_type(self, rcid, esid=None):
         """Return map's value datatype
 
         For Exascale FastForward.
