@@ -67,6 +67,7 @@ class Group(HLObject, DictCompat):
         exists.
         """
         name, lcpl = self._e(name, lcpl=True)
+        self.set_tr_env(trid, esid=esid)
         gid = h5g.create(self.id, name, trid, lcpl=lcpl, esid=esid)
         return Group(gid)
 

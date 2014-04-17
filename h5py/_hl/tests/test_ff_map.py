@@ -30,7 +30,6 @@ class BaseTest(TestCase_ff):
         os.chdir(self._old_dir)
 
 
-# @ut.skip("Known to fail")
 class TestMap(BaseTest):
 
     def test_create_map_root(self):
@@ -119,42 +118,48 @@ class TestMap(BaseTest):
         eff_finalize()
 
 
-    # def test_example2(self):
-    #     """ Example 2 """
-    #     from mpi4py import MPI
-    #     from h5py import h5p
+    # @ut.skip("Not working")
+    def test_create_map_group(self):
+        """ Create an empty map in a group """
+        from mpi4py import MPI
+        from h5py import h5p, h5m
 
-    #     comm = MPI.COMM_WORLD
-    #     eff_init(comm, MPI.INFO_NULL)
-    #     my_rank = comm.Get_rank()
-    #     es = EventStack()
-    #     f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm,
-    #              info=MPI.INFO_NULL)
-    #     my_version = 0
-    #     version = f.acquire_context(my_version)
-    #     self.assertEqual(my_version, version)
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
+                 info=MPI.INFO_NULL)
+        my_version = 0
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
         
-    #     comm.Barrier()
+        comm.Barrier()
         
-    #     if my_rank == 0:
-    #         f.create_transaction(1)
-    #         f.tr.start(h5p.DEFAULT)
+        if my_rank == 0:
+            f.create_transaction(1)
+            f.tr.start(h5p.DEFAULT)
 
-    #         grp1 = f.create_group("G1", f.tr)
-    #         grp2 = grp1.create_group("G2", f.tr)
+            grp1 = f.create_group("G1", f.tr)
+            grp2 = grp1.create_group("G2", f.tr)
 
-    #         f.tr.finish()
-    #         # f.tr._close()
+            m = grp2.create_map('empty_map', f.tr)
+            self.assertIsInstance(m, Map)
+            self.assertIsInstance(m.id, h5m.MapID)
+            m.close()
+
+            f.tr.finish()
+            # f.tr._close()
         
-    #     f.rc.release()
+        f.rc.release()
         
-    #     comm.Barrier()
+        comm.Barrier()
         
-    #     if my_rank == 0:
-    #         grp1.close()
-    #         grp2.close()
-    #     #f.rc._close()
-    #     f.close()
-    #     #es.close()
-    #     #comm.Barrier()
-    #     eff_finalize()
+        if my_rank == 0:
+            grp1.close()
+            grp2.close()
+        #f.rc._close()
+        f.close()
+        #es.close()
+        #comm.Barrier()
+        eff_finalize()
