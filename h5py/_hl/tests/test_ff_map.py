@@ -118,7 +118,6 @@ class TestMap(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip("Not working")
     def test_create_map_group(self):
         """ Create an empty map in a group """
         from mpi4py import MPI
@@ -244,6 +243,48 @@ class TestMap(BaseTest):
             self.assertIsInstance(val_dt, Datatype)
             self.assertEqual(key_dt.dtype, numpy.dtype('S7'))
             self.assertEqual(val_dt.dtype, numpy.dtype('int64'))
+
+            m.close()
+
+            f.tr.finish()
+            # f.tr._close()
+        
+        f.rc.release()
+        
+        comm.Barrier()
+        
+        #f.rc._close()
+        f.close()
+        #es.close()
+        eff_finalize()
+
+
+    # @ut.skip("Not working")
+    def test_get_empty_map(self):
+        """ Getting a key/value pair from empty map raises exception  """
+        from mpi4py import MPI
+        from h5py import h5p
+
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
+                 info=MPI.INFO_NULL)
+        my_version = 0
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
+        
+        comm.Barrier()
+        
+        if my_rank == 0:
+            f.create_transaction(1)
+            f.tr.start(h5p.DEFAULT)
+
+            m = f.create_map('empty_map', f.tr)
+            kv_pairs = m.count(f.rc)
+
+            self.assertEqual(kv_pairs, 0)
 
             m.close()
 
