@@ -34,7 +34,7 @@ cdef class TransactionID(ObjectID):
     Represents an HDF5 transaction identifier
     """
 
-    def start(self, PropTSID tspl, EventStackID esid=None):
+    def start(self, PropTSID tspl=None, EventStackID esid=None):
         """(PropTSID tspl, EventStackID esid=None)
         
         Start a transaction.

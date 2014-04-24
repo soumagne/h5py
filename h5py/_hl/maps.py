@@ -130,7 +130,7 @@ class Map(HLObject):
         For Exascale FastForward.
         """
         if self.count(rcid, esid=esid) == 0:
-            raise RuntimeError("Map is empty")
+            raise KeyError(key, "(map is empty)")
         vdt = readtime_dtype(self.val_dtype.dtype, [])
         val = numpy.ndarray(self.val_shape, dtype=vdt, order='C')
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)

@@ -51,7 +51,7 @@ class TestMap(BaseTest):
         
         if my_rank == 0:
             f.create_transaction(1)
-            f.tr.start(h5p.DEFAULT)
+            f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
 
@@ -94,7 +94,7 @@ class TestMap(BaseTest):
         
         if my_rank == 0:
             f.create_transaction(1)
-            f.tr.start(h5p.DEFAULT)
+            f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
 
@@ -137,7 +137,7 @@ class TestMap(BaseTest):
         
         if my_rank == 0:
             f.create_transaction(1)
-            f.tr.start(h5p.DEFAULT)
+            f.tr.start()
 
             grp1 = f.create_group("G1", f.tr)
             grp2 = grp1.create_group("G2", f.tr)
@@ -185,7 +185,7 @@ class TestMap(BaseTest):
         
         if my_rank == 0:
             f.create_transaction(1)
-            f.tr.start(h5p.DEFAULT)
+            f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
             key_dt = m.key_type(f.rc)
@@ -232,7 +232,7 @@ class TestMap(BaseTest):
         
         if my_rank == 0:
             f.create_transaction(1)
-            f.tr.start(h5p.DEFAULT)
+            f.tr.start()
 
             m = f.create_map('empty_map', f.tr, key_dtype='S7',
                              val_dtype='int64')
@@ -263,7 +263,6 @@ class TestMap(BaseTest):
     def test_get_empty_map(self):
         """ Getting a key/value pair from empty map raises exception  """
         from mpi4py import MPI
-        from h5py import h5p
 
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
@@ -279,12 +278,14 @@ class TestMap(BaseTest):
         
         if my_rank == 0:
             f.create_transaction(1)
-            f.tr.start(h5p.DEFAULT)
+            f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
             kv_pairs = m.count(f.rc)
 
             self.assertEqual(kv_pairs, 0)
+            with self.assertRaises(KeyError):
+                val = m.get(1, f.rc)
 
             m.close()
 
