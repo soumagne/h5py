@@ -259,7 +259,6 @@ class TestMap(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip("Not working")
     def test_get_empty_map(self):
         """ Getting a key/value pair from empty map raises exception  """
         from mpi4py import MPI
@@ -286,6 +285,113 @@ class TestMap(BaseTest):
             self.assertEqual(kv_pairs, 0)
             with self.assertRaises(KeyError):
                 val = m.get(1, f.rc)
+
+            m.close()
+
+            f.tr.finish()
+            # f.tr._close()
+        
+        f.rc.release()
+        
+        comm.Barrier()
+        
+        #f.rc._close()
+        f.close()
+        #es.close()
+        eff_finalize()
+
+
+    @ut.skip("Still being worked on")
+    def test_map_kv_ops(self):
+        """ Map set/get/delete/exist key/value operations  """
+        from mpi4py import MPI
+
+        print ">>>>> in test_map_kv_ops"
+
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
+                 info=MPI.INFO_NULL)
+        my_version = 0
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
+        
+        comm.Barrier()
+        
+        if my_rank == 0:
+            f.create_transaction(1)
+            f.tr.start()
+
+            m = f.create_map('test_map', f.tr)
+
+            # Number of key/value pairs in empty map...
+            # kv_pairs = m.count(f.rc)
+            # self.assertEqual(kv_pairs, 0)
+
+            print ">>>>> first set()"
+            m.set(1, 2, f.tr)
+            print ">>>>> second set()"
+            m.set(3, 4, f.tr)
+            # print ">>>>> third set()"
+            # m.set(5, 6, f.tr)
+
+            # self.assertEqual(m.count(f.rc), 1)
+            # with self.assertRaises(KeyError):
+            #     val = m.get(1, f.rc)
+
+            m.close()
+
+            f.tr.finish()
+            # f.tr._close()
+        
+        f.rc.release()
+        
+        comm.Barrier()
+        
+        #f.rc._close()
+        f.close()
+        #es.close()
+        eff_finalize()
+
+
+    def test_map_kv_ops_user_types(self):
+        """ Map get/set/delete/exists key/value ops with user supplied datatypes """
+        from mpi4py import MPI
+        from h5py import h5p
+        from h5py.highlevel import Datatype
+        import numpy
+
+        print ">>>>> in test_map_kv_ops_user_types"
+
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
+                 info=MPI.INFO_NULL)
+        my_version = 0
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
+        
+        comm.Barrier()
+        
+        if my_rank == 0:
+            f.create_transaction(1)
+            f.tr.start()
+
+            m = f.create_map('test_map', f.tr, key_dtype='S7',
+                             val_dtype='int64')
+            print ">>>>> m.id =", m.id
+            print ">>>>> m.id.id =", m.id.id
+            print ">>>>> first set()"
+            m.set('a', 1, f.tr)
+            # print ">>>>> get('a')"
+            # val = m.get('a', f.rc)
+            # print ">>>>> key('a') =", val
+            # print ">>>>> second set()"
+            # m.set('b', 2, f.tr)
 
             m.close()
 
