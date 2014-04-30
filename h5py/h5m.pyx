@@ -52,8 +52,17 @@ def open_ff(GroupID loc not None, char* name, RCntxtID rc not None, EventStackID
     Open an existing map object possibly asynchronously.
     """
     cdef hid_t mid
+    cdef MapID m
+    cdef tuple kv_types
     mid = H5Mopen_ff(loc.id, name, H5P_DEFAULT, rc.id, esid_default(es))
-    return MapID.open(mid)
+    m = MapID.open(mid)
+
+    # Set up the key/value TypeIDs...
+    kv_types = m.get_types_ff(rc, es=es)
+    m.key_typeid = kv_types[0]
+    m.val_typeid = kv_types[1]
+
+    return m
 
 
 cdef class MapID(ObjectID):

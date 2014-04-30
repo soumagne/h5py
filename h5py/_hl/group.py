@@ -12,7 +12,7 @@ import posixpath as pp
 import numpy
 import collections
 
-from h5py import h5g, h5i, h5o, h5r, h5t, h5l, h5p
+from h5py import h5g, h5i, h5o, h5r, h5t, h5l, h5p, h5m
 from . import base
 from .base import HLObject, DictCompat, py3
 from . import dataset
@@ -214,6 +214,22 @@ class Group(HLObject, DictCompat):
         self.set_tr_env(trid, esid=esid)
         self[name] = mp
         return mp
+
+    def open_map(self, name, rcid, esid=None, **kwds):
+        """ Open an Exascale FastForward HDF5 map
+
+        name
+            Name of the map (absolute or relative). Required.
+        rcid
+            Read context object. Required.
+        esid
+            Event stack object. Default None.
+        """
+        if name is None:
+            raise ValueError("Need a map name to open it")
+        self.set_rc_env(rcid, esid=esid)
+        mapid = h5m.open_ff(self.id, name, rcid, es=esid)
+        return maps.Map(mapid)
 
     def require_dataset(self, name, shape, dtype, exact=False, **kwds):
         """ Open a dataset, creating it if it doesn't exist.
