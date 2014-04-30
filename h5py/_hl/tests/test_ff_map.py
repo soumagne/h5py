@@ -385,24 +385,52 @@ class TestMap(BaseTest):
                              val_dtype='int64')
             print ">>>>> m.id =", m.id
             print ">>>>> m.id.id =", m.id.id
+            print ">>>>> f.tr =", f.tr
+            print ">>>>> f.tr.id =", f.tr.id
             print ">>>>> first set()"
             m.set('a', 1, f.tr)
-            # print ">>>>> get('a')"
-            # val = m.get('a', f.rc)
-            # print ">>>>> key('a') =", val
             # print ">>>>> second set()"
             # m.set('b', 2, f.tr)
 
-            m.close()
+            # m.close()
 
             f.tr.finish()
-            # f.tr._close()
+            f.tr._close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        #f.rc._close()
+        f.rc._close()
+
+        my_version = 1
+        version = f.acquire_context(1)        
+        self.assertEqual(my_version, version)
+
+        comm.Barrier()
+
+        if my_rank == 0:
+            print ">>>>> exists('a')"
+            kv_exists = m.exists('a', f.rc)
+            print ">>>>> kv_exists =", kv_exists
+            print ">>>>> exists('b')"
+            kv_exists = m.exists('b', f.rc)
+            print ">>>>> kv_exists =", kv_exists
+            print ">>>>> count()"
+            cnt = m.count(f.rc)
+            print ">>>>> kv pair count =", cnt
+            # print ">>>>> get('a')"
+            # val = m.get('a', f.rc)
+            # print ">>>>> key('a') =", val
+
+        f.rc.release()
+
+        comm.Barrier()
+
+        f.rc._close()
+
+        m.close()
+
         f.close()
-        #es.close()
+        es.close()
         eff_finalize()

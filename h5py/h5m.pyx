@@ -188,13 +188,34 @@ cdef class MapID(ObjectID):
         """
         cdef TypeID key_mtype, val_mtype
 
+        print ">>>>> in h5m.MapID.set_ff()"
+        print "self =", self
+        print "self.id =", self.id
+        print "tr =", tr
+        print "tr.id =", tr.id
+        print "self.key_typeid =", self.key_typeid
+        print "self.key_typeid.id =", self.key_typeid.id
+        print "self.val_typeid =", self.val_typeid
+        print "self.val_typeid.id =", self.val_typeid.id
+
         try:
             check_numpy_read(key)
             check_numpy_read(val)
-            key_mtype = py_create(key.dtype)
-            val_mtype = py_create(val.dtype)
+            # key_mtype = py_create(key.dtype)
+            # val_mtype = py_create(val.dtype)
+
+            # print "key_mtype =", key_mtype
+            # print "key_mtype.id =", key_mtype.id
+            # print "val_mtype =", val_mtype
+            # print "val_mtype.id =", val_mtype.id
+
+            key_mtype = self.key_typeid
+            val_mtype = self.val_typeid
+
             map_gs_ff(self.id, key_mtype.id, PyArray_DATA(key), val_mtype.id,
                       PyArray_DATA(val), pdefault(dxpl), tr.id,
                       esid_default(es), 0)
         finally:
             pass
+
+        print "<<<<<"
