@@ -419,17 +419,22 @@ class TestMap(BaseTest):
             print ">>>>> count()"
             cnt = m.count(f.rc)
             print ">>>>> kv pair count =", cnt
+
+            # Close the map object so it can be opened for a get()
+            m.close()
+            m = f.open_map('test_map', f.rc)
+
             # print ">>>>> get('a')"
             # val = m.get('a', f.rc)
             # print ">>>>> key('a') =", val
+
+            m.close()
 
         f.rc.release()
 
         comm.Barrier()
 
         f.rc._close()
-
-        m.close()
 
         f.close()
         es.close()
