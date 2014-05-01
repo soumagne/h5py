@@ -342,24 +342,38 @@ class TestMap(BaseTest):
             f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
-            kv_pairs = m.count(f.rc)
-
-            self.assertEqual(kv_pairs, 0)
-            with self.assertRaises(KeyError):
-                val = m.get(1, f.rc)
-
-            m.close()
 
             f.tr.finish()
-            # f.tr._close()
+            f.tr._close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        #f.rc._close()
+        f.rc._close()
+
+        my_version = 1
+        version = f.acquire_context(1)        
+        self.assertEqual(my_version, version)
+
+        comm.Barrier()
+
+        if my_rank == 0:
+            kv_pairs = m.count(f.rc)
+            self.assertEqual(kv_pairs, 0)
+            with self.assertRaises(KeyError):
+                val = m.get(1, f.rc)
+
+        m.close()
+
+        f.rc.release()
+
+        comm.Barrier()
+
+        f.rc._close()
+
         f.close()
-        #es.close()
+        es.close()
         eff_finalize()
 
 
