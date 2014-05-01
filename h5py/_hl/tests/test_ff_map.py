@@ -164,6 +164,68 @@ class TestMap(BaseTest):
         eff_finalize()
 
 
+    def test_create_open_group_map(self):
+        """ Create an empty map in a group then open it """
+        from mpi4py import MPI
+        from h5py import h5m
+
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
+                 info=MPI.INFO_NULL)
+        my_version = 0
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
+        
+        comm.Barrier()
+
+        if my_rank == 0:
+            f.create_transaction(1)
+            f.tr.start()
+
+            grp1 = f.create_group("G1", f.tr)
+            grp2 = grp1.create_group("G2", f.tr)
+
+            m = grp2.create_map('empty_map', f.tr)
+            self.assertIsInstance(m, Map)
+            self.assertIsInstance(m.id, h5m.MapID)
+            m.close()
+
+            grp2.close()
+            grp1.close()
+
+            f.tr.finish()
+            f.tr._close()
+        
+        f.rc.release()
+        
+        comm.Barrier()
+        
+        f.rc._close()
+
+        my_version = 1
+        version = f.acquire_context(1)
+        self.assertEqual(my_version, version)
+
+        comm.Barrier()
+
+        if my_rank == 0:
+            m = f.open_map('G1/G2/empty_map', f.rc)
+            self.assertIsInstance(m, Map)
+            self.assertIsInstance(m.id, h5m.MapID)
+            m.close()
+
+        f.rc.release()
+        comm.Barrier()
+        f.rc._close()
+
+        f.close()
+        es.close()
+        eff_finalize()
+
+
     def test_get_kv_types(self):
         """ h5m.get_types_ff reported datatypes """
         from mpi4py import MPI
