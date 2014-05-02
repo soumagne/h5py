@@ -1,6 +1,7 @@
 # Test suite for Exascale FastForward H5M API.
 
 import os
+from time import sleep
 from .common_ff import ut, TestCase_ff
 from h5py import h5
 from h5py.eff_control import eff_init, eff_finalize
@@ -26,6 +27,7 @@ class BaseTest(TestCase_ff):
 
 
     def tearDown(self):
+        sleep(1)
         self.ff_cleanup()
         os.chdir(self._old_dir)
 
@@ -465,8 +467,8 @@ class TestMap(BaseTest):
             print ">>>>> f.tr.id =", f.tr.id
             print ">>>>> first set()"
             m.set('a', 1, f.tr)
-            # print ">>>>> second set()"
-            # m.set('b', 2, f.tr)
+            print ">>>>> second set()"
+            m.set('b', 2, f.tr)
 
             # m.close()
 
@@ -500,9 +502,9 @@ class TestMap(BaseTest):
             m.close()
             m = f.open_map('test_map', f.rc)
 
-            # print ">>>>> get('a')"
-            # val = m.get('a', f.rc)
-            # print ">>>>> key('a') =", val
+            print ">>>>> get('a')"
+            val = m.get('a', f.rc)
+            print ">>>>> key('a') =", val
 
             m.close()
 
