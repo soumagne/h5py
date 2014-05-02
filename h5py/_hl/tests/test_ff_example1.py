@@ -26,53 +26,9 @@ class BaseTest(TestCase_ff):
 
 
     def tearDown(self):
+        self.shut_h5ff_server()
         self.ff_cleanup()
         os.chdir(self._old_dir)
-
-
-class TestMPI(BaseTest):
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
-    def test_mpi_thread_multi(self):
-        """ MPI_THREAD_MULTIPLE support """
-        from mpi4py import MPI
-        provided = MPI.Query_thread()
-        self.assertEqual(provided, MPI.THREAD_MULTIPLE)
-
-
-    def test_mpi_auto_init(self):
-        """ MPI auto initialization """
-        from mpi4py import MPI
-        self.assertTrue(MPI.Is_initialized())
-
-
-    def test_comm_class(self):
-        """ Check MPI.COMM_WORLD class """
-        from  mpi4py import MPI
-        comm = MPI.COMM_WORLD
-        self.assertIsInstance(comm, MPI.Intracomm)
-
-
-class TestWorkEnv(BaseTest):
-
-    def setUp(self):
-        self._old_dir = os.getcwd()
-        os.chdir(self.exe_dir)
-
-
-    def tearDown(self):
-        os.chdir(self._old_dir)
-
-
-    def test_wrk_dir(self):
-        """ Work directory for running tests """
-        cwd = os.getcwd()
-        self.assertEqual(cwd, self.exe_dir)
 
 
 class TestExample1(BaseTest):

@@ -26,6 +26,7 @@ class BaseTest(TestCase_ff):
 
 
     def tearDown(self):
+        self.shut_h5ff_server()
         self.ff_cleanup()
         os.chdir(self._old_dir)
 
