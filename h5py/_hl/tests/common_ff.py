@@ -36,3 +36,10 @@ class TestCase_ff(TestCase):
         if retcode:
             raise RuntimeError('h5ff_server: Failed to run')
         time.sleep(sleep)
+
+    def shut_h5ff_server(self):
+        """ Shuts down all h5ff_server processes """
+
+        retcode = os.system('killall -g h5ff_server')
+        if retcode:
+            raise RuntimeError('killall -g h5ff_server: Command failed')

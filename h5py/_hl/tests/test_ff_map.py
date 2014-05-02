@@ -1,7 +1,6 @@
 # Test suite for Exascale FastForward H5M API.
 
 import os
-from time import sleep
 from .common_ff import ut, TestCase_ff
 from h5py import h5
 from h5py.eff_control import eff_init, eff_finalize
@@ -27,7 +26,7 @@ class BaseTest(TestCase_ff):
 
 
     def tearDown(self):
-        sleep(1)
+        self.shut_h5ff_server()
         self.ff_cleanup()
         os.chdir(self._old_dir)
 
