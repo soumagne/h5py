@@ -60,6 +60,9 @@ if my_rank == 0:
     kv_exists = m.exists('1', f.rc)
     assert kv_exists
 
+    kv_exists = m.exists(1, f.rc)
+    assert kv_exists
+
     kv_exists = m.exists('1234567', f.rc)
     assert kv_exists
 
