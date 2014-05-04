@@ -37,10 +37,6 @@ def create_ff(GroupID loc not None, char* name, TypeID key_type not None,
     mid = H5Mcreate_ff(loc.id, name, key_type.id, val_type.id, pdefault(lcpl),
                        H5P_DEFAULT, H5P_DEFAULT, tr.id, esid_default(es))
     mapid = MapID.open(mid)
-    # 2014-04-16: The typewrap() messes by producing new TypeID objects so they
-    # are commented out.
-    # mapid.key_typeid = typewrap(key_type.id)
-    # mapid.val_typeid = typewrap(val_type.id)
     mapid.key_typeid = key_type
     mapid.val_typeid = val_type
     return mapid
@@ -133,12 +129,12 @@ cdef class MapID(ObjectID):
 
         Delete a key/value pair from the map object.
         """
-        cdef TypeID mem_type
+        cdef TypeID key_type
 
         try:
             check_numpy_read(key)
-            mem_type = py_create(key.dtype)
-            map_del_ff(self.id, mem_type.id, PyArray_DATA(key), tr.id, 
+            key_type = self.key_typeid
+            map_del_ff(self.id, key_type.id, PyArray_DATA(key), tr.id, 
                        esid_default(es))
         finally:
             pass
@@ -152,12 +148,12 @@ cdef class MapID(ObjectID):
         asynchronously.
         """
         cdef hbool_t exists
-        cdef TypeID mem_type
+        cdef TypeID key_type
 
         try:
             check_numpy_read(key)
-            mem_type = py_create(key.dtype)
-            exists = map_check_ff(self.id, mem_type.id, PyArray_DATA(key),
+            key_type = self.key_typeid
+            exists = map_check_ff(self.id, key_type.id, PyArray_DATA(key),
                                   rc.id, esid_default(es))
         finally:
             pass
@@ -173,14 +169,14 @@ cdef class MapID(ObjectID):
         Retrieve the value for a given key from the map object, possibly
         asynchronously.
         """
-        cdef TypeID key_mtype, val_mtype
+        cdef TypeID key_type, val_type
 
         try:
             check_numpy_read(key)
             check_numpy_write(val)
-            key_mtype = py_create(key.dtype)
-            val_mtype = py_create(val.dtype)
-            map_gs_ff(self.id, key_mtype.id, PyArray_DATA(key), val_mtype.id,
+            key_type = self.key_typeid
+            val_type = self.val_typeid
+            map_gs_ff(self.id, key_type.id, PyArray_DATA(key), val_type.id,
                       PyArray_DATA(val), pdefault(dxpl), rc.id,
                       esid_default(es), 1)
         finally:
@@ -195,36 +191,16 @@ cdef class MapID(ObjectID):
         Set the value for a given key in the map object, possibly
         asynchronously.
         """
-        cdef TypeID key_mtype, val_mtype
-
-        print ">>>>> in h5m.MapID.set_ff()"
-        print "self =", self
-        print "self.id =", self.id
-        print "tr =", tr
-        print "tr.id =", tr.id
-        print "self.key_typeid =", self.key_typeid
-        print "self.key_typeid.id =", self.key_typeid.id
-        print "self.val_typeid =", self.val_typeid
-        print "self.val_typeid.id =", self.val_typeid.id
+        cdef TypeID key_type, val_type
 
         try:
             check_numpy_read(key)
             check_numpy_read(val)
-            # key_mtype = py_create(key.dtype)
-            # val_mtype = py_create(val.dtype)
+            key_type = self.key_typeid
+            val_type = self.val_typeid
 
-            # print "key_mtype =", key_mtype
-            # print "key_mtype.id =", key_mtype.id
-            # print "val_mtype =", val_mtype
-            # print "val_mtype.id =", val_mtype.id
-
-            key_mtype = self.key_typeid
-            val_mtype = self.val_typeid
-
-            map_gs_ff(self.id, key_mtype.id, PyArray_DATA(key), val_mtype.id,
+            map_gs_ff(self.id, key_type.id, PyArray_DATA(key), val_type.id,
                       PyArray_DATA(val), pdefault(dxpl), tr.id,
                       esid_default(es), 0)
         finally:
             pass
-
-        print "<<<<<"

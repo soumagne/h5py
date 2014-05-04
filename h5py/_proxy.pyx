@@ -177,29 +177,19 @@ cdef herr_t map_gs_ff(hid_t map, hid_t key_mtype, void* key_buf,
                       hid_t val_mtype, void* val_buf, hid_t dxpl,
                       hid_t objid, hid_t esid, int get) except -1:
 
-    print ">>>>> in _proxy.map_gs_ff()"
-    print "map =", map
-    print "key_mtype =", key_mtype
-    print "val_mtype =", val_mtype
-    print "objid =", objid
-
     try:
         if not (needs_proxy(key_mtype) or needs_proxy(val_mtype)):
             if get:
                 H5Mget_ff(map, key_mtype, key_buf, val_mtype, val_buf, dxpl,
                           objid, esid)
             else:
-                print "before H5Mset_ff()..."
                 H5Mset_ff(map, key_mtype, key_buf, val_mtype, val_buf, dxpl,
                           objid, esid)
-                print "after H5Mset_ff()..."
         else:
             raise NotImplementedError("Proxy buffering not implemented for map "
                                       "get/set operation")
     finally:
         pass
-
-    print "<<<<<"
 
     return 0
 
