@@ -76,6 +76,15 @@ if my_rank == 0:
     val = m.get('b', f.rc)
     assert val == 2
 
+    val = m.get('1', f.rc)
+    assert val == 3
+
+    val = m.get(1, f.rc)
+    assert val == 3
+
+    val = m.get('1234567', f.rc)
+    assert val == 4
+
     m.close()
 
 f.rc.release()
