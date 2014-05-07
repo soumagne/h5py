@@ -88,7 +88,48 @@ if my_rank == 0:
     val = m.get('1234567', f.rc)
     assert val == 4
 
-    m.close()
+    f.create_transaction(2)
+    f.tr.start()
+
+    # Delete some key-value pairs...
+    m.delete('b', f.tr)
+    m.delete('1234567', f.tr)
+
+    f.tr.finish()
+    f.tr._close()
+
+f.rc.release()
+comm.Barrier()
+f.rc._close()
+
+my_version = 2
+version = f.acquire_context(2)
+assert my_version == version, "Read context version: %d, requested %d" \
+        % (version, my_version)
+
+comm.Barrier()
+
+if my_rank == 0:
+    kv_exists = m.exists('a', f.rc)
+    assert kv_exists
+
+    kv_exists = m.exists('b', f.rc)
+    assert not kv_exists
+
+    kv_exists = m.exists('c', f.rc)
+    assert not kv_exists
+
+    kv_exists = m.exists('1', f.rc)
+    assert kv_exists
+
+    kv_exists = m.exists('1234567', f.rc)
+    assert not kv_exists
+
+    cnt = m.count(f.rc)
+    assert cnt == 2
+
+
+m.close()
 
 f.rc.release()
 comm.Barrier()
