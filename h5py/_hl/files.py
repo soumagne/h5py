@@ -249,16 +249,21 @@ class File(Group):
         Group.__init__(self, fid)
 
 
-    def close(self, esid=None):
+    def close(self, persist=True, esid=None):
         """ Close the file.  All open objects become invalid.
 
-        Optional argument es represents an EventStackID object. Default
-        value is None.
+        Optional arguments:
+        
+        persist
+            Flag to indicate whether to persist the final transaction. Default
+            is True.
+        es
+            Represents an EventStackID object. Default value is None.
         """
         # TODO: find a way to square this with having issue 140
         # Not clearing shared state introduces a tiny memory leak, but
         # it goes like the number of files opened in a session.
-        self.id.close(es=esid)
+        self.id.close(persist=persist, es=esid)
 
 
     def flush(self):

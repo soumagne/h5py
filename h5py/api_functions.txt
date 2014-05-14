@@ -559,7 +559,7 @@ hdf5:
 
 # === H5F API New Additions ==============================================
 
-   EFF MPI hid_t H5Fclose_ff(hid_t file_id, hid_t es_id)
+   EFF MPI hid_t H5Fclose_ff(hid_t file_id, hbool_t persist_flag, hid_t es_id)
    EFF MPI hid_t H5Fcreate_ff(char *name, unsigned flags, hid_t fcpl_id, hid_t fapl_id, hid_t es_id)
    EFF MPI hid_t H5Fopen_ff(char *name, unsigned flags, hid_t fapl_id, hid_t *rcntxt_id, hid_t es_id)
 
