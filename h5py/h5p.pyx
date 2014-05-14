@@ -965,31 +965,20 @@ cdef class PropFAID(PropInstanceID):
             """
             H5Pset_fapl_mpio(self.id, comm.ob_mpi, info.ob_mpi) 
 
+    if EFF:
+        # Exascale FastForward
+        def set_fapl_iod(self, Comm comm not None, Info info not None): 
+            """(Comm comm, Info info)
 
-        def set_fapl_mpiposix(self, Comm comm not None, bint use_gpfs_hints=0):
-            """ (Comm comm, BOOL use_gpfs_hints=0)
-
-            Set MPI-POSIX driver.
+            Specify that the IOD VOL plugin should be used to access the
+            HDF5 container.
 
             Comm: An mpi4py.MPI.Comm instance
-            use_gpfs_hints: Enable internal hints for GPFS file system
+            Info: An mpi4py.MPI.Info instance
+
+            Requires FastForward HDF5 (prereq.: MPI and Parallel HDF5)
             """
-            H5Pset_fapl_mpiposix(self.id, comm.ob_mpi, use_gpfs_hints)
-
-        if EFF:
-            # Exascale FastForward
-            def set_fapl_iod(self, Comm comm not None, Info info not None): 
-                """(Comm comm, Info info)
-
-                Specify that the IOD VOL plugin should be used to access the
-                HDF5 container.
-
-                Comm: An mpi4py.MPI.Comm instance
-                Info: An mpi4py.MPI.Info instance
-
-                Requires FastForward HDF5 (prereq.: MPI and Parallel HDF5)
-                """
-                H5Pset_fapl_iod(self.id, comm.ob_mpi, info.ob_mpi)
+            H5Pset_fapl_iod(self.id, comm.ob_mpi, info.ob_mpi)
 
     def get_mdc_config(self):
         """() => CacheConfig
