@@ -829,3 +829,29 @@ cdef extern from "H5FFpublic.h":
 
 cdef extern from "H5Mpublic.h":
     ctypedef herr_t (*H5M_iterate_func_t)(const void *key, const void *value, void *context) except 2
+
+# === H5X API ============================================================
+
+cdef extern from "H5Xpublic.h":
+
+    int H5X_CLASS_T_VERS
+
+    # Plugin IDs
+    int H5X_PLUGIN_ERROR
+    int H5X_PLUGIN_ERROR    # (-1) no plugin
+    int H5X_PLUGIN_NONE     # 0  reserved indefinitely
+    int H5X_PLUGIN_DUMMY    # 1  dummy
+    int H5X_PLUGIN_FASTBIT  # 2  fastbit
+    int H5X_PLUGIN_ALACRIT  # 3  alacrity
+    int H5X_PLUGIN_RESERVED # 64 plugin ids below this value reserved
+    int H5X_PLUGIN_MAX      # 256  maximum plugin id
+
+    # Maximum number of plugins allowed in a pipeline
+    int H5X_MAX_NPLUGINS    # 16
+    
+    # Index type
+    ctypedef enum H5X_type_t:
+        H5X_TYPE_LINK_NAME,   # Link name index
+        H5X_TYPE_ATTR_NAME,   # Attribute name index
+        H5X_TYPE_DATA_ELEM,   # Dataset element index
+        H5X_TYPE_MAP_VALUE    # Map value index
