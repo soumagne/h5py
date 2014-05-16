@@ -12,7 +12,7 @@ class TestCase_ff(TestCase):
     @property
     def exe_dir(self):
         """ Directory from which to run tests. """
-        return r'/scr/ajelenak/hdf5ff_build/examples'
+        return r'/scr/ajelenak/build/examples'
 
 
     @property
