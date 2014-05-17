@@ -670,6 +670,12 @@ hdf5:
    EFF herr_t H5Mdelete_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hid_t trans_id, hid_t estack_id)
    EFF herr_t H5Mclose_ff(hid_t map_id, hid_t estack_id)
 
+# === H5X API =============================================================
+
+   EFF herr_t H5Xcreate_ff(hid_t file_id, unsigned plugin_id, hid_t scope_id, hid_t xcpl_id, hid_t trans_id, hid_t estack_id)
+   EFF herr_t H5Xremove_ff(hid_t file_id, unsigned plugin_id, hid_t scope_id, hid_t trans_id, hid_t estack_id)
+   EFF herr_t H5Xget_count_ff(hid_t scope_id, hsize_t *idx_count, hid_t rcxt_id, hid_t estack_id)
+
 #=========================================================================
 #=========================================================================
 
