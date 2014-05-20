@@ -855,3 +855,27 @@ cdef extern from "H5Xpublic.h":
         H5X_TYPE_ATTR_NAME,   # Attribute name index
         H5X_TYPE_DATA_ELEM,   # Dataset element index
         H5X_TYPE_MAP_VALUE    # Map value index
+
+# === H5Q API ============================================================
+
+cdef extern from "H5Qpublic.h":
+
+    # Query type
+    ctypedef enum H5Q_type_t:
+        H5Q_TYPE_DATA_ELEM,  # selects data elements
+        H5Q_TYPE_ATTR_VALUE, # selects attribute values
+        H5Q_TYPE_ATTR_NAME,  # selects attributes
+        H5Q_TYPE_LINK_NAME   # selects objects
+
+    # Query match conditions
+    ctypedef enum H5Q_match_op_t:
+        H5Q_MATCH_EQUAL,        # equal
+        H5Q_MATCH_NOT_EQUAL,    # not equal
+        H5Q_MATCH_LESS_THAN,    # less than
+        H5Q_MATCH_GREATER_THAN  # greater than
+
+    # Query combine operators
+    ctypedef enum H5Q_combine_op_t:
+        H5Q_COMBINE_AND,
+        H5Q_COMBINE_OR,
+        H5Q_SINGLETON
