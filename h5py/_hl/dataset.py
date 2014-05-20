@@ -317,7 +317,7 @@ class Dataset(Index, HLObject):
         dcpl = self._dcpl.get_fill_value(arr)
         return arr[0]
 
-    def __init__(self, bind):
+    def __init__(self, bind, container=None):
         """ Create a new Dataset object by binding to a low-level DatasetID.
         """
         from threading import local
@@ -330,6 +330,7 @@ class Dataset(Index, HLObject):
         self._filters = filters.get_filters(self._dcpl)
         self._local = local()
         self._local.astype = None
+        self._container = container
 
     def close(self, esid=None):
         """Close the dataset. Named argument esid (default: None) holds the

@@ -26,12 +26,13 @@ class Group(Index, HLObject, DictCompat):
     """ Represents an Exascale FastForward HDF5 group.
     """
 
-    def __init__(self, bind):
+    def __init__(self, bind, container=None):
         """ Create a new Group object by binding to a low-level GroupID.
         """
         if not isinstance(bind, h5g.GroupID):
             raise ValueError("%s is not a GroupID" % bind)
         HLObject.__init__(self, bind)
+        self._container = container
 
         # For Exascale FastForward. Holds current transaction, read
         # context, and event stack identifier objects.
@@ -70,7 +71,7 @@ class Group(Index, HLObject, DictCompat):
         name, lcpl = self._e(name, lcpl=True)
         self.set_tr_env(trid, esid=esid)
         gid = h5g.create(self.id, name, trid, lcpl=lcpl, esid=esid)
-        return Group(gid)
+        return Group(gid, container=self.container)
 
 
     def close(self, esid=None):
@@ -186,7 +187,7 @@ class Group(Index, HLObject, DictCompat):
         """
 
         dsid = dataset.make_new_dset_ff(self, name, trid, shape, dtype, data, **kwds)
-        dset = dataset.Dataset(dsid)
+        dset = dataset.Dataset(dsid, container=self.container)
         if name is not None:
             self[name] = dset
         return dset
