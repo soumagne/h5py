@@ -18,9 +18,10 @@ from .base import HLObject, DictCompat, py3
 from . import dataset
 from . import datatype
 from . import maps
+from .index import Index
 
 
-class Group(HLObject, DictCompat):
+class Group(Index, HLObject, DictCompat):
 
     """ Represents an Exascale FastForward HDF5 group.
     """
