@@ -193,6 +193,19 @@ class HLObject(CommonStateObject):
         return files.File(self.id)
 
     @property
+    def container(self):
+        """ Return the container (file) instance of this object. This property
+        provides exactly the same functionality as the above 'file' but is
+        guaranteed to work for the FastForward HDF5 version. """
+        import files
+        if self._container is None:
+            if isinstance(self, files.File):
+                return self
+            else:
+                raise ValueError("The container property cannot be None")
+        return self._container
+
+    @property
     def name(self):
         """ Return the full name of this object.  None if anonymous. """
         return self._d(h5i.get_name(self.id))
@@ -240,6 +253,7 @@ class HLObject(CommonStateObject):
     def __init__(self, oid):
         """ Setup this object, given its low-level identifier """
         self._id = oid
+        self._container = None
 
     def __hash__(self):
         return hash(self.id)
