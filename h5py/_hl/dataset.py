@@ -17,6 +17,7 @@ from .base import HLObject, py3
 from . import filters
 from . import selections as sel
 from . import selections2 as sel2
+from .index import Index
 
 def readtime_dtype(basetype, names):
     """ Make a NumPy dtype appropriate for reading """
@@ -214,7 +215,7 @@ class AstypeContext(object):
         self._dset._local.astype = None
 
 
-class Dataset(HLObject):
+class Dataset(Index, HLObject):
 
     """
         Represents an HDF5 dataset
