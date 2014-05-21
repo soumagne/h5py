@@ -92,3 +92,23 @@ cdef class QueryID(ObjectID):
         cdef H5Q_match_op_t match_op
         H5Qget_match_info(self.id, NULL, &match_op)
         return <int>match_op
+
+
+    def get_components(self):
+        """() => TUPLE subquery1, subquery2
+
+        Get component queries from the compound query.
+        """
+        cdef hid_t subq1, subq2
+        H5Qget_components(self.id, &subq1, &subq2)
+        return QueryID.open(subq1), QueryID.open(subq2)
+
+
+    def get_combine_op(self):
+        """() => INT combine_op
+
+        Get the combine operator type of the query object.
+        """
+        cdef H5Q_combine_op_t combine_op
+        H5Qget_combine_op(self.id, &combine_op)
+        return <int>combine_op
