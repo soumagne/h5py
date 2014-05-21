@@ -676,6 +676,17 @@ hdf5:
    EFF herr_t H5Xremove_ff(hid_t file_id, unsigned plugin_id, hid_t scope_id, hid_t trans_id, hid_t estack_id)
    EFF herr_t H5Xget_count_ff(hid_t scope_id, hsize_t *idx_count, hid_t rcxt_id, hid_t estack_id)
 
+# === H5Q API =============================================================
+
+   EFF hid_t H5Qcreate_v(H5Q_type_t query_type, H5Q_match_op_t match_op, hid_t datatype_id, void *val)
+   EFF hid_t H5Qcreate_n(H5Q_type_t query_type, H5Q_match_op_t match_op, char *name)
+   EFF herr_t H5Qclose(hid_t query_id)
+   EFF hid_t H5Qcombine(hid_t query1_id, H5Q_combine_op_t combine_op, hid_t query2_id)
+   EFF herr_t H5Qget_match_info(hid_t query_id, H5Q_type_t *query_type, H5Q_match_op_t *match_op)
+   EFF herr_t H5Qget_components(hid_t query_id, hid_t *sub_query1_id, hid_t *sub_query2_id)
+   EFF herr_t H5Qget_combine_op(hid_t query_id, H5Q_combine_op_t *op_type)
+   EFF herr_t H5Qapply(hid_t query_id, hbool_t *result, hid_t type_id, void *elem)
+
 #=========================================================================
 #=========================================================================
 
