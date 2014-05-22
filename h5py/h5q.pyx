@@ -9,9 +9,12 @@ include "_locks.pxi"
 from _errors cimport set_exception
 from h5t cimport typewrap, py_create, TypeID
 from numpy cimport import_array, ndarray, PyArray_DATA
-from utils cimport check_numpy_read, check_numpy_write
+from utils cimport check_numpy_read
 
 from h5py import _objects
+
+# Initialize NumPy
+import_array()
 
 # API Constants
 
@@ -39,6 +42,7 @@ def create(int query_type, int match_op, *args):
     cdef hid_t qid, dtid
     cdef char* name
 
+    rlock = FastRLock()
     if query_type == H5Q_TYPE_DATA_ELEM or query_type == H5Q_TYPE_ATTR_VALUE:
         dt = args[0]
         if not isinstance(dt, TypeID):
@@ -50,8 +54,11 @@ def create(int query_type, int match_op, *args):
             raise ValueError("Fourth argument must be ndarray")
         check_numpy_read(value)
         
-        qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, dtid,
-                        PyArray_DATA(value))
+        with rlock:
+            qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, dtid,
+                            PyArray_DATA(value))
+            if qid < 0:
+                set_exception()
 
     elif query_type == H5Q_TYPE_ATTR_NAME or query_type == H5Q_TYPE_LINK_NAME:
         obj_name = args[0]
@@ -59,7 +66,11 @@ def create(int query_type, int match_op, *args):
             raise ValueError("Third argument must be string")
         name = obj_name
         
-        qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, name)
+        with rlock:
+            qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op,
+                            name)
+            if qid < 0:
+                set_exception()
 
     else:
         raise ValueError("%d: Unsupported query type" % query_type)
@@ -113,7 +124,7 @@ cdef class QueryID(ObjectID):
 
 
     def get_components(self):
-        """() => TUPLE subquery1, subquery2
+        """() => TUPLE (QueryID subquery1, QueryID subquery2)
 
         Get component queries from the compound query.
         """
