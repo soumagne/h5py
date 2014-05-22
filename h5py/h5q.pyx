@@ -1,5 +1,12 @@
 # H5Q API Low-Level Bindings
+include "config.pxi"
 
+cdef extern from "hdf5.h":
+    hid_t H5Qcreate(H5Q_type_t query_type, H5Q_match_op_t match_op, ...) except *
+
+include "_locks.pxi"
+
+from _errors cimport set_exception
 from h5t cimport typewrap, py_create, TypeID
 from numpy cimport import_array, ndarray, PyArray_DATA
 from utils cimport check_numpy_read, check_numpy_write
@@ -24,28 +31,39 @@ SINGLETON = H5Q_SINGLETON
 
 # API Bindings
 
-def create_value_query(int query_type, int match_op, TypeID dt not None,
-                       ndarray value not None):
-    """(INT query_type, INT match_op, TypeID dt, NDARRAY value) => QueryID
+def create(int query_type, int match_op, *args):
+    """(INT query_type, INT match_op, *args) => QueryID
 
-    Create a new query_type object with match_op condition for selecting data
-    elements or attribute values.
+    Create a new query_type object with match_op condition.
     """
-    cdef hid_t qid
-    check_numpy_read(value)
-    qid = H5Qcreate_v(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, dt.id,
-                      PyArray_DATA(value))
-    return QueryID.open(qid)
+    cdef hid_t qid, dtid
+    cdef char* name
 
+    if query_type == H5Q_TYPE_DATA_ELEM or query_type == H5Q_TYPE_ATTR_VALUE:
+        dt = args[0]
+        if not isinstance(dt, TypeID):
+            raise ValueError("Third argument must be TypeID")
+        dtid = dt.id
 
-def create_name_query(int query_type, int match_op, char* name):
-    """(INT query_type, INT match_op, STRING name) => QueryID
+        value = args[1]
+        if not isinstance(value, ndarray):
+            raise ValueError("Fourth argument must be ndarray")
+        check_numpy_read(value)
+        
+        qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, dtid,
+                        PyArray_DATA(value))
 
-    Create a new query_type object with match_op condition for selecting
-    objects by their name.
-    """
-    cdef hid_t qid
-    qid = H5Qcreate_n(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, name)
+    elif query_type == H5Q_TYPE_ATTR_NAME or query_type == H5Q_TYPE_LINK_NAME:
+        obj_name = args[0]
+        if not isinstance(obj_name, str):
+            raise ValueError("Third argument must be string")
+        name = obj_name
+        
+        qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, name)
+
+    else:
+        raise ValueError("%d: Unsupported query type" % query_type)
+
     return QueryID.open(qid)
 
 
