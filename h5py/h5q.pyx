@@ -55,10 +55,11 @@ def create(int query_type, int match_op, *args):
         check_numpy_read(value)
         
         with rlock:
-            qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op, dtid,
-                            PyArray_DATA(value))
+            qid = H5Qcreate(<H5Q_type_t>query_type, <H5Q_match_op_t>match_op,
+                            dtid, PyArray_DATA(value))
             if qid < 0:
                 set_exception()
+                PyErr_Occurred()
 
     elif query_type == H5Q_TYPE_ATTR_NAME or query_type == H5Q_TYPE_LINK_NAME:
         obj_name = args[0]
@@ -71,6 +72,7 @@ def create(int query_type, int match_op, *args):
                             name)
             if qid < 0:
                 set_exception()
+                PyErr_Occurred()
 
     else:
         raise ValueError("%d: Unsupported query type" % query_type)
