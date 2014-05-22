@@ -678,7 +678,7 @@ hdf5:
 
 # === H5Q API =============================================================
 
-   # Function below is commented out because variadic function cannot be
+   # Function below is commented out because variadic functions cannot be
    # declared in this file. It is handled in the h5q.pyx file.
    # EFF hid_t H5Qcreate(H5Q_type_t query_type, H5Q_match_op_t match_op, ...)
    EFF herr_t H5Qclose(hid_t query_id)
@@ -686,7 +686,6 @@ hdf5:
    EFF herr_t H5Qget_match_info(hid_t query_id, H5Q_type_t *query_type, H5Q_match_op_t *match_op)
    EFF herr_t H5Qget_components(hid_t query_id, hid_t *sub_query1_id, hid_t *sub_query2_id)
    EFF herr_t H5Qget_combine_op(hid_t query_id, H5Q_combine_op_t *op_type)
-   EFF herr_t H5Qapply(hid_t query_id, hbool_t *result, hid_t type_id, void *elem)
 
 #=========================================================================
 #=========================================================================
