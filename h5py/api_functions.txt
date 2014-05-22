@@ -687,6 +687,17 @@ hdf5:
    EFF herr_t H5Qget_components(hid_t query_id, hid_t *sub_query1_id, hid_t *sub_query2_id)
    EFF herr_t H5Qget_combine_op(hid_t query_id, H5Q_combine_op_t *op_type)
 
+# === H5V API =============================================================
+
+   EFF hid_t H5Vcreate_ff(hid_t loc_id, hid_t query_id, hid_t vcpl_id, hid_t rcxt_id, hid_t estack_id)
+   EFF herr_t H5Vget_query(hid_t view_id, hid_t *query_id)
+   EFF herr_t H5Vget_counts(hid_t view_id, hsize_t *attr_count, hsize_t *obj_count, hsize_t *elem_region_count)
+   EFF herr_t H5Vget_location_ff(hid_t view_id, hid_t *location_id, hid_t estack_id)
+   EFF herr_t H5Vget_attrs_ff(hid_t view_id, hsize_t start, hsize_t count, hid_t attr_id[], hid_t estack_id)
+   EFF herr_t H5Vget_objs_ff(hid_t view_id, hsize_t start, hsize_t count, hid_t obj_id[], hid_t estack_id)
+   EFF herr_t H5Vget_elem_regions_ff(hid_t view_id, hsize_t start, hsize_t count, hid_t dataset_id[], hid_t dataspace_id[], hid_t estack_id)
+   EFF herr_t H5Vclose(hid_t view_id)
+
 #=========================================================================
 #=========================================================================
 
