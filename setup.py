@@ -177,7 +177,8 @@ MODULES =  ['defs','_errors','_objects','_proxy', 'h5fd', 'h5z',
 
 # Exascale FastForward low-level modules
 if EFF:
-    MODULES += ['h5es', 'eff_control', 'h5rc', 'h5tr', 'h5m', 'h5x', 'h5q']
+    MODULES += ['h5es', 'eff_control', 'h5rc', 'h5tr',
+                'h5m', 'h5x', 'h5q', 'h5v']
 
 # No Cython, no point in configuring
 if HAVE_CYTHON:     
