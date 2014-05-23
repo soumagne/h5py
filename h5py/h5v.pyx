@@ -6,7 +6,6 @@ For Exascale FastForward.
 
 include "config.pxi"
 
-from _objects cimport ObjectID
 from utils cimport emalloc, efree
 from h5p cimport pdefault, PropCreateID
 from h5py cimport h5i
@@ -15,7 +14,8 @@ from h5rc cimport RCntxtID
 from h5es cimport esid_default, EventStackID
 from h5q cimport QueryID
 
-from h5py import h5
+from h5py import h5, _objects
+
 if not h5.get_config().eff:
     raise RuntimeError("HDF5 library not built with FastForward support")
 
@@ -37,7 +37,7 @@ def create_ff(ObjectID loc not None, QueryID q not None, RCntxtID rc not None,
 
 
 cdef class ViewID(ObjectID):
-    """ Represents HDF5 Exacale FastForward view object """
+    """ Represents HDF5 Exascale FastForward view object """
 
     def get_query(self):
         """() => QueryID
@@ -65,7 +65,7 @@ cdef class ViewID(ObjectID):
 
         Get the location object for this view, possibly asynchronously.
 
-        For Exacale FastForward.
+        For Exascale FastForward.
         """
         cdef hid_t locid
         H5Vget_location_ff(self.id, &locid, esid_default(es))
@@ -79,19 +79,90 @@ cdef class ViewID(ObjectID):
         view object beginning at offset start (default: 0), possibly
         asynchronously.
 
-        For Exacale FastForward.
+        For Exascale FastForward.
         """
         cdef hid_t *attr_id = NULL
         cdef list attr_objs = []
         cdef int i
 
         try:
-            attr_ids = <hid_t*>emalloc(sizeof(hid_t)*count)
+            attr_id = <hid_t*>emalloc(sizeof(hid_t)*count)
             H5Vget_attrs_ff(self.id, <hsize_t>start, <hsize_t>count, attr_id,
                             esid_default(es))
             for i from 0 <= i < count:
                 attr_objs.append(h5i.wrap_identifier(attr_id[i]))
 
             return attr_objs
+
         finally:
             efree(attr_id)
+
+
+    def get_objs_ff(self, start=0, count=1, EventStackID es=None):
+        """(INT start=0, INT count=1, EventStackID es=None) => LIST
+
+        Retrieve the count (default: 1) number of objects referenced by the view
+        object beginning at offset start (default: 0), possibly asynchronously.
+
+        For Exascale FastForward.
+        """
+        cdef hid_t *obj_id = NULL
+        cdef list objs = []
+        cdef int i
+
+        try:
+            obj_id = <hid_t*>emalloc(sizeof(hid_t)*count)
+            H5Vget_objs_ff(self.id, <hsize_t>start, <hsize_t>count, obj_id, 
+                           esid_default(es))
+            for i from 0 <= i < count:
+                objs.append(h5i.wrap_identifier(obj_id[i]))
+
+            return objs
+
+        finally:
+            efree(obj_id)
+
+
+    def get_elem_regions_ff(self, start=0, count=1, EventStackID es=None):
+        """(INT start=0, INT count=1, EventStackID es=None) => LIST[TUPLE]
+
+        Retrieve the count (default: 1) number of dataset and dataspace pairs
+        referenced by the view object beginning at offset start (default: 0),
+        possibly asynchronously. Each dataspace has a selection defined which
+        corresponds to the elements from the dataset that are included in the
+        view.
+
+        For Exascale FastForward.
+        """
+        cdef hid_t *dset_id = NULL
+        cdef hid_t *space_id = NULL
+        cdef list pairs = []
+        cdef int i
+
+        try:
+            dset_id = <hid_t*>emalloc(sizeof(hid_t)*count)
+            space_id = <hid_t*>emalloc(sizeof(hid_t)*count)
+            H5Vget_elem_regions_ff(self.id, <hsize_t>start, <hsize_t>count, 
+                                   dset_id, space_id, esid_default(es))
+            for i from 0 <= i < count:
+                pairs.append(
+                    (h5i.wrap_identifier(dset_id[i]),
+                     h5i.wrap_identifier(space_id[i]))
+                )
+
+            return pairs
+
+        finally:
+            efree(dset_id)
+            efree(space_id)
+
+
+    def _close(self):
+        """()
+
+        Close the view object.
+        """
+        with _objects.registry.lock:
+            H5Vclose(self.id)
+            if not self.valid:
+                del _objects.registry[self.id]
