@@ -7,7 +7,7 @@ cdef extern from "hdf5.h":
 include "_locks.pxi"
 
 from _errors cimport set_exception
-from h5t cimport typewrap, py_create, TypeID
+from h5t cimport typewrap, TypeID
 from numpy cimport import_array, ndarray, PyArray_DATA
 from utils cimport check_numpy_read
 
@@ -18,16 +18,19 @@ import_array()
 
 # API Constants
 
+# Query type
 TYPE_DATA_ELEM = H5Q_TYPE_DATA_ELEM
 TYPE_ATTR_VALUE = H5Q_TYPE_ATTR_VALUE
 TYPE_ATTR_NAME = H5Q_TYPE_ATTR_NAME
 TYPE_LINK_NAME = H5Q_TYPE_LINK_NAME
 
+# Match operator
 MATCH_EQUAL = H5Q_MATCH_EQUAL
 MATCH_NOT_EQUAL = H5Q_MATCH_NOT_EQUAL
 MATCH_LESS_THAN = H5Q_MATCH_LESS_THAN
 MATCH_GREATER_THAN = H5Q_MATCH_GREATER_THAN
 
+# Combine operator
 COMBINE_AND = H5Q_COMBINE_AND
 COMBINE_OR = H5Q_COMBINE_OR
 SINGLETON = H5Q_SINGLETON
@@ -37,7 +40,7 @@ SINGLETON = H5Q_SINGLETON
 def create(int query_type, int match_op, *args):
     """(INT query_type, INT match_op, *args) => QueryID
 
-    Create a new query_type object with match_op condition.
+    Create a new atomic query object with match_op condition.
     """
     cdef hid_t qid, dtid
     cdef char* name
@@ -138,7 +141,7 @@ cdef class QueryID(ObjectID):
     def get_combine_op(self):
         """() => INT combine_op
 
-        Get the combine operator type of the query object.
+        Get the combine operator type of the compound query object.
         """
         cdef H5Q_combine_op_t combine_op
         H5Qget_combine_op(self.id, &combine_op)
