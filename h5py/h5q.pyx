@@ -108,14 +108,14 @@ cdef class QueryID(ObjectID):
         return QueryID.open(qid)
 
 
-    def get_match_type(self):
+    def get_query_type(self):
         """() => INT type
 
-        Get the match type of the atomic query object.
+        Get the query type of the atomic query object.
         """
-        cdef H5Q_type_t match_type
-        H5Qget_match_info(self.id, &match_type, NULL)
-        return <int>match_type
+        cdef H5Q_type_t query_type
+        H5Qget_match_info(self.id, &query_type, NULL)
+        return <int>query_type
 
 
     def get_match_op(self):
