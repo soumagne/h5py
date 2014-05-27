@@ -33,7 +33,7 @@ class Query(object):
                 qt = 'atomic'
             else:
                 qt = 'compound'
-        return '<HDF5 %s query object (id: %s) >' % (qt, str(self.id.id))
+        return '<HDF5 %s query object (id: %s)>' % (qt, str(self.id.id))
 
 
     def is_atomic(self):
@@ -49,7 +49,7 @@ class Query(object):
 def _val_helper(obj):
     """ Returns a tuple with ndarray and TypeID representation of obj. """
 
-    val = np.asarray(other, order='C')
+    val = np.asarray(obj, order='C')
     dt = h5t.py_create(val.dtype, logical=1)
 
     return val, dt
@@ -63,9 +63,10 @@ class AtomicQuery(Query):
 
         if isinstance(qobj, h5q.QueryID):
             self._id = qobj
-        elif qobj not in _query_type:
-            raise ValueError("%s: Invalid query type" % query_type)
-            self._qt = query_type
+        else:
+            if qobj not in _query_type:
+                raise ValueError("%s: Invalid query type" % qobj)
+            self._qt = qobj
 
 
     def __gt__(self, other):
