@@ -7,7 +7,7 @@ For Exascale FastForward.
 include "config.pxi"
 
 from utils cimport emalloc, efree
-from h5p cimport pdefault, PropCreateID
+from h5p cimport pdefault, PropVCID
 from h5py cimport h5i
 from h5tr cimport TransactionID
 from h5rc cimport RCntxtID
@@ -23,8 +23,8 @@ if not h5.get_config().eff:
 # H5V API Bindings
 
 def create_ff(ObjectID loc not None, QueryID q not None, RCntxtID rc not None,
-              PropCreateID vcpl=None, EventStackID es=None):
-    """(ObjectID loc, QueryID q, RCntxtID rc, PropCreateID vcpl=None, EventStackID es=None) => ViewID view
+              PropVCID vcpl=None, EventStackID es=None):
+    """(ObjectID loc, QueryID q, RCntxtID rc, PropVCID vcpl=None, EventStackID es=None) => ViewID view
 
     Create a new view object on the object loc, possibly asynchronously. loc can
     be either a container, group, or dataset.
