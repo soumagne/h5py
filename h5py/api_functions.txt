@@ -568,7 +568,7 @@ hdf5:
    EFF hid_t H5Gopen_ff(hid_t loc_id, char * name, hid_t gapl_id, hid_t rcntxt_id, hid_t es_id)
    EFF hid_t H5Gclose_ff(hid_t group_id, hid_t es_id)
 
-# === H5P API ============================================================
+# === H5P API Additions ==================================================
 
    EFF herr_t H5Pset_fapl_iod(hid_t fapl_id, MPI_Comm comm, MPI_Info info)
    EFF herr_t H5Pset_rcapl_version_request(hid_t rcapl_id, H5RC_request_t acquire_req)
@@ -578,6 +578,8 @@ hdf5:
    EFF herr_t H5Pset_dxpl_checksum(hid_t dxpl_id, uint64_t value)
    EFF herr_t H5Pset_dxpl_checksum_ptr(hid_t dxpl_id, uint64_t *value)
    EFF herr_t H5Pset_dxpl_inject_corruption(hid_t dxpl_id, hbool_t flag)
+   EFF herr_t H5Pset_view_elmt_scope(hid_t vcpl_id, hid_t space_id)
+   EFF herr_t H5Pget_view_elmt_scope(hid_t vcpl_id, hid_t *space_id)
 
 # === H5TR - Transaction Operation API ===================================
 

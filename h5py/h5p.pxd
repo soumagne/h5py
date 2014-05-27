@@ -102,3 +102,7 @@ cdef class PropTAID(PropInstanceID):
 cdef class PropTCID(PropCreateID):
     """ Datatype creation property list """
     pass
+
+cdef class PropVCID(PropCreateID):
+    """ View creation property list """
+    pass

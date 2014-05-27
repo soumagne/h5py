@@ -20,6 +20,10 @@ from utils cimport  require_tuple, convert_dims, convert_tuple, \
 from numpy cimport ndarray, import_array
 from h5t cimport TypeID, py_create
 from h5ac cimport CacheConfig
+
+IF EFF:
+    from h5s cimport SpaceID
+
 from h5py import _objects
 
 # Initialization
@@ -65,6 +69,8 @@ cdef object propwrap(hid_t id_in):
             pcls = PropTAID
         elif H5Pequal(clsid, H5P_DATATYPE_CREATE):
             pcls = PropTCID
+        elif H5Pequal(clsid, H5P_VIEW_CREATE):
+            pcls = PropVCID
 
         else:
             raise ValueError("No class found for ID %d" % id_in)
@@ -109,10 +115,12 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
                  # for keyword arguments.
 
 # For Exascale FastForward, not sure (yet) if these need to be locked
-RC_AQUIRE = H5P_RC_ACQUIRE
-TR_START = H5P_TR_START
-DATATYPE_ACCESS = H5P_DATATYPE_ACCESS
-DATATYPE_CREATE = H5P_DATATYPE_CREATE
+IF EFF:
+    RC_AQUIRE = H5P_RC_ACQUIRE
+    TR_START = H5P_TR_START
+    DATATYPE_ACCESS = H5P_DATATYPE_ACCESS
+    DATATYPE_CREATE = H5P_DATATYPE_CREATE
+    VIEW_CREATE = H5P_VIEW_CREATE
 
 # === Property list functional API ============================================
 
@@ -1210,77 +1218,77 @@ cdef class PropDAID(PropInstanceID):
         H5Pget_chunk_cache(self.id, &rdcc_nslots, &rdcc_nbytes, &rdcc_w0 )
         return (rdcc_nslots,rdcc_nbytes,rdcc_w0)
 
-# Read Context Acquire property list
-cdef class PropRCAID(PropInstanceID):
-    """ Read Context Acquire property list """
+IF EFF:
+    # Read Context Acquire property list
+    cdef class PropRCAID(PropInstanceID):
+        """ Read Context Acquire property list """
 
-    def set_rcapl_version_request(self, H5RC_request_t acquire_req):
-        """(H5RC_request_t acquire_req)
+        def set_rcapl_version_request(self, H5RC_request_t acquire_req):
+            """(H5RC_request_t acquire_req)
 
-        Specify a version request modifier in a read context acquire
-        property list. Possible values are: H5RC_EXACT, H5RC_PREV,
-        H5RC_NEXT, H5RC_LAST.
-        """
-        H5Pset_rcapl_version_request(self.id, acquire_req)
-
-
-    def get_rcapl_version_request(self):
-        """ () => H5RC_request_t acquire_req
-
-        Retrieve a version request modifier from a read context acquire
-        property list.
-        """
-        cdef H5RC_request_t acquire_req
-        H5Pget_rcapl_version_request(self.id, &acquire_req)
-        return acquire_req
+            Specify a version request modifier in a read context acquire
+            property list. Possible values are: H5RC_EXACT, H5RC_PREV,
+            H5RC_NEXT, H5RC_LAST.
+            """
+            H5Pset_rcapl_version_request(self.id, acquire_req)
 
 
-# Transaction start property list
-cdef class PropTSID(PropInstanceID):
-    """ Transaction start property list """
+        def get_rcapl_version_request(self):
+            """ () => H5RC_request_t acquire_req
 
-    def set_trspl_num_peers(self, unsigned num_peers):
-        """(UINT num_peers)
+            Retrieve a version request modifier from a read context acquire
+            property list.
+            """
+            cdef H5RC_request_t acquire_req
+            H5Pget_rcapl_version_request(self.id, &acquire_req)
+            return acquire_req
 
-        Set the leader count in the transaction start property list.
-        """
-        H5Pset_trspl_num_peers(self.id, num_peers)
+
+    # Transaction start property list
+    cdef class PropTSID(PropInstanceID):
+        """ Transaction start property list """
+
+        def set_trspl_num_peers(self, unsigned num_peers):
+            """(UINT num_peers)
+
+            Set the leader count in the transaction start property list.
+            """
+            H5Pset_trspl_num_peers(self.id, num_peers)
 
 
-    def get_trspl_num_peers(self):
-        """() => UINT num_peers
+        def get_trspl_num_peers(self):
+            """() => UINT num_peers
 
-        Retrieve the leader count from the transaction start property list.
-        """
+            Retrieve the leader count from the transaction start property list.
+            """
+            cdef unsigned num_peers
+            H5Pget_trspl_num_peers(self.id, &num_peers)
+            return num_peers
+
+    # PropTSID default value helper function
+    cdef hid_t tsdefault(PropTSID tsid):
         cdef unsigned num_peers
-        H5Pget_trspl_num_peers(self.id, &num_peers)
-        return num_peers
+        if tsid is None:
+            return <hid_t>H5P_DEFAULT
+        num_peers = tsid.get_trspl_num_peers()
+        if num_peers == 1:
+            return <hid_t>H5P_DEFAULT
+        return tsid.id
 
-# PropTSID default value helper function
-cdef hid_t tsdefault(PropTSID tsid):
-    cdef unsigned num_peers
-    if tsid is None:
-        return <hid_t>H5P_DEFAULT
-    num_peers = tsid.get_trspl_num_peers()
-    if num_peers == 1:
-        return <hid_t>H5P_DEFAULT
-    return tsid.id
+    # Datatype access property list
+    cdef class PropTAID(PropInstanceID):
+        """ Datatype access property list """
+        pass
 
-# Datatype access property list
-cdef class PropTAID(PropInstanceID):
-    """ Datatype access property list """
-    pass
+    # Datatype creation property list
+    cdef class PropTCID(PropCreateID):
+        """ Datatype creation property list """
+        pass
 
-# Datatype creation property list
-cdef class PropTCID(PropCreateID):
-    """ Datatype creation property list """
-    pass
+    # Dataset transfer property list
+    cdef class PropDXID(PropInstanceID):
+        """ Dataset transfer property list """
 
-# Dataset transfer property list
-cdef class PropDXID(PropInstanceID):
-    """ Dataset transfer property list """
-
-    IF EFF:
         def set_checksum(self, uint64_t value):
             """(UINT value)
 
@@ -1310,5 +1318,25 @@ cdef class PropDXID(PropInstanceID):
             """
             H5Pset_dxpl_inject_corruption(self.id, <hbool_t>flag)
 
-    ELSE:
-        pass
+
+    cdef class PropVCID(PropCreateID):
+        """ View creation property list """
+
+        def set_view_elmt_scope(self, SpaceID space not None):
+            """(SpaceID space)
+
+            Set a selection that constrains dataset element query results for
+            view creation.
+            """
+            H5Pset_view_elmt_scope(self.id, space.id)
+
+
+        def get_view_elmt_scope(self, SpaceID space not None):
+            """() => SpaceID space
+
+            Get the selection that constrains dataset element query results for
+            view creation.
+            """
+            cdef hid_t sid
+            H5Pget_view_elmt_scope(self.id, &sid)
+            return SpaceID.open(sid)

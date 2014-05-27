@@ -412,6 +412,7 @@ cdef extern from "hdf5.h":
   hid_t H5P_RC_ACQUIRE
   hid_t H5P_TR_START
   hid_t H5P_TR_FINISH
+  hid_t H5P_VIEW_CREATE
 
 # === H5R - Reference API =====================================================
 
