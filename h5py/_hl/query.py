@@ -16,6 +16,21 @@ _match_op = {'=': h5q.MATCH_EQUAL,
              '>': h5q.MATCH_GREATER_THAN}
 
 
+def make_query(qid):
+    """ Create an instance of correct query class: AtomicQuery or CompoundQuery.
+    """
+
+    if not isinstance(qid, h5q.QueryID):
+        raise TypeError("%s not h5q.QueryID" % qid)
+
+    if qid.get_combine_op() == h5q.SINGLETON:
+        # Query is atomic...
+        return AtomicQuery(qid)
+    else:
+        # Query is compound...
+        return CompoundQuery(qid)
+
+
 class Query(object):
     """ Mixin class for other query classes """
 
@@ -44,6 +59,11 @@ class Query(object):
     def is_compound(self):
         cop = self.id.get_combine_op()
         return cop != h5q.SINGLETON
+
+
+    def close(self):
+        """ Close the query object """
+        self.id._close()
 
 
 def _val_helper(obj):
@@ -170,12 +190,7 @@ class CompoundQuery(Query):
         qtpl = self.id.get_components()
         qlist = []
         for qid in qtpl:
-            if qid.get_combine_op() == h5q.SINGLETON:
-                # Subquery is atomic...
-                qlist.append(AtomicQuery(qid))
-            else:
-                # Subquery is compound...
-                qlist.append(CompoundQuery(qid))
+            qlist.append(make_query(qid))
 
         return tuple(qlist)
 
