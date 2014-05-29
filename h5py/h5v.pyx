@@ -104,6 +104,8 @@ cdef class ViewID(ObjectID):
         Retrieve the count (default: 1) number of objects referenced by the view
         object beginning at offset start (default: 0), possibly asynchronously.
 
+        Objects are: datasets, datatypes, groups, and maps.
+
         For Exascale FastForward.
         """
         cdef hid_t *obj_id = NULL
