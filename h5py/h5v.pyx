@@ -72,7 +72,7 @@ cdef class ViewID(ObjectID):
         return h5i.wrap_identifier(locid)
 
 
-    def get_attrs_ff(self, start=0, count=1, EventStackID es=None):
+    def get_attrs_ff(self, int start=0, int count=1, EventStackID es=None):
         """(INT start=0, INT count=1, EventStackID es=None) => LIST
 
         Retrieve the count (default: 1) number of attributes referenced by the
@@ -98,7 +98,7 @@ cdef class ViewID(ObjectID):
             efree(attr_id)
 
 
-    def get_objs_ff(self, start=0, count=1, EventStackID es=None):
+    def get_objs_ff(self, int start=0, int count=1, EventStackID es=None):
         """(INT start=0, INT count=1, EventStackID es=None) => LIST
 
         Retrieve the count (default: 1) number of objects referenced by the view
@@ -123,7 +123,8 @@ cdef class ViewID(ObjectID):
             efree(obj_id)
 
 
-    def get_elem_regions_ff(self, start=0, count=1, EventStackID es=None):
+    def get_elem_regions_ff(self, int start=0, int count=1,
+                            EventStackID es=None):
         """(INT start=0, INT count=1, EventStackID es=None) => LIST[TUPLE]
 
         Retrieve the count (default: 1) number of dataset and dataspace pairs
