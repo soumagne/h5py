@@ -20,3 +20,4 @@ from _hl.event_stack import EventStack
 from _hl.maps import Map
 from _hl import index
 from _hl.query import AtomicQuery, CompoundQuery
+from _hl.view import View
