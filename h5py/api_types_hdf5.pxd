@@ -209,14 +209,24 @@ cdef extern from "hdf5.h":
     H5I_BADID        = -1,  # invalid Group
     H5I_FILE        = 1,    # group ID for File objects
     H5I_GROUP,              # group ID for Group objects
+    H5I_MAP,                # group ID for Map objects
     H5I_DATATYPE,           # group ID for Datatype objects
     H5I_DATASPACE,          # group ID for Dataspace objects
     H5I_DATASET,            # group ID for Dataset objects
     H5I_ATTR,               # group ID for Attribute objects
     H5I_REFERENCE,          # group ID for Reference objects
     H5I_VFL,                # group ID for virtual file layer
+    H5I_VOL,                # group ID for virtual object layer
+    H5I_ES,                 # group ID for Event Queue objects
+    H5I_RC,                 # group ID for Read Context objects
+    H5I_TR,                 # group ID for Transaction objects
+    H5I_QUERY,              # group ID for Query objects
+    H5I_VIEW,               # group ID for view objects
     H5I_GENPROP_CLS,        # group ID for generic property list classes
     H5I_GENPROP_LST,        # group ID for generic property lists
+    H5I_ERROR_CLASS,        # group ID for error classes
+    H5I_ERROR_MSG,          # group ID for error messages
+    H5I_ERROR_STACK,        # group ID for error stacks
     H5I_NGROUPS             # number of valid groups, MUST BE LAST!
 
 # === H5L/H5O - Links interface (1.8.X only) ======================================
