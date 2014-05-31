@@ -10,7 +10,7 @@ _query_type = {'data_elem': h5q.TYPE_DATA_ELEM,
                'attr_name': h5q.TYPE_ATTR_NAME,
                'link_name': h5q.TYPE_LINK_NAME}
 
-_match_op = {'=': h5q.MATCH_EQUAL,
+_match_op = {'==': h5q.MATCH_EQUAL,
              '!=': h5q.MATCH_NOT_EQUAL,
              '<': h5q.MATCH_LESS_THAN,
              '>': h5q.MATCH_GREATER_THAN}
@@ -152,12 +152,12 @@ class AtomicQuery(Query):
 
 
     def __and__(self, other_query):
-        qid = h5q.combine(self.id, h5q.COMBINE_AND, other_query.id)
+        qid = self.id.combine(h5q.COMBINE_AND, other_query.id)
         return CompoundQuery(qid)
 
 
     def __or__(self, other_query):
-        qid = h5q.combine(self.id, h5q.COMBINE_OR, other_query.id)
+        qid = self.id.combine(h5q.COMBINE_OR, other_query.id)
         return CompoundQuery(qid)
 
 
@@ -179,7 +179,7 @@ class CompoundQuery(Query):
     """ Compound query class """
 
     def __init__(self, qid):
-        if isinstance(qid, h5q.QueryID):
+        if not isinstance(qid, h5q.QueryID):
             raise ValueError("%s is not QueryID" % qid)
         self._id = qid
 
