@@ -4,12 +4,11 @@
 
 include "config.pxi"
 
-#from h5f cimport FileID
 from h5p cimport pdefault, PropRCAID
 from h5es cimport EventStackID, esid_default
 from h5py import _objects
 
-# Public constants
+# API constants
 EXACT = H5RC_EXACT
 PREV = H5RC_PREV
 NEXT = H5RC_NEXT
@@ -17,12 +16,12 @@ LAST = H5RC_LAST
 
 # Read Context operations
 
-def create(ObjectID fid not None, int container_version):
+def create(ObjectID fid not None, uint64_t container_version):
     """(ObjectID fid, int container_version) => RCntxtID
 
     Create a read context associated with a container and version.
     """
-    return RCntxtID.open(H5RCcreate(fid.id, <uint64_t>container_version))
+    return RCntxtID.open(H5RCcreate(fid.id, container_version))
 
 
 def acquire(ObjectID fid not None, uint64_t container_version, PropRCAID rcapl=None, EventStackID es=None):
@@ -44,21 +43,6 @@ cdef class RCntxtID(ObjectID):
     """
     Represents an HDF5 read context identifier
     """
-
-#    def __cinit__(self, id):
-#        self.locked = True
-#
-#
-#    def close(self):
-#        """()
-#
-#        Close a read context associated with this identifier.
-#        """
-#       with _objects.registry.lock:
-#           self.locked = False
-#            H5RCclose(self.id)
-#            _objects.registry.cleanup()
-
 
     # Let's first trust Python to clean up correctly.
     def _close(self):
