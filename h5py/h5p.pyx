@@ -142,6 +142,7 @@ def create(PropClassID cls not None):
     - RC_AQUIRE (Exascale FastForward)
     - TR_START (Exascale FastForward)
     - DATATYPE_ACCESS (Exascale FastForward)
+    - VIEW_CREATE (Exascale FastForward)
     """
     cdef hid_t newid
     newid = H5Pcreate(cls.id)
@@ -1248,7 +1249,7 @@ IF EFF:
     cdef class PropTSID(PropInstanceID):
         """ Transaction start property list """
 
-        def set_trspl_num_peers(self, unsigned num_peers):
+        def set_num_peers(self, unsigned num_peers):
             """(UINT num_peers)
 
             Set the leader count in the transaction start property list.
@@ -1256,7 +1257,7 @@ IF EFF:
             H5Pset_trspl_num_peers(self.id, num_peers)
 
 
-        def get_trspl_num_peers(self):
+        def get_num_peers(self):
             """() => UINT num_peers
 
             Retrieve the leader count from the transaction start property list.
@@ -1270,7 +1271,7 @@ IF EFF:
         cdef unsigned num_peers
         if tsid is None:
             return <hid_t>H5P_DEFAULT
-        num_peers = tsid.get_trspl_num_peers()
+        num_peers = tsid.get_num_peers()
         if num_peers == 1:
             return <hid_t>H5P_DEFAULT
         return tsid.id
