@@ -17,7 +17,7 @@ _match_op = {'==': h5q.MATCH_EQUAL,
 
 
 def make_query(qid):
-    """ Create an instance of correct query class: AtomicQuery or CompoundQuery.
+    """ Create an instance of correct query class: AQuery or CQuery.
     """
 
     if not isinstance(qid, h5q.QueryID):
@@ -25,10 +25,10 @@ def make_query(qid):
 
     if qid.get_combine_op() == h5q.SINGLETON:
         # Query is atomic...
-        return AtomicQuery(qid)
+        return AQuery(qid)
     else:
         # Query is compound...
-        return CompoundQuery(qid)
+        return CQuery(qid)
 
 
 class Query(object):
@@ -45,10 +45,10 @@ class Query(object):
             return "<Closed HDF5 query object>"
         else:
             if self.is_atomic():
-                qt = 'atomic'
+                qt = "atomic"
             else:
-                qt = 'compound'
-        return '<HDF5 %s query object (id: %s)>' % (qt, str(self.id.id))
+                qt = "compound"
+        return "<HDF5 %s query object (id: %s)>" % (qt, id(self.id))
 
 
     def is_atomic(self):
@@ -75,13 +75,21 @@ def _val_helper(obj):
     return val, dt
 
 
-class AtomicQuery(Query):
+class AQuery(Query):
     """ Atomic query class """
 
     def __init__(self, qobj):
+        """Initialize atomic query. Arguments:
+
+        qobj
+            Either a h5q.QueryID object or a query type string. Supported values
+            are: "data_elem", "attr_value", "attr_name", or "link_name".
+        """
         self._id = None
 
         if isinstance(qobj, h5q.QueryID):
+            if qobj.get_combine_op() != h5q.SINGLETON:
+                raise TypeError("Init argument is not atomic query")
             self._id = qobj
         else:
             if qobj not in _query_type:
@@ -153,12 +161,12 @@ class AtomicQuery(Query):
 
     def __and__(self, other_query):
         qid = self.id.combine(h5q.COMBINE_AND, other_query.id)
-        return CompoundQuery(qid)
+        return CQuery(qid)
 
 
     def __or__(self, other_query):
         qid = self.id.combine(h5q.COMBINE_OR, other_query.id)
-        return CompoundQuery(qid)
+        return CQuery(qid)
 
 
     def query_type(self):
@@ -175,17 +183,34 @@ class AtomicQuery(Query):
         return _match_op.keys()[_match_op.values().index(op)]
 
 
-class CompoundQuery(Query):
+class CQuery(Query):
     """ Compound query class """
 
     def __init__(self, qid):
+        """Initialize compound query. Arguments:
+
+        qid
+            An h5q.QueryID object representing a compound query.
+        """
         if not isinstance(qid, h5q.QueryID):
             raise ValueError("%s is not QueryID" % qid)
+            if qid.get_combine_op() == h5q.SINGLETON:
+                raise TypeError("Init argument is not a compound query")
         self._id = qid
 
 
+    def __and__(self, other_query):
+        qid = self.id.combine(h5q.COMBINE_AND, other_query.id)
+        return CQuery(qid)
+
+
+    def __or__(self, other_query):
+        qid = self.id.combine(h5q.COMBINE_OR, other_query.id)
+        return CQuery(qid)
+
+
     def components(self):
-        """ Tuple of the subqueries of the compound query. """
+        """Tuple of the subqueries of the compound query."""
         
         qtpl = self.id.get_components()
         qlist = []
@@ -196,8 +221,8 @@ class CompoundQuery(Query):
 
 
     def combine_op(self):
-        """ Returns string representation of the compound query's combine
-        operator. """
+        """Returns string representation of the compound query's combine
+        operator."""
 
         op = self.id.get_combine_op()
         if op == h5q.COMBINE_AND:
@@ -205,5 +230,5 @@ class CompoundQuery(Query):
         elif op == h5q.COMBINE_OR:
             return '|'
         else:
-            raise RuntimeError("%s: Invalid combine operator for compound query"
-                               % op)
+            raise ValueError("%s: Invalid combine operator for compound query"
+                             % op)
