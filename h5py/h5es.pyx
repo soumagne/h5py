@@ -12,6 +12,12 @@ cdef hid_t esid_default(EventStackID es):
         return <hid_t>H5_EVENT_STACK_NULL
     return <hid_t>es.id
 
+# API constants
+STATUS_IN_PROGRESS = H5ES_STATUS_IN_PROGRESS
+STATUS_SUCCEED = H5ES_STATUS_SUCCEED
+STATUS_FAIL = H5ES_STATUS_FAIL
+STATUS_CANCEL = H5ES_STATUS_CANCEL
+
 # Event stack operations
 
 def create():
@@ -23,6 +29,7 @@ def create():
    return EventStackID.open(H5EScreate())
 
 
+# Not implemented in the HDF5_FF library
 # def cancel(EventStackID es not None, int event_idx not None):
 #    """(EventStackID es, INT event_idx) => INT status
 # 
@@ -47,29 +54,13 @@ def create():
 #    H5EScancel_all(es.id, &status)
 #    return status
 
-# EventStackID implementation
 
+# EventStackID implementation
 cdef class EventStackID(ObjectID):
     """
     Represents an HDF5 event stack identifier
     """
    
-#   def __cinit__(self, id):
-#       self.locked = True
-
-
-#   def close(self):
-#       """()
-#
-#       Closes the event stack.
-#       """
-#       with _objects.registry.lock:
-#           self.locked = False
-#            H5ESclose(self.id)
-#            _objects.registry.cleanup()
-
-
-    # Let's first trust Python to clean up correctly.
     def _close(self):
         """()
 
