@@ -83,7 +83,7 @@ class EventStack:
 
     def wait(self, event_idx=0):
         """Waits for the completion or cancellation of the event specified by
-        event_idx in the event stack and reports the event’s completion status.
+        event_idx in the event stack and reports the event's completion status.
         The call does not return until the event being waited on completes or is
         cancelled. Possible status values: 'in_progress', 'succeed', 'fail',
         'cancel'.
