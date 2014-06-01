@@ -1223,7 +1223,7 @@ IF EFF:
     cdef class PropRCAID(PropInstanceID):
         """ Read Context Acquire property list """
 
-        def set_rcapl_version_request(self, H5RC_request_t acquire_req):
+        def set_version_request(self, H5RC_request_t acquire_req):
             """(H5RC_request_t acquire_req)
 
             Specify a version request modifier in a read context acquire
@@ -1233,7 +1233,7 @@ IF EFF:
             H5Pset_rcapl_version_request(self.id, acquire_req)
 
 
-        def get_rcapl_version_request(self):
+        def get_version_request(self):
             """ () => H5RC_request_t acquire_req
 
             Retrieve a version request modifier from a read context acquire

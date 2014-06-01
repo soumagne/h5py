@@ -15,7 +15,7 @@ _status = {"in_progress": h5es.STATUS_IN_PROGRESS,
            "cancel": h5es.STATUS_CANCEL}
 
 
-class EventStack:
+class EventStack(object):
     """
     Represents an HDF5 event stack.
 

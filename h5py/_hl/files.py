@@ -13,6 +13,7 @@ import os
 
 from .base import HLObject, py3
 from .group import Group
+from .read_context import make_rcapl
 from h5py import h5, h5f, h5p, h5i, h5fd, h5t, h5rc, h5tr, _objects
 from h5py import version
 
@@ -277,11 +278,24 @@ class File(Group):
         self._rcid = h5rc.create(self.id, version)
 
 
-    def acquire_context(self, version=0, rcapl=None, esid=None):
+    def acquire_context(self, version=0, req="exact", esid=None):
         """Acquire a read handle for the container at a given version and
         create a read context associated with the container and version.
         Returns the acquired container version.
+
+        Arguments:
+
+        version
+            Requested container version. Default is 0.
+
+        req
+            Container version request modifier. Possible values: "exact"
+            (default), "prev", "next", and "last".
+
+        esid
+            Event stack identifier object. Default is None.
         """
+        rcapl = make_rcapl(req)
         (rcid, ver) = h5rc.acquire(self.id, version, rcapl=rcapl, es=esid)
         self._rcid = rcid
         return ver
