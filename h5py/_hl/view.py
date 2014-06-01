@@ -3,9 +3,12 @@ Python interface to HDF5 Exascale FastForward H5V API
 """
 
 from h5py import h5v, h5s, h5p, h5a, h5f, h5g, h5d, h5q, h5r, h5t, h5m
-from h5py import File, Group, Dataset, Datatype, Map
-from h5py.query import make_query
-from .dataset import readtime_dtype
+from .group import Group
+from .files import File
+from .dataset import readtime_dtype, Dataset
+from .datatype import Datatype
+from .maps import Map
+from .query import make_query
 import numpy
 
 
