@@ -5,6 +5,7 @@ Python interface to the Exascale FastForward HDF5 H5Q API
 from h5py import h5q, h5t
 import numpy as np
 
+################################################################################
 _query_type = {'data_elem': h5q.TYPE_DATA_ELEM,
                'attr_value': h5q.TYPE_ATTR_VALUE,
                'attr_name': h5q.TYPE_ATTR_NAME,
@@ -15,7 +16,7 @@ _match_op = {'==': h5q.MATCH_EQUAL,
              '<': h5q.MATCH_LESS_THAN,
              '>': h5q.MATCH_GREATER_THAN}
 
-
+################################################################################
 def make_query(qid):
     """ Create an instance of correct query class: AQuery or CQuery.
     """
@@ -30,7 +31,7 @@ def make_query(qid):
         # Query is compound...
         return CQuery(qid)
 
-
+################################################################################
 class Query(object):
     """ Mixin class for other query classes """
 
@@ -40,32 +41,34 @@ class Query(object):
         return self._id
 
 
+    @property
+    def is_atomic(self):
+        cop = self.id.get_combine_op()
+        return cop == h5q.SINGLETON
+
+
+    @property
+    def is_compound(self):
+        cop = self.id.get_combine_op()
+        return cop != h5q.SINGLETON
+
+
     def __repr__(self):
         if not self.id:
             return "<Closed HDF5 query object>"
         else:
-            if self.is_atomic():
+            if self.is_atomic:
                 qt = "atomic"
             else:
                 qt = "compound"
         return "<HDF5 %s query object (id: %s)>" % (qt, id(self.id))
 
 
-    def is_atomic(self):
-        cop = self.id.get_combine_op()
-        return cop == h5q.SINGLETON
-
-
-    def is_compound(self):
-        cop = self.id.get_combine_op()
-        return cop != h5q.SINGLETON
-
-
     def close(self):
         """ Close the query object """
         self.id._close()
 
-
+################################################################################
 def _val_helper(obj):
     """ Returns a tuple with ndarray and TypeID representation of obj. """
 
@@ -74,9 +77,25 @@ def _val_helper(obj):
 
     return val, dt
 
-
+################################################################################
 class AQuery(Query):
     """ Atomic query class """
+
+    @property
+    def type(self):
+        """ Return string representation of the query's type. """
+        
+        qt = self.id.get_query_type()
+        return _query_type.keys()[_query_type.values().index(qt)]
+
+
+    @property
+    def op(self):
+        """ Return string representation of the query's match operator. """
+        
+        op = self.id.get_match_op()
+        return _match_op.keys()[_match_op.values().index(op)]
+
 
     def __init__(self, qobj):
         """Initialize atomic query. Arguments:
@@ -168,23 +187,23 @@ class AQuery(Query):
         qid = self.id.combine(h5q.COMBINE_OR, other_query.id)
         return CQuery(qid)
 
-
-    def query_type(self):
-        """ Returns string representation of the query's type. """
-        
-        qt = self.id.get_query_type()
-        return _query_type.keys()[_query_type.values().index(qt)]
-
-
-    def match_op(self):
-        """ Returns string representation of the query's match operator. """
-        
-        op = self.id.get_match_op()
-        return _match_op.keys()[_match_op.values().index(op)]
-
-
+################################################################################
 class CQuery(Query):
     """ Compound query class """
+
+    @property
+    def op(self):
+        """Return string representation of the compound query's combine
+        operator."""
+
+        op = self.id.get_combine_op()
+        if op == h5q.COMBINE_AND:
+            return '&'
+        elif op == h5q.COMBINE_OR:
+            return '|'
+        else:
+            raise ValueError("%s: Invalid combine operator for compound query"
+                             % op)
 
     def __init__(self, qid):
         """Initialize compound query. Arguments:
@@ -193,9 +212,9 @@ class CQuery(Query):
             An h5q.QueryID object representing a compound query.
         """
         if not isinstance(qid, h5q.QueryID):
-            raise ValueError("%s is not QueryID" % qid)
-            if qid.get_combine_op() == h5q.SINGLETON:
-                raise TypeError("Init argument is not a compound query")
+            raise TypeError("%s is not QueryID" % qid)
+        if qid.get_combine_op() == h5q.SINGLETON:
+            raise TypeError("Init argument is not a compound query")
         self._id = qid
 
 
@@ -218,17 +237,3 @@ class CQuery(Query):
             qlist.append(make_query(qid))
 
         return tuple(qlist)
-
-
-    def combine_op(self):
-        """Returns string representation of the compound query's combine
-        operator."""
-
-        op = self.id.get_combine_op()
-        if op == h5q.COMBINE_AND:
-            return '&'
-        elif op == h5q.COMBINE_OR:
-            return '|'
-        else:
-            raise ValueError("%s: Invalid combine operator for compound query"
-                             % op)
