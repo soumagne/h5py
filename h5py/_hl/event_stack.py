@@ -43,7 +43,7 @@ class EventStack(object):
     def create(self):
         """ Create event stack """
         self._id = h5es.create()
-        return self._id
+        return self
 
 
     def close(self):
