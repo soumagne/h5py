@@ -247,7 +247,7 @@ class HLObject(CommonStateObject):
     @property
     def token(self):
         """Object's token containing all the metadata needed to open the object
-        from any tank in the application, even in the same transaction the
+        from any rank in the application, even in the same transaction the
         object was created in.
 
         For Exascale FastForward.
