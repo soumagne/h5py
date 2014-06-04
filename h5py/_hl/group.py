@@ -233,6 +233,38 @@ class Group(Index, HLObject, DictCompat):
         mapid = h5m.open_ff(self.id, name, rcid, es=esid)
         return maps.Map(mapid)
 
+    def open_map_by_token(self, token, trid, esid=None, **kwds):
+        """ Open an Exascale FastForward HDF5 map by token.
+
+        token
+            Token buffer. Required.
+        trid
+            Transaction object. Required.
+        esid
+            Event stack object. Default None.
+        """
+        if token is None:
+            raise ValueError("Need a token buffer to open map")
+        self.set_tr_env(trid, esid=esid)
+        mapid = h5o.open_by_token(token, trid, es=esid)
+        return maps.Map(mapid)
+
+    def open_dataset_by_token(self, token, trid, esid=None, **kwds):
+        """ Open an Exascale FastForward HDF5 dataset by token.
+
+        token
+            Token buffer. Required.
+        trid
+            Transaction object. Required.
+        esid
+            Event stack object. Default None.
+        """
+        if token is None:
+            raise ValueError("Need a token buffer to open dataset")
+        self.set_tr_env(trid, esid=esid)
+        dsid = h5o.open_by_token(token, trid, es=esid)
+        return dataset.Dataset(dsid, container=self.container)
+
     def require_dataset(self, name, shape, dtype, exact=False, **kwds):
         """ Open a dataset, creating it if it doesn't exist.
 
