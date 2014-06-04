@@ -12,7 +12,7 @@ import warnings
 import os
 import sys
 
-from h5py import h5d, h5i, h5r, h5p, h5f, h5t
+from h5py import h5d, h5i, h5r, h5p, h5f, h5t, h5o
 
 py3 = sys.version_info[0] == 3
 
@@ -243,6 +243,16 @@ class HLObject(CommonStateObject):
         .selection property).
         """
         return _RegionProxy(self)
+
+    @property
+    def token(self):
+        """Object's token containing all the metadata needed to open the object
+        from any tank in the application, even in the same transaction the
+        object was created in.
+
+        For Exascale FastForward.
+        """
+        return h5o.get_token(self.id)
 
     @property
     def attrs(self):
