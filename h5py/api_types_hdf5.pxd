@@ -277,6 +277,7 @@ cdef extern from "hdf5.h":
     H5O_TYPE_GROUP,             # Object is a group
     H5O_TYPE_DATASET,           # Object is a dataset
     H5O_TYPE_NAMED_DATATYPE,    # Object is a named data type
+    H5O_TYPE_MAP,               # Object is a map
     H5O_TYPE_NTYPES             # Number of different object types (must be last!)
 
   unsigned int H5O_COPY_SHALLOW_HIERARCHY_FLAG    # (0x0001u) Copy only immediate members
