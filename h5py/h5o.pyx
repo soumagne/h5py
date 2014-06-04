@@ -33,6 +33,8 @@ from h5es cimport esid_default, EventStackID
 TYPE_GROUP = H5O_TYPE_GROUP
 TYPE_DATASET = H5O_TYPE_DATASET
 TYPE_NAMED_DATATYPE = H5O_TYPE_NAMED_DATATYPE
+IF EFF:
+    TYPE_MAP = H5O_TYPE_MAP
 
 COPY_SHALLOW_HIERARCHY_FLAG = H5O_COPY_SHALLOW_HIERARCHY_FLAG
 COPY_EXPAND_SOFT_LINK_FLAG  = H5O_COPY_EXPAND_SOFT_LINK_FLAG
@@ -438,6 +440,46 @@ IF EFF:
             efree(buf)
 
         return pstring
+
+
+    def get_token(ObjectID obj not None):
+        """(ObjectID obj) => bytes
+
+        Retrieve the object token containing all the object metadata needed to
+        open the object from any rank in the application, even in the same
+        transaction that the object was created in.
+        """
+        cdef size_t token_size
+        cdef uint8_t *token = NULL
+        cdef bytes py_bytes
+
+        try:
+            # Get token buffer size...
+            H5Oget_token(obj.id, NULL, &token_size)
+            assert token_size > 0
+
+            # Get token buffer...
+            token = <uint8_t*>emalloc(sizeof(uint8_t)*token_size)
+            H5Oget_token(obj.id, token, &token_size)
+
+            # Slice token to token_size number of bytes to include any null
+            # bytes...
+            py_bytes = token[:token_size]
+
+            return py_bytes
+
+        finally:
+            efree(token)
+
+
+    def open_by_token(bytes py_token not None, TransactionID tr not None,
+                      EventStackID es=None):
+        """Open the existing HDF5 object described by the token buffer token.
+        """
+        cdef uint8_t *token = NULL
+        token = py_token
+        return wrap_identifier(H5Oopen_by_token(token, tr.id, esid_default(es)))
+
 
 # === Visit routines ==========================================================
 
