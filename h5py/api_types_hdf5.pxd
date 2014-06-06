@@ -850,13 +850,13 @@ cdef extern from "H5Xpublic.h":
 
     # Plugin IDs
     int H5X_PLUGIN_ERROR
-    int H5X_PLUGIN_ERROR    # (-1) no plugin
-    int H5X_PLUGIN_NONE     # 0  reserved indefinitely
-    int H5X_PLUGIN_DUMMY    # 1  dummy
-    int H5X_PLUGIN_FASTBIT  # 2  fastbit
-    int H5X_PLUGIN_ALACRIT  # 3  alacrity
-    int H5X_PLUGIN_RESERVED # 64 plugin ids below this value reserved
-    int H5X_PLUGIN_MAX      # 256  maximum plugin id
+    int H5X_PLUGIN_ERROR     # (-1) no plugin
+    int H5X_PLUGIN_NONE      # 0  reserved indefinitely
+    int H5X_PLUGIN_DUMMY     # 1  dummy
+    int H5X_PLUGIN_FASTBIT   # 2  fastbit
+    int H5X_PLUGIN_ALACRITY  # 3  alacrity
+    int H5X_PLUGIN_RESERVED  # 64 plugin ids below this value reserved
+    int H5X_PLUGIN_MAX       # 256  maximum plugin id
 
     # Maximum number of plugins allowed in a pipeline
     int H5X_MAX_NPLUGINS    # 16

@@ -6,7 +6,7 @@ from h5py import h5x
 
 _indexes = {'dummy': h5x.PLUGIN_DUMMY,
             'fastbit': h5x.PLUGIN_FASTBIT,
-            'alacrity': h5x.PLUGIN_ALACRIT}
+            'alacrity': h5x.PLUGIN_ALACRITY}
 
 class Index(object):
     """
@@ -30,7 +30,6 @@ class Index(object):
         esid
             Optional EventStackID object. Default None.
         """
-
         plugin_id = _indexes[plugin]
         h5x.create_ff(self.container.id, plugin_id, self.id, es=esid)
 
@@ -50,7 +49,6 @@ class Index(object):
         esid
             Optional EventStackID object. Default None.
         """
-
         plugin_id = _indexes[plugin]
         h5x.remove_ff(self.container.id, plugin_id, self.id, tr.id, es=esid)
 
@@ -66,6 +64,5 @@ class Index(object):
         esid
             Optional EventStackID object. Default None.
         """
-
         count = h5x.get_count_ff(self.id, rc.id, es=esid)
         return count
