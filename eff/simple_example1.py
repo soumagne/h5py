@@ -8,6 +8,7 @@ sys.path.insert(1, '../build/lib.linux-x86_64-2.6')
 from mpi4py import rc
 rc.initialize = False
 
+import os
 from mpi4py import MPI
 from h5py import h5, File, EventStack
 from h5py.eff_control import eff_init as EFF_init, eff_finalize as EFF_finalize
@@ -23,7 +24,7 @@ comm = MPI.COMM_WORLD
 EFF_init(comm, MPI.INFO_NULL)
 print 'size = %d; rank = %d' % (comm.Get_size(), comm.Get_rank())
 es = EventStack()
-f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+f = File(os.environ["USER"]+"_ff_file_ex1.h5", 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
 f.close()
 EFF_finalize()
 
