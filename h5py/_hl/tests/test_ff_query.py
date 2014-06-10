@@ -72,8 +72,8 @@ class TestQuery(TestCaseFF):
             self.assertEqual(q.op, '!=')
 
         # Already atomic query cannot be used again...
-        qv = AQuery("attr_value") = 5
-        qn = AQuery("attr_name") = "foo"
+        qv = AQuery("attr_value") == 5
+        qn = AQuery("attr_name") == "foo"
         with self.assertRaises(RuntimeError):
             qn == "bar"
         with self.assertRaises(RuntimeError):
@@ -86,11 +86,11 @@ class TestQuery(TestCaseFF):
 
     def test_compound_query(self):
         """Compound query functionality"""
-        qv = AQuery("attr_value") = 5
-        qn = AQuery("attr_name") = "foo"
+        qv = AQuery("attr_value") == 5
+        qn = AQuery("attr_name") == "foo"
 
         # Cannot initiate compound query object with anything but h5q.QueryID...
-        with self.assertRaises(ValueError):
+        with self.assertRaises(TypeError):
             CQuery("blah")
 
         # Cannot initiate compound query object with atomic query's id...

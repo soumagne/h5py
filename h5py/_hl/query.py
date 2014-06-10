@@ -161,7 +161,7 @@ class AQuery(Query):
         return self
 
 
-    def __neq__(self, other):
+    def __ne__(self, other):
         if self.id is not None:
             raise RuntimeError("Atomic query already created")
         if self._qt in ('data_elem', 'attr_value'):
