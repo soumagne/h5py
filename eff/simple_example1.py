@@ -2,7 +2,7 @@
 
 # Make sure that HDF5_FF library is found...
 import sys
-sys.path.insert(1, '/home/ajelenak/h5py/build/lib.linux-x86_64-2.6')
+sys.path.insert(1, '../build/lib.linux-x86_64-2.6')
 #print 'sys.path = ', sys.path
 
 from mpi4py import rc
