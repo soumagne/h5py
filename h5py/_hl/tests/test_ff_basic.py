@@ -1,7 +1,7 @@
 # Basic suite of tests for Exascale FastForward HDF5 library.
 
 import os
-from .common_ff import TestCase_ff
+from .common_ff import TestCaseFF
 from h5py import h5
 
 
@@ -11,29 +11,40 @@ if not mpi:
     raise RuntimeError('This HDF5 does not appear to be built with MPI')
 eff = h5.get_config().eff
 if not eff:
-    raise RuntimeError('The h5py module was not built for Exascale FastForward') 
+    raise RuntimeError('The h5py module was not built for Exascale FastForward')
 
 
-class BaseTest(TestCase_ff):
-    
-    def setUp(self):
-        self.ff_cleanup()
-        self._old_dir = os.getcwd()
-        os.chdir(self.exe_dir)
 
 
-    def tearDown(self):
-        self.ff_cleanup()
-        os.chdir(self._old_dir)
-
-
-class TestMPI(BaseTest):
+class TestWorkEnv(TestCaseFF):
 
     def setUp(self):
         pass
 
+
     def tearDown(self):
         pass
+
+
+    def test_write_dir(self):
+        """Work directory writeable"""
+        cwd = os.getcwd()
+        self.assertTrue(os.access(cwd, os.W_OK))
+
+
+    def test_env_vars(self):
+        """Verify important env. variables"""
+        self.assertIn("EFF_MPI_IONS", os.environ)
+        self.assertNotEqual(len(os.environ["EFF_MPI_IONS"]), 0)
+
+        self.assertIn("EFF_MPI_CNS", os.environ)
+        self.assertNotEqual(len(os.environ["EFF_MPI_CNS"]), 0)
+
+        self.assertIn("H5FF_SERVER", os.environ)
+        self.assertNotEqual(len(os.environ["H5FF_SERVER"]), 0)
+        self.assertTrue(os.path.isfile(os.environ["H5FF_SERVER"]))
+        self.assertTrue(os.access(os.environ["H5FF_SERVER"], os.X_OK))
+
 
     def test_mpi_thread_multi(self):
         """ MPI_THREAD_MULTIPLE support """
@@ -53,20 +64,3 @@ class TestMPI(BaseTest):
         from  mpi4py import MPI
         comm = MPI.COMM_WORLD
         self.assertIsInstance(comm, MPI.Intracomm)
-
-
-class TestWorkEnv(BaseTest):
-
-    def setUp(self):
-        self._old_dir = os.getcwd()
-        os.chdir(self.exe_dir)
-
-
-    def tearDown(self):
-        os.chdir(self._old_dir)
-
-
-    def test_wrk_dir(self):
-        """ Work directory for running tests """
-        cwd = os.getcwd()
-        self.assertEqual(cwd, self.exe_dir)

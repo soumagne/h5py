@@ -1,6 +1,6 @@
 # Test suite for Exascale FastForward H5Q API.
 
-from .common_ff import ut, TestCase_ff
+from .common_ff import ut, TestCaseFF
 from h5py.highlevel import AQuery, CQuery
 
 from h5py import h5
@@ -10,7 +10,7 @@ if not eff:
 
 
 
-class TestQuery(TestCase_ff):
+class TestQuery(TestCaseFF):
 
     def test_atomic_query(self):
         """ Atomic query functionality """

@@ -18,7 +18,7 @@ f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
 my_version = 0
 version = f.acquire_context(my_version)
 assert my_version == version, "Read context version: %d, requested %d" \
-        % (version, my_version)
+    % (version, my_version)
 
 comm.Barrier()
 
@@ -26,8 +26,7 @@ if my_rank == 0:
     f.create_transaction(1)
     f.tr.start()
 
-    m = f.create_map('test_map', f.tr, key_dtype='S7',
-                     val_dtype='int64')
+    m = f.create_map('test_map', f.tr, key_dtype='S7', val_dtype='int64')
     m.set('a', 1, f.tr)
     m.set('b', 2, f.tr)
     m.set(1, 3, f.tr) # will convert key to string '1'

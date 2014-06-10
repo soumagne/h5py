@@ -1,7 +1,7 @@
 # Test suite for Exascale FastForward H5M API.
 
 import os
-from .common_ff import ut, TestCase_ff
+from .common_ff import ut, TestCaseFF
 from h5py import h5
 from h5py.eff_control import eff_init, eff_finalize
 
@@ -16,19 +16,16 @@ if not mpi:
     raise RuntimeError('This HDF5 does not appear to be built with MPI support')
 
 
-class BaseTest(TestCase_ff):
+class BaseTest(TestCaseFF):
     
     def setUp(self):
         self.ff_cleanup()
-        self._old_dir = os.getcwd()
-        os.chdir(self.exe_dir)
-        self.run_h5ff_server()
+        self.start_h5ff_server()
 
 
     def tearDown(self):
-        self.shut_h5ff_server()
+        #self.shut_h5ff_server()
         self.ff_cleanup()
-        os.chdir(self._old_dir)
 
 
 class TestMap(BaseTest):
