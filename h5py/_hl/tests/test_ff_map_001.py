@@ -33,22 +33,22 @@ class TestMap(BaseTest):
     def test_create_map_root(self):
         """ Create an empty map in the root group """
         from mpi4py import MPI
-        from h5py import h5p, h5m
+        from h5py import h5m
 
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
@@ -74,7 +74,6 @@ class TestMap(BaseTest):
     def test_default_kv_types(self):
         """ Default key/value datatypes """
         from mpi4py import MPI
-        from h5py import h5p
         from h5py.highlevel import Datatype
         import numpy
 
@@ -82,16 +81,16 @@ class TestMap(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
@@ -119,22 +118,22 @@ class TestMap(BaseTest):
     def test_create_map_group(self):
         """ Create an empty map in a group """
         from mpi4py import MPI
-        from h5py import h5p, h5m
+        from h5py import h5m
 
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             grp1 = f.create_group("G1", f.tr)
@@ -171,22 +170,22 @@ class TestMap(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
 
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             grp1 = f.create_group("G1", f.tr)
             grp2 = grp1.create_group("G2", f.tr)
 
-            m = grp2.create_map('empty_map', f.tr)
+            m = grp2.create_map("empty_map", f.tr)
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
             m.close()
@@ -203,8 +202,8 @@ class TestMap(BaseTest):
         
         f.rc._close()
 
-        my_version = 1
-        version = f.acquire_context(1)
+        my_version = 2
+        version = f.acquire_context(2)
         self.assertEqual(my_version, version)
 
         comm.Barrier()
@@ -227,7 +226,6 @@ class TestMap(BaseTest):
     def test_get_kv_types(self):
         """ h5m.get_types_ff reported datatypes """
         from mpi4py import MPI
-        from h5py import h5p
         from h5py.highlevel import Datatype
         import numpy
 
@@ -235,16 +233,16 @@ class TestMap(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
@@ -282,16 +280,16 @@ class TestMap(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             m = f.create_map('empty_map', f.tr, key_dtype='S7',
@@ -327,16 +325,16 @@ class TestMap(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             m = f.create_map('empty_map', f.tr)
@@ -350,8 +348,8 @@ class TestMap(BaseTest):
         
         f.rc._close()
 
-        my_version = 1
-        version = f.acquire_context(1)        
+        my_version = 2
+        version = f.acquire_context(2)        
         self.assertEqual(my_version, version)
 
         comm.Barrier()

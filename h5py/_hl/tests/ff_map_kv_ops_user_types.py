@@ -4,6 +4,7 @@
 import sys
 sys.path.insert(1, sys.argv[1])
 
+import os
 from h5py.eff_control import eff_init, eff_finalize
 from h5py.highlevel import EventStack, File, Map
 from mpi4py import MPI
@@ -13,9 +14,9 @@ comm = MPI.COMM_WORLD
 eff_init(comm, MPI.INFO_NULL)
 my_rank = comm.Get_rank()
 es = EventStack()
-f = File('ff_file_map.h5', 'w', driver='iod', comm=comm,
-         info=MPI.INFO_NULL)
-my_version = 0
+fname = "%s_%s" % (os.environ["USER"], "ff_file_map.h5")
+f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+my_version = 1
 version = f.acquire_context(my_version)
 assert my_version == version, "Read context version: %d, requested %d" \
     % (version, my_version)
@@ -23,7 +24,7 @@ assert my_version == version, "Read context version: %d, requested %d" \
 comm.Barrier()
 
 if my_rank == 0:
-    f.create_transaction(1)
+    f.create_transaction(2)
     f.tr.start()
 
     m = f.create_map('test_map', f.tr, key_dtype='S7', val_dtype='int64')
@@ -39,8 +40,8 @@ f.rc.release()
 comm.Barrier()
 f.rc._close()
 
-my_version = 1
-version = f.acquire_context(1)        
+my_version = 2
+version = f.acquire_context(2)        
 assert my_version == version, "Read context version: %d, requested %d" \
         % (version, my_version)
 
@@ -88,7 +89,7 @@ if my_rank == 0:
     assert val == 4
 
     # Delete some key-value pairs...
-    f.create_transaction(2)
+    f.create_transaction(3)
     f.tr.start()
     m.delete('b', f.tr)
     m.delete('1234567', f.tr)
@@ -99,8 +100,8 @@ f.rc.release()
 comm.Barrier()
 f.rc._close()
 
-my_version = 2
-version = f.acquire_context(2)
+my_version = 3
+version = f.acquire_context(3)
 assert my_version == version, "Read context version: %d, requested %d" \
         % (version, my_version)
 

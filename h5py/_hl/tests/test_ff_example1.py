@@ -36,8 +36,8 @@ class TestExample1(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         es = EventStack()
-        f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
+        fname = self.filename("ff_file_ex1.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         f.close()
         eff_finalize()
 
@@ -50,16 +50,16 @@ class TestExample1(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
-        f = File('ff_file_ex1.h5', 'w', driver='iod', comm=comm,
-                 info=MPI.INFO_NULL)
-        my_version = 0
+        fname = self.filename("ff_file_ex1.h5")
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
         
         comm.Barrier()
         
         if my_rank == 0:
-            f.create_transaction(1)
+            f.create_transaction(2)
             f.tr.start()
 
             grp1 = f.create_group("G1", f.tr)

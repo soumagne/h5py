@@ -9,18 +9,6 @@ class TestCaseFF(TestCase):
     Testing class for the Exascale FastForward project.
     """
 
-    #@property
-    #def exe_dir(self):
-        #""" Directory from which to run tests. """
-        #return r'/scr/ajelenak/build/examples'
-
-
-    #@property
-    #def h5ff_server(self):
-        #""" Name of the h5ff_server's executable """
-        #return r'h5ff_server'
-
-
     @property
     def num_ions(self):
         """Number of h5ff_server processes."""
@@ -79,6 +67,14 @@ class TestCaseFF(TestCase):
             os.remove("./port.cfg")
         except:
             pass
+
+
+    def filename(fname):
+        """Produce a file name compatible with the Lola cluster's rules."""
+        user = os.environ.get("USER", '')
+        if len(user) == 0:
+            raise ValueError("$USER env. varianble not set")
+        return "%s_%s" % (user, fname)
 
 
     def start_h5ff_server(self, num_ions=1, sleep=2):
