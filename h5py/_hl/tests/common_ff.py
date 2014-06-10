@@ -26,7 +26,7 @@ class TestCaseFF(TestCase):
             raise ValueError("$EFF_MPI_IONS not set")
         ions = os.environ["EFF_MPI_IONS"]
         if ions[-1] == ',':
-            ions = [:-1]
+            ions = ions[:-1]
         return ions
 
 
@@ -38,7 +38,7 @@ class TestCaseFF(TestCase):
             raise ValueError("$EFF_MPI_CNS not set")
         cns = os.environ["EFF_MPI_CNS"]
         if cns[-1] == ',':
-            cns = [:-1]
+            cns = cns[:-1]
         return cns
 
 
@@ -69,11 +69,11 @@ class TestCaseFF(TestCase):
             pass
 
 
-    def filename(fname):
+    def filename(self, fname):
         """Produce a file name compatible with the Lola cluster's rules."""
         user = os.environ.get("USER", '')
         if len(user) == 0:
-            raise ValueError("$USER env. varianble not set")
+            raise ValueError("$USER env. variable not set")
         return "%s_%s" % (user, fname)
 
 
