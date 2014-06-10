@@ -338,46 +338,46 @@ cdef class FileID(GroupID):
         self.locked = True
 
 
-IF EFF:
-    def close(self, bint persist=True, EventStackID es=None):
-        """(BOOL persist=True, EventStackID es=None)
+    IF EFF:
+        def close(self, bint persist=True, EventStackID es=None):
+            """(BOOL persist=True, EventStackID es=None)
 
-        Terminate access through this identifier.  Note that depending on
-        what property list settings were used to open the file, the
-        physical file might not be closed until all remaining open
-        identifiers are freed.
+            Terminate access through this identifier.  Note that depending on
+            what property list settings were used to open the file, the
+            physical file might not be closed until all remaining open
+            identifiers are freed.
 
-        By default, H5Fclose_ff will call persist (H5RCpersist) on that last
-        transaction. The user can opt not persist the final transaction created
-        by H5Fclose_ff by setting persist to None.  The container will
-        still be readable and correct, but there will be some performance loss
-        if the additional file metadata is not persisted.
+            By default, H5Fclose_ff will call persist (H5RCpersist) on that last
+            transaction. The user can opt not persist the final transaction created
+            by H5Fclose_ff by setting persist to None.  The container will
+            still be readable and correct, but there will be some performance loss
+            if the additional file metadata is not persisted.
 
-        The es parameter indicates the event stack the event object
-        for this call should be pushed onto when the function is
-        executed asynchronously. The function may be executed
-        synchronously by not passing this parameter.
+            The es parameter indicates the event stack the event object
+            for this call should be pushed onto when the function is
+            executed asynchronously. The function may be executed
+            synchronously by not passing this parameter.
 
-        Requires HDF5 FastForward library.
-        """
+            Requires HDF5 FastForward library.
+            """
 
-        with _objects.registry.lock:
-            self.locked = False
-            H5Fclose_ff(self.id, <hbool_t>persist, esid_default(es))
-            _objects.registry.cleanup()
-ELSE:
-    def close(self):
-        """()
+            with _objects.registry.lock:
+                self.locked = False
+                H5Fclose_ff(self.id, <hbool_t>persist, esid_default(es))
+                _objects.registry.cleanup()
+    ELSE:
+        def close(self):
+            """()
 
-        Terminate access through this identifier.  Note that depending on
-        what property list settings were used to open the file, the
-        physical file might not be closed until all remaining open
-        identifiers are freed.
-        """
-        with _objects.registry.lock:
-            self.locked = False
-            H5Fclose(self.id)
-            _objects.registry.cleanup()
+            Terminate access through this identifier.  Note that depending on
+            what property list settings were used to open the file, the
+            physical file might not be closed until all remaining open
+            identifiers are freed.
+            """
+            with _objects.registry.lock:
+                self.locked = False
+                H5Fclose(self.id)
+                _objects.registry.cleanup()
 
 
     def reopen(self):
