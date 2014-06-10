@@ -2,7 +2,7 @@
 Python high-level interface for the H5RC API
 """
 
-from h5py import h5, h5rc
+from h5py import h5, h5p, h5rc
 
 # Check if this module can be used
 eff = h5.get_config().eff
