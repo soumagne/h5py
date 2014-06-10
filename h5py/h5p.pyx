@@ -114,13 +114,13 @@ DEFAULT = None   # In the HDF5 header files this is actually 0, which is an
                  # is to make them all None, to better match the Python style
                  # for keyword arguments.
 
-# For Exascale FastForward, not sure (yet) if these need to be locked
+# For Exascale FastForward
 IF EFF:
-    RC_AQUIRE = H5P_RC_ACQUIRE
-    TR_START = H5P_TR_START
-    DATATYPE_ACCESS = H5P_DATATYPE_ACCESS
-    DATATYPE_CREATE = H5P_DATATYPE_CREATE
-    VIEW_CREATE = H5P_VIEW_CREATE
+    RC_ACQUIRE = lockcls(H5P_RC_ACQUIRE)
+    TR_START = lockcls(H5P_TR_START)
+    DATATYPE_ACCESS = lockcls(H5P_DATATYPE_ACCESS)
+    DATATYPE_CREATE = lockcls(H5P_DATATYPE_CREATE)
+    VIEW_CREATE = lockcls(H5P_VIEW_CREATE)
 
 # === Property list functional API ============================================
 
