@@ -42,15 +42,19 @@ class ReadContext(object):
         return self._id.get_version()
 
 
-    def __init__(self, rcid):
+    def __init__(self, rcid, container):
         """ Initialize this instance. Argument:
 
         rcid
             A RCntxtID object to wrap with this class.
+
+        container
+            Container object.
         """
         if not isinstance(rcid, h5rc.RCntxtID):
             raise TypeError("%s is not h5rc.RCntxtID" % rcid)
         self._id = rcid
+        self._ctn = container
 
 
     def __repr__(self):
@@ -67,21 +71,21 @@ class ReadContext(object):
         self._id._close()
 
 
-    def persist(self, es=None):
+    def persist(self):
         """Copy data for the container from IOD to DAOS up to specified
         container version.
         """
-        self._id.persist(es=es)
+        self._id.persist(es=self._cnt.es.id)
 
 
-    def release(self, es=None):
+    def release(self):
         """Close the read context and release the read handle for the associated
         container version.
         """
-        self._id.release(es=es)
+        self._id.release(es=self._cnt.es.id)
 
 
-    def make_snapshot(self, name, es=None):
+    def make_snapshot(self, name):
         """Make a named snapshot of the container on DAOS.
         """
-        self._id.snapshot(name, es=es)
+        self._id.snapshot(name, es=self._cnt.es.id)

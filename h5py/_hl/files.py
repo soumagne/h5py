@@ -291,7 +291,7 @@ class File(Group):
     def create_context(self, version):
         """ Create a read context on the container at requested version.
         """
-        self._rc = ReadContext(h5rc.create(self.id, version))
+        self._rc = ReadContext(h5rc.create(self.id, version), container=self)
 
 
     def acquire_context(self, version=0, req="exact"):
@@ -310,7 +310,7 @@ class File(Group):
         """
         rcapl = make_rcapl(req)
         (rcid, ver) = h5rc.acquire(self.id, version, rcapl=rcapl, es=self.es.id)
-        self._rc = ReadContext(rcid)
+        self._rc = ReadContext(rcid, container=self)
         return ver
 
 
@@ -318,7 +318,7 @@ class File(Group):
         """Create a transaction associated with the container, read
         context, and transaction number.
         """
-        self._trid = Transaction(self, self.rc, transaction_number)
+        self._tr = Transaction(self, self.rc, transaction_number)
 
 
     def skip_transaction(self, start_trans_number, skip=1):

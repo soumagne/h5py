@@ -26,9 +26,9 @@ my_rank = comm.Get_rank()
 my_size = comm.Get_size()
 print 'size = %d; rank = %d' % (my_size, my_rank)
 es = EventStack()
-f = File(os.environ["USER"]+"_ff_file_ex1.h5", 'w', driver='iod', comm=comm,
-         info=MPI.INFO_NULL)
-
+f = File(os.environ["USER"]+"_ff_file_ex1.h5", es, mode='w', driver='iod',
+         comm=comm, info=MPI.INFO_NULL)
+f.es = es
 my_version = 1
 version = f.acquire_context(my_version)
 print "Requested read context version = %d" % my_version
@@ -40,8 +40,8 @@ if my_rank == 0:
     f.create_transaction(2)
     f.tr.start()
 
-    grp1 = f.create_group("G1", f.tr)
-    grp2 = grp1.create_group("G2", f.tr)
+    grp1 = f.create_group("G1")
+    grp2 = grp1.create_group("G2")
 
     f.tr.finish()
 #    f.tr._close()

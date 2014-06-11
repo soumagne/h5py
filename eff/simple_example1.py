@@ -2,7 +2,7 @@
 
 # Make sure that HDF5_FF library is found...
 import sys
-sys.path.insert(1, '../build/lib.linux-x86_64-2.6')
+sys.path.insert(1, "../build/lib.linux-x86_64-2.6")
 #print 'sys.path = ', sys.path
 
 from mpi4py import rc
@@ -17,15 +17,17 @@ print "mpi = ", h5.get_config().mpi
 print "HDF5 version = ", h5.get_libversion()
 
 provided = MPI.Init_thread(required=MPI.THREAD_MULTIPLE)
-print 'MPI.THREAD_MULTIPLE = %d' % MPI.THREAD_MULTIPLE
-print 'provided = %d' % provided
+print "MPI.THREAD_MULTIPLE = %d" % MPI.THREAD_MULTIPLE
+print "provided = %d" % provided
 
 comm = MPI.COMM_WORLD
 EFF_init(comm, MPI.INFO_NULL)
-print 'size = %d; rank = %d' % (comm.Get_size(), comm.Get_rank())
+print "size = %d; rank = %d" % (comm.Get_size(), comm.Get_rank())
 es = EventStack()
-f = File(os.environ["USER"]+"_ff_file_ex1.h5", 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+f = File(os.environ["USER"]+"_ff_file_ex1.h5", es, mode='w', driver="iod",
+         comm=comm, info=MPI.INFO_NULL)
+f.es = es
 f.close()
 EFF_finalize()
 
-print 'The End'
+print "The End"
