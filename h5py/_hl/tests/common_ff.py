@@ -57,16 +57,14 @@ class TestCaseFF(TestCase):
 
     def ff_cleanup(self):
         """Run the FF cleanup shell script."""
-        sname = r'/scratch/iod/scripts/purgeall.sh > /dev/null 2>&1'
-        try:
-            os.system(sname)
-        except (OSError, subprocess.CalledProcessError) as e:
-            raise RuntimeError('%s: Failed to run' % sname)
+        # sname = r'/scratch/iod/scripts/purgeall.sh > /dev/null 2>&1'
+        sname = r'ssh lola-12 "/scratch/iod/scripts/purgeall.sh"'
+        subprocess.check_call(sname, shell=True)
 
-        try:
-            os.remove("./port.cfg")
-        except:
-            pass
+        # try:
+        #     os.remove("./port.cfg")
+        # except:
+        #     pass
 
 
     def filename(self, fname):
@@ -97,7 +95,7 @@ class TestCaseFF(TestCase):
         cmd = ["mpiexec", "-np", str(num_ions), "-hosts", self.eff_mpi_ions,
                self.h5ff_server]
         cmdline = ' '.join(cmd)
-        servp = subprocess.Popen(cmdline, shell=True)
+        servp = subprocess.Popen(cmdline, shell=True, cwd=os.getcwd())
         time.sleep(sleep)
         retcode = servp.poll()
         if retcode is not None:

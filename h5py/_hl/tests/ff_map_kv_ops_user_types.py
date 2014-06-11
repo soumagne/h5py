@@ -131,5 +131,4 @@ comm.Barrier()
 f.rc._close()
 
 f.close()
-es.close()
 eff_finalize()

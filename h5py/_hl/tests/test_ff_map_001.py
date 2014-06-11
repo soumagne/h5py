@@ -25,7 +25,8 @@ class BaseTest(TestCaseFF):
 
     def tearDown(self):
         #self.shut_h5ff_server()
-        self.ff_cleanup()
+        # self.ff_cleanup()
+        pass
 
 
 class TestMap(BaseTest):
@@ -219,7 +220,7 @@ class TestMap(BaseTest):
         f.rc._close()
 
         f.close()
-        es.close()
+        # es.close()
         eff_finalize()
 
 
@@ -369,5 +370,5 @@ class TestMap(BaseTest):
         f.rc._close()
 
         f.close()
-        es.close()
+        # es.close()
         eff_finalize()
