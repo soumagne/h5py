@@ -8,7 +8,7 @@ from .dataset import readtime_dtype
 from . import datatype
 
 
-def make_new_map(parent, name, tr, kdt=None, vdt=None, es=None):
+def make_new_map(parent, name, tr, es, kdt=None, vdt=None):
     """ Create a new map object and return its low-level identifier object
 
     For Exascale FastForward.
@@ -68,7 +68,7 @@ class Map(HLObject):
         if not isinstance(mapid, h5m.MapID):
             raise TypeError("%s is not a MapID object" % mapid)
         HLObject.__init__(self, mapid)
-        self.container = container
+        self._container = container
 
         # Shapes for storing key and value data...
         self._key_shape = None

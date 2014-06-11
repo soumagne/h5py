@@ -57,8 +57,7 @@ class TestCaseFF(TestCase):
 
     def ff_cleanup(self):
         """Run the FF cleanup shell script."""
-        # sname = r'/scratch/iod/scripts/purgeall.sh > /dev/null 2>&1'
-        sname = r'ssh lola-12 "/scratch/iod/scripts/purgeall.sh"'
+        sname = r'ssh lola-12 "/scratch/iod/scripts/purgeall.sh" > /dev/null 2>&1'
         subprocess.check_call(sname, shell=True)
 
         # try:

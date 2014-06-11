@@ -1,6 +1,7 @@
 # Test suite for Exascale FastForward H5M API.
 
 import os
+import numpy
 from .common_ff import ut, TestCaseFF
 from h5py import h5
 from h5py.eff_control import eff_init, eff_finalize
@@ -24,8 +25,6 @@ class BaseTest(TestCaseFF):
 
 
     def tearDown(self):
-        #self.shut_h5ff_server()
-        # self.ff_cleanup()
         pass
 
 
@@ -41,7 +40,8 @@ class TestMap(BaseTest):
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -52,23 +52,19 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            m = f.create_map('empty_map', f.tr)
-
+            m = f.create_map('empty_map')
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
 
             m.close()
 
             f.tr.finish()
-            # f.tr._close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        #f.rc._close()
         f.close()
-        #es.close()
         eff_finalize()
 
 
@@ -76,14 +72,14 @@ class TestMap(BaseTest):
         """ Default key/value datatypes """
         from mpi4py import MPI
         from h5py.highlevel import Datatype
-        import numpy
 
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -94,7 +90,7 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            m = f.create_map('empty_map', f.tr)
+            m = f.create_map('empty_map')
 
             self.assertIsInstance(m.key_dtype, Datatype)
             self.assertIsInstance(m.val_dtype, Datatype)
@@ -104,15 +100,12 @@ class TestMap(BaseTest):
             m.close()
 
             f.tr.finish()
-            # f.tr._close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        #f.rc._close()
         f.close()
-        #es.close()
         eff_finalize()
 
 
@@ -126,7 +119,8 @@ class TestMap(BaseTest):
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -137,16 +131,15 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            grp1 = f.create_group("G1", f.tr)
-            grp2 = grp1.create_group("G2", f.tr)
+            grp1 = f.create_group("G1")
+            grp2 = grp1.create_group("G2")
 
-            m = grp2.create_map('empty_map', f.tr)
+            m = grp2.create_map('empty_map')
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
             m.close()
 
             f.tr.finish()
-            # f.tr._close()
         
         f.rc.release()
         
@@ -155,10 +148,7 @@ class TestMap(BaseTest):
         if my_rank == 0:
             grp1.close()
             grp2.close()
-        #f.rc._close()
         f.close()
-        #es.close()
-        #comm.Barrier()
         eff_finalize()
 
 
@@ -172,21 +162,22 @@ class TestMap(BaseTest):
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
-        
+
         comm.Barrier()
 
         if my_rank == 0:
             f.create_transaction(2)
             f.tr.start()
 
-            grp1 = f.create_group("G1", f.tr)
-            grp2 = grp1.create_group("G2", f.tr)
+            grp1 = f.create_group("G1")
+            grp2 = grp1.create_group("G2")
 
-            m = grp2.create_map("empty_map", f.tr)
+            m = grp2.create_map("empty_map")
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
             m.close()
@@ -195,13 +186,13 @@ class TestMap(BaseTest):
             grp1.close()
 
             f.tr.finish()
-            f.tr._close()
+            f.tr.close()
         
         f.rc.release()
         
         comm.Barrier()
-        
-        f.rc._close()
+
+        f.rc.close()
 
         my_version = 2
         version = f.acquire_context(2)
@@ -210,17 +201,16 @@ class TestMap(BaseTest):
         comm.Barrier()
 
         if my_rank == 0:
-            m = f.open_map('G1/G2/empty_map', f.rc)
+            m = f.open_map('G1/G2/empty_map')
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
             m.close()
 
         f.rc.release()
         comm.Barrier()
-        f.rc._close()
+        f.rc.close()
 
         f.close()
-        # es.close()
         eff_finalize()
 
 
@@ -228,14 +218,14 @@ class TestMap(BaseTest):
         """ h5m.get_types_ff reported datatypes """
         from mpi4py import MPI
         from h5py.highlevel import Datatype
-        import numpy
 
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -246,9 +236,9 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            m = f.create_map('empty_map', f.tr)
-            key_dt = m.key_type(f.rc)
-            val_dt = m.value_type(f.rc)
+            m = f.create_map('empty_map')
+            key_dt = m.key_type()
+            val_dt = m.value_type()
 
             self.assertIsInstance(key_dt, Datatype)
             self.assertIsInstance(val_dt, Datatype)
@@ -258,15 +248,12 @@ class TestMap(BaseTest):
             m.close()
 
             f.tr.finish()
-            # f.tr._close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        #f.rc._close()
         f.close()
-        #es.close()
         eff_finalize()
 
 
@@ -275,14 +262,14 @@ class TestMap(BaseTest):
         from mpi4py import MPI
         from h5py import h5p
         from h5py.highlevel import Datatype
-        import numpy
 
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -293,10 +280,9 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            m = f.create_map('empty_map', f.tr, key_dtype='S7',
-                             val_dtype='int64')
-            key_dt = m.key_type(f.rc)
-            val_dt = m.value_type(f.rc)
+            m = f.create_map('empty_map', key_dtype='S7', val_dtype='int64')
+            key_dt = m.key_type()
+            val_dt = m.value_type()
 
             self.assertIsInstance(key_dt, Datatype)
             self.assertIsInstance(val_dt, Datatype)
@@ -306,20 +292,17 @@ class TestMap(BaseTest):
             m.close()
 
             f.tr.finish()
-            # f.tr._close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        #f.rc._close()
         f.close()
-        #es.close()
         eff_finalize()
 
 
     def test_get_empty_map(self):
-        """ Getting a key/value pair from empty map raises exception  """
+        """Getting a key/value pair from empty map raises exception"""
         from mpi4py import MPI
 
         comm = MPI.COMM_WORLD
@@ -327,7 +310,8 @@ class TestMap(BaseTest):
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -338,16 +322,16 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            m = f.create_map('empty_map', f.tr)
+            m = f.create_map('empty_map')
 
             f.tr.finish()
-            f.tr._close()
+            f.tr.close()
         
         f.rc.release()
         
         comm.Barrier()
         
-        f.rc._close()
+        f.rc.close()
 
         my_version = 2
         version = f.acquire_context(2)        
@@ -356,10 +340,10 @@ class TestMap(BaseTest):
         comm.Barrier()
 
         if my_rank == 0:
-            kv_pairs = m.count(f.rc)
+            kv_pairs = m.count()
             self.assertEqual(kv_pairs, 0)
             with self.assertRaises(KeyError):
-                val = m.get(1, f.rc)
+                val = m.get(1)
 
         m.close()
 
@@ -367,10 +351,9 @@ class TestMap(BaseTest):
 
         comm.Barrier()
 
-        f.rc._close()
+        f.rc.close()
 
         f.close()
-        # es.close()
         eff_finalize()
 
 
@@ -384,7 +367,8 @@ class TestMap(BaseTest):
         my_rank = comm.Get_rank()
         es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -395,18 +379,18 @@ class TestMap(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            m = f.create_map('test_map', f.tr, key_dtype='S7', val_dtype='int64')
-            m.set('a', 1, f.tr)
-            m.set('b', 2, f.tr)
-            m.set(1, 3, f.tr) # will convert key to string '1'
-            m.set('12345678', 4, f.tr) # will clip key to 7 chars
+            m = f.create_map('test_map', key_dtype='S7', val_dtype='int64')
+            m.set('a', 1)
+            m.set('b', 2)
+            m.set(1, 3) # will convert key to string '1'
+            m.set('12345678', 4) # will clip key to 7 chars
 
             f.tr.finish()
-            f.tr._close()
+            f.tr.close()
 
         f.rc.release()
         comm.Barrier()
-        f.rc._close()
+        f.rc.close()
 
         my_version = 2
         version = f.acquire_context(2)        
@@ -415,57 +399,57 @@ class TestMap(BaseTest):
         comm.Barrier()
 
         if my_rank == 0:
-            kv_exists = m.exists('a', f.rc)
+            kv_exists = m.exists('a')
             self.assertTrue(kv_exists)
 
-            kv_exists = m.exists('b', f.rc)
+            kv_exists = m.exists('b')
             self.assertTrue(kv_exists)
 
-            kv_exists = m.exists('c', f.rc)
+            kv_exists = m.exists('c')
             self.assertFalse(kv_exists)
 
-            kv_exists = m.exists('1', f.rc)
+            kv_exists = m.exists('1')
             self.assertTrue(kv_exists)
 
-            kv_exists = m.exists(1, f.rc)
+            kv_exists = m.exists(1)
             self.assertTrue(kv_exists)
 
-            kv_exists = m.exists('1234567', f.rc)
+            kv_exists = m.exists('1234567')
             self.assertTrue(kv_exists)
 
-            cnt = m.count(f.rc)
+            cnt = m.count()
             self.assertEqual(cnt, 4)
 
             # Close the map object so it can be opened for a get()
             m.close()
-            m = f.open_map('test_map', f.rc)
+            m = f.open_map('test_map')
 
-            val = m.get('a', f.rc)
+            val = m.get('a')
             self.assertEqual(val, 1)
 
-            val = m.get('b', f.rc)
+            val = m.get('b')
             self.assertEqual(val, 2)
 
-            val = m.get('1', f.rc)
+            val = m.get('1')
             self.assertEqual(val, 3)
 
-            val = m.get(1, f.rc)
+            val = m.get(1)
             self.assertEqual(val, 3)
 
-            val = m.get('1234567', f.rc)
+            val = m.get('1234567')
             self.assertEqual(val, 4)
 
             # Delete some key-value pairs...
             f.create_transaction(3)
             f.tr.start()
-            m.delete('b', f.tr)
-            m.delete('1234567', f.tr)
+            m.delete('b')
+            m.delete('1234567')
             f.tr.finish()
-            f.tr._close()
+            f.tr.close()
 
         f.rc.release()
         comm.Barrier()
-        f.rc._close()
+        f.rc.close()
 
         my_version = 3
         version = f.acquire_context(3)
@@ -474,19 +458,19 @@ class TestMap(BaseTest):
         comm.Barrier()
 
         if my_rank == 0:
-            kv_exists = m.exists('a', f.rc)
+            kv_exists = m.exists('a')
             self.assertTrue(kv_exists)
 
-            kv_exists = m.exists('b', f.rc)
+            kv_exists = m.exists('b')
             self.assertFalse(kv_exists)
 
-            kv_exists = m.exists('1', f.rc)
+            kv_exists = m.exists('1')
             self.assertTrue(kv_exists)
 
-            kv_exists = m.exists('1234567', f.rc)
+            kv_exists = m.exists('1234567')
             self.assertFalse(kv_exists)
 
-            cnt = m.count(f.rc)
+            cnt = m.count()
             self.assertEqual(cnt, 2)
 
 
@@ -494,7 +478,7 @@ class TestMap(BaseTest):
 
         f.rc.release()
         comm.Barrier()
-        f.rc._close()
+        f.rc.close()
 
         f.close()
         eff_finalize()

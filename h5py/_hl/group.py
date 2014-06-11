@@ -176,8 +176,8 @@ class Group(Index, HLObject, DictCompat):
         if name is None:
             raise ValueError("New map object requires a name")
         mapid = maps.make_new_map(self, self._e(name), self.container.tr,
-                                  kdt=key_dtype, vdt=val_dtype,
-                                  esid=self.container.es, **kwds)
+                                  self.container.es, kdt=key_dtype,
+                                  vdt=val_dtype, **kwds)
         mp = maps.Map(mapid, container=self.container)
         self[name] = mp
         return mp
