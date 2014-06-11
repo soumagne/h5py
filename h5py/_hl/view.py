@@ -30,18 +30,25 @@ class Attribute(object):
         return self._id
 
 
-    def __init__(self, bind):
+    @property
+    def container(self):
+        """Container (File) object this attribute belongs to."""
+        return self._container
+
+
+    def __init__(self, bind, container=None):
         if not isinstance(bind, h5a.AttrID):
             raise ValueError("%s is not h5a.AttrID" % bind)
         self._id = bind
+        self._container = container
 
 
-    def close(self, esid=None):
+    def close(self):
         """ Close the attribute object """
-        self.id._close_ff(es=esid)
+        self.id._close_ff(es=self.container.es.id)
 
 
-    def value(self, rc, esid=None):
+    def value(self):
         """ Read attribute's value """
 
         if self.id.get_space().get_simple_extent_type() == h5s.NULL:
@@ -50,7 +57,7 @@ class Attribute(object):
         tid = self.id.get_type()
         dt = readtime_dtype(self.id.dtype, [])
         val = numpy.ndarray(self.id.shape, dtype=dt, order='C')
-        self.id.read_ff(val, rc, es=esid)
+        self.id.read_ff(val, self.container.rc.id, es=self.container.es.id)
 
         if len(val.shape) == 0:
             return val[()]
@@ -69,7 +76,13 @@ class View(object):
         return self._id
 
 
-    def __init__(self, loc, query, rc, sel=None, esid=None):
+    @property
+    def container(self):
+        """Container (File) object this view belongs to."""
+        return self._container
+
+
+    def __init__(self, loc, query, sel=None, container=None):
         """Create a new view object. Arguments:
 
         loc
@@ -79,16 +92,13 @@ class View(object):
         query
             Query object, the results of which will be available in this view.
 
-        rc
-            Read context object.
-
         sel
             Optional, default is None. One of selection objects from the
             selections.py module for constraining query results presented in the
             view. Its id property must be of h5s.SpaceID type.
 
-        esid
-            Optional, default None. Event stack object.
+        container
+            Optional, default None. Container (File) the loc object belongs to.
 
         For Exascale FastForward.
         """
@@ -108,6 +118,7 @@ class View(object):
             vcpl.set_view_elmt_scope(sel.id)
             self._id = h5v.create_ff(loc.id, query.id, rc.id, vcpl=vcpl,
                                      es=esid)
+        self._container = container
 
 
     def close(self):
@@ -148,24 +159,24 @@ class View(object):
         return self.count()[2]
 
 
-    def location(self, esid=None):
+    def location(self):
         """ Object on which the view is created, possibly asynchronously.
         
         For Exascale FastForward.
         """
 
-        locid = self.id.get_location_ff(es=esid)
+        locid = self.id.get_location_ff(es=self.container.es.id)
         if isinstance(locid, h5f.FileID):
             return File(locid)
         elif isinstance(locid, h5g.GroupID):
-            return Group(locid)
+            return Group(locid, container=self.container)
         elif isinstance(locid, h5d.DatasetID):
-            return Dataset(locid)
+            return Dataset(locid, container=self.container)
         else:
             raise ValueError("%s invalid view object location" % locid)
 
 
-    def attrs(self, start=0, count=1, esid=None):
+    def attrs(self, start=0, count=1):
         """Retrieve the count (default: 1) number of attributes referenced by
         the view object beginning at offset start (default: 0), possibly
         asynchronously.
@@ -175,12 +186,13 @@ class View(object):
         For Exascale FastForward.
         """
 
-        attrs_id = self.id.get_attrs_ff(start=start, count=count, es=esid)
+        attrs_id = self.id.get_attrs_ff(start=start, count=count,
+                                        es=self.container.es.id)
         for aid in attrs_id:
             yield Attribute(aid)
 
 
-    def objs(self, start=0, count=1, esid=None):
+    def objs(self, start=0, count=1):
         """Retrieve the count (default: 1) number of HDF5 objects referenced by
         the view object beginning at offset start (default: 0), possibly
         asynchronously. HDF5 objects returned are: datasets, datatypes, groups,
@@ -192,23 +204,24 @@ class View(object):
         For Exascale FastForward.
         """
 
-        objs_id = self.id.get_objs_ff(start=start, count=count, es=esid)
+        objs_id = self.id.get_objs_ff(start=start, count=count,
+                                      es=self.container.es.id)
         for oid in objs_id:
             if isinstance(oid, h5d.DatasetID):
-                obj = Dataset(oid)
+                obj = Dataset(oid, container=self.container)
             elif isinstance(oid, h5g.GroupID):
-                obj = Group(oid)
+                obj = Group(oid, container=self.container)
             elif isinstance(oid, h5t.TypeID):
-                obj = Datatype(oid)
+                obj = Datatype(oid, container=self.container)
             elif isinstance(oid, h5m.MapID):
-                obj = Map(oid)
+                obj = Map(oid, container=self.container)
             else:
                 raise ValueError("%s unexpected object type" % oid)
 
             yield obj
 
 
-    def regions(self, start=0, count=1, esid=None):
+    def regions(self, start=0, count=1):
         """Retrieve the count (default: 1) number of region references
         from the view object beginning at offset start (default: 0),
         possibly asynchronously. Each region reference points to a dataset's
@@ -219,6 +232,7 @@ class View(object):
         For Exascale FastForward.
         """
 
-        tl = self.id.get_elem_regions_ff(start=start, count=count, es=esid)
+        tl = self.id.get_elem_regions_ff(start=start, count=count,
+                                         es=self.container.es.id)
         for dsid, spaceid in tl:
             yield h5r.create(dsid, '.', h5r.DATASET_REGION, spaceid)

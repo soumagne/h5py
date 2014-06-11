@@ -42,9 +42,15 @@ class ReadContext(object):
         return self._id.get_version()
 
 
-    def __init__(self, f, container_version):
-        """ Create read context associated with a container and version """
-        self._id = h5rc.create(f.id, container_version)
+    def __init__(self, rcid):
+        """ Initialize this instance. Argument:
+
+        rcid
+            A RCntxtID object to wrap with this class.
+        """
+        if not isinstance(rcid, h5rc.RCntxtID):
+            raise TypeError("%s is not h5rc.RCntxtID" % rcid)
+        self._id = rcid
 
 
     def __repr__(self):

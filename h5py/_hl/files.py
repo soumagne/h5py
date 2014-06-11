@@ -13,7 +13,9 @@ import os
 
 from .base import HLObject, py3
 from .group import Group
-from .read_context import make_rcapl
+from .read_context import make_rcapl, ReadContext
+from .transaction import Transaction
+from .event_stack import EventStack
 from h5py import h5, h5f, h5p, h5i, h5fd, h5t, h5rc, h5tr, _objects
 from h5py import version
 
@@ -63,14 +65,13 @@ def make_fapl(driver, libver, **kwds):
     return plist
 
 
-def make_fid(name, mode, userblock_size, fapl, fcpl=None, esid=None, with_rc=False):
+def make_fid(name, mode, userblock_size, fapl, es, fcpl=None, with_rc=False):
     """ Get a new FileID by opening or creating a file.
     Also validates mode argument.
     
-    This is the Exascale FastForward version with one extra named argument:
-    esid is for the EventStackID object. The with_rc flag indicates whether to
-    acquire a read context when opening a file. Its default
-    value is False.
+    This is the Exascale FastForward version with one extra argument: es is for
+    the EventStack object. The with_rc flag indicates whether to acquire a read
+    context when opening a file. Its default value is False.
     """
 
     if userblock_size is not None:
@@ -90,29 +91,32 @@ def make_fid(name, mode, userblock_size, fapl, fcpl=None, esid=None, with_rc=Fal
     rcid = None
 
     if mode == 'r':
-        (fid, rcid) = h5f.open(name, h5f.ACC_RDONLY, fapl=fapl, rc=with_rc, es=esid)
+        (fid, rcid) = h5f.open(name, h5f.ACC_RDONLY, fapl=fapl, rc=with_rc,
+                               es=es.id)
     elif mode == 'r+':
-        (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=esid)
+        (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=es.id)
     elif mode == 'w-':
         with_rc = False # This flag is meaningless for create()
-        fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=esid)
+        fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=es.id)
     elif mode == 'w':
         with_rc = False # This flag is meaningless for create()
-        fid = h5f.create(name, h5f.ACC_TRUNC, fapl=fapl, fcpl=fcpl, es=esid)
+        fid = h5f.create(name, h5f.ACC_TRUNC, fapl=fapl, fcpl=fcpl, es=es.id)
     elif mode == 'a' or mode is None:
         try:
-            (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=esid)
+            (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc,
+                                   es=es.id)
             try:
                 existing_fcpl = fid.get_create_plist()
                 if (userblock_size is not None and
                         existing_fcpl.get_userblock() != userblock_size):
-                    raise ValueError("Requested userblock size (%d) does not match that of existing file (%d)" % (userblock_size, existing_fcpl.get_userblock()))
+                    raise ValueError("Requested userblock size (%d) does not match that of existing file (%d)"
+                                     % (userblock_size, existing_fcpl.get_userblock()))
             except:
                 fid.close()
                 raise
         except IOError:
             with_rc = False # This flag is meaningless for create()
-            fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=esid)
+            fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=es.id)
     else:
         raise ValueError("Invalid mode; must be one of r, r+, w, w-, a")
 
@@ -179,14 +183,28 @@ class File(Group):
 
     @property
     def rc(self):
-        """ Stores the RCntxtID object associated with the file """
-        return self._rcid
+        """ Hold the ReadContext object associated with the file """
+        return self._rc
 
 
     @property
     def tr(self):
-        """ Stores the TransactionID object associated with the file """
-        return self._trid
+        """ Hold the Transaction object associated with the file """
+        return self._tr
+
+
+    @property
+    def es(self):
+        """ Hold current EventStack object for all file's objects """
+        return self._es
+
+
+    @es.setter
+    def es(self, obj):
+        """ Accept EventStack object to be used by all file's object """
+        if not isinstance(obj, EventStack):
+            raise TypeError("%s not EventStack object" % obj)
+        self._es = obj
 
 
     if mpi and hdf5_version >= (1, 8, 9):
@@ -202,8 +220,8 @@ class File(Group):
             self.id.set_mpi_atomicity(value)
 
 
-    def __init__(self, name, mode=None, driver=None, 
-                 libver=None, userblock_size=None, esid=None, with_rc=False, **kwds):
+    def __init__(self, name, es, mode=None, driver=None, libver=None,
+                 userblock_size=None, with_rc=False, **kwds):
         """Create a new file object.
 
         See the h5py user guide for a detailed explanation of the options.
@@ -211,6 +229,9 @@ class File(Group):
         name
             Name of the file on disk.  Note: for files created with the 'core'
             driver, HDF5 still requires this be non-empty.
+        es
+            Exascale FastForward event stack identifier object
+            (EventStack). Required.
         driver
             Name of the driver to use.  Legal values are None (default,
             recommended), 'core', 'sec2', 'stdio', 'mpio', 'iod'.
@@ -220,9 +241,6 @@ class File(Group):
         userblock
             Desired size of user block.  Only allowed when creating a new
             file (mode w or w-).
-        esid
-            Exascale FastForward event stack identifier object
-            (EventStackID). Default None.
         with_rc
             A flag requesting a read context handle at the same time when
             opening a file. Default False.
@@ -242,14 +260,14 @@ class File(Group):
 
             fapl = make_fapl(driver, libver, **kwds)
 
-            (fid, rcid) = make_fid(name, mode, userblock_size, fapl, esid=esid, with_rc=with_rc)
-            self._rcid = rcid # Holds read context identifier object
-            self._trid = None # Holds transaction identifier object
+            (fid, rcid) = make_fid(name, mode, userblock_size, fapl, es, with_rc=with_rc)
+            self._rc = ReadContext(rcid) if rcid is not None else None
+            self._tr = None
 
         Group.__init__(self, fid)
 
 
-    def close(self, persist=True, esid=None):
+    def close(self, persist=True):
         """ Close the file.  All open objects become invalid.
 
         Optional arguments:
@@ -257,13 +275,11 @@ class File(Group):
         persist
             Flag to indicate whether to persist the final transaction. Default
             is True.
-        es
-            Represents an EventStackID object. Default value is None.
         """
         # TODO: find a way to square this with having issue 140
         # Not clearing shared state introduces a tiny memory leak, but
         # it goes like the number of files opened in a session.
-        self.id.close(persist=persist, es=esid)
+        self.id.close(persist=persist, es=self.es.id)
 
 
     def flush(self):
@@ -273,12 +289,12 @@ class File(Group):
 
 
     def create_context(self, version):
-        """ Create a read context on the container and requested version.
+        """ Create a read context on the container at requested version.
         """
-        self._rcid = h5rc.create(self.id, version)
+        self._rc = ReadContext(h5rc.create(self.id, version))
 
 
-    def acquire_context(self, version=0, req="exact", esid=None):
+    def acquire_context(self, version=0, req="exact"):
         """Acquire a read handle for the container at a given version and
         create a read context associated with the container and version.
         Returns the acquired container version.
@@ -291,13 +307,10 @@ class File(Group):
         req
             Container version request modifier. Possible values: "exact"
             (default), "prev", "next", and "last".
-
-        esid
-            Event stack identifier object. Default is None.
         """
         rcapl = make_rcapl(req)
-        (rcid, ver) = h5rc.acquire(self.id, version, rcapl=rcapl, es=esid)
-        self._rcid = rcid
+        (rcid, ver) = h5rc.acquire(self.id, version, rcapl=rcapl, es=self.es.id)
+        self._rc = ReadContext(rcid)
         return ver
 
 
@@ -305,14 +318,14 @@ class File(Group):
         """Create a transaction associated with the container, read
         context, and transaction number.
         """
-        self._trid = h5tr.create(self.id, self._rcid, transaction_number)
+        self._trid = Transaction(self, self.rc, transaction_number)
 
 
-    def skip_transaction(self, start_trans_number, skip=1, esid=None):
+    def skip_transaction(self, start_trans_number, skip=1):
         """Explicitly skip one or more transactions for the container. The
         default skip count is 1. EventStackID object is an optional argument.
         """
-        h5tr.skip(self.id, start_trans_num, count=skip, es=esid) 
+        h5tr.skip(self.id, start_trans_num, count=skip, es=self.es.id) 
 
 
     def __enter__(self):

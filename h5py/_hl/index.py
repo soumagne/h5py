@@ -15,54 +15,37 @@ class Index(object):
     For Exascale FastForward.
     """
 
-    def create_index(self, tr, plugin='dummy', esid=None):
+    def create_index(self, plugin='dummy'):
         """Create an index of type plugin on this object.
 
         Arguments:
 
-        tr
-            Transaction object.
-
         plugin
             Plugin type. Possible values: 'dummy', 'fastbit', or 'alacrity'.
             Default 'dummy'.
-
-        esid
-            Optional EventStackID object. Default None.
         """
         plugin_id = _indexes[plugin]
-        h5x.create_ff(self.container.id, plugin_id, self.id, es=esid)
+        h5x.create_ff(self.container.id, plugin_id, self.id,
+                      self.container.tr.id, es=self.container.es.id)
 
 
-    def remove_index(self, tr, plugin='dummy', es=None):
+    def remove_index(self, plugin='dummy'):
         """Remove an index of type plugin on this object.
 
         Arguments:
 
-        tr
-            Transaction object.
-
         plugin
             Plugin type. Possible values: 'dummy', 'fastbit', or 'alacrity'.
             Default 'dummy'.
-
-        esid
-            Optional EventStackID object. Default None.
         """
         plugin_id = _indexes[plugin]
-        h5x.remove_ff(self.container.id, plugin_id, self.id, tr.id, es=esid)
+        h5x.remove_ff(self.container.id, plugin_id, self.id,
+                      self.container.tr.id, es=self.container.es.id)
 
 
-    def index_count(self, rc, esid=None):
-        """Number of indexes on this object.
+    def index_count(self):
+        """Number of indexes on this object."""
 
-        Arguments:
-
-        rc
-            Read context object.
-
-        esid
-            Optional EventStackID object. Default None.
-        """
-        count = h5x.get_count_ff(self.id, rc.id, es=esid)
+        count = h5x.get_count_ff(self.id, self.container.rc.id,
+                                 es=self.container.es.id)
         return count

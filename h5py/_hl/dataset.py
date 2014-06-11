@@ -117,11 +117,11 @@ def make_new_dset(parent, shape=None, dtype=None, data=None,
 #===========================================================================
 # For Exascale FastForward
 
-def make_new_dset_ff(parent, name, trid, shape=None, dtype=None, data=None,
+def make_new_dset_ff(parent, name, tr, shape=None, dtype=None, data=None,
                      chunks=None, compression=None, shuffle=None,
                      fletcher32=None, maxshape=None, compression_opts=None,
                      fillvalue=None, scaleoffset=None, track_times=None,
-                     esid=None):
+                     es=None):
     """ Return a new low-level dataset identifier
 
     For Exascale FastForward.
@@ -193,11 +193,11 @@ def make_new_dset_ff(parent, name, trid, shape=None, dtype=None, data=None,
     sid = h5s.create_simple(shape, maxshape)
 
 
-    dset_id = h5d.create_ff(parent.id, name, tid, sid, trid, dcpl=dcpl,
-                            es=esid)
+    dset_id = h5d.create_ff(parent.id, name, tid, sid, tr.id, dcpl=dcpl,
+                            es=es.id)
 
     if data is not None:
-        dset_id.write_ff(h5s.ALL, h5s.ALL, data, trid, es=esid)
+        dset_id.write_ff(h5s.ALL, h5s.ALL, data, tr.id, es=es.id)
 
     return dset_id
 
@@ -332,15 +332,14 @@ class Dataset(Index, HLObject):
         self._local.astype = None
         self._container = container
 
-    def close(self, esid=None):
-        """Close the dataset. Named argument esid (default: None) holds the
-        EventStackID identifier.
+    def close(self):
+        """Close the dataset.
         
         For Exascale FastForward.
         """
-        self.id._close(esid=esid)
+        self.id._close(esid=self.container.es.id)
 
-    def resize(self, size, trid, axis=None, esid=None):
+    def resize(self, size, axis=None):
         """ Resize the dataset, or the specified axis.
 
         For Exascale FastForward.
@@ -370,7 +369,7 @@ class Dataset(Index, HLObject):
             size[axis] = newlen
 
         size = tuple(size)
-        self.id.set_extent_ff(size, trid, es=esid)
+        self.id.set_extent_ff(size, self.container.tr.id, es=self.container.es.id)
         #h5f.flush(self.id)  # THG recommends
 
     def __len__(self):
@@ -665,7 +664,7 @@ class Dataset(Index, HLObject):
         for fspace in selection.broadcast(mshape):
             self.id.write(mspace, fspace, val, mtype)
 
-    def read_direct(self, dest, rcid, source_sel=None, dest_sel=None, esid=None):
+    def read_direct(self, dest, source_sel=None, dest_sel=None):
         """ Read data directly from HDF5 into an existing NumPy array.
 
         For Exascale FastForward.
@@ -688,9 +687,10 @@ class Dataset(Index, HLObject):
             dest_sel = sel.select(dest.shape, dest_sel, self.id)
 
         for mspace in dest_sel.broadcast(source_sel.mshape):
-            self.id.read_ff(mspace, fspace, dest, rcid, es=esid)
+            self.id.read_ff(mspace, fspace, dest, self.container.rc.id,
+                            es=self.container.es.id)
 
-    def write_direct(self, source, trid, source_sel=None, dest_sel=None, esid=None):
+    def write_direct(self, source, source_sel=None, dest_sel=None):
         """ Write data directly to HDF5 from a NumPy array.
 
         For Exascale FastForward.
@@ -712,7 +712,8 @@ class Dataset(Index, HLObject):
             dest_sel = sel.select(self.shape, dest_sel, self.id)
 
         for fspace in dest_sel.broadcast(source_sel.mshape):
-            self.id.write_ff(mspace, fspace, source, trid, es=esid)
+            self.id.write_ff(mspace, fspace, source, self.container.tr.id,
+                             es=self.container.es.id)
 
     def __array__(self, dtype=None):
         """ Create a Numpy array containing the whole dataset.  DON'T THINK

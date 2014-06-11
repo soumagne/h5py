@@ -34,50 +34,21 @@ class Group(Index, HLObject, DictCompat):
         HLObject.__init__(self, bind)
         self._container = container
 
-        # For Exascale FastForward. Holds current transaction, read
-        # context, and event stack identifier objects.
-        self._trid = None
-        self._rcid = None
-        self._esid = None
-
-    def set_rc_env(self, rcid, esid=None):
-        """Set read context environment to be used. Event stack ID object
-        is optional argument, default set to None.
-
-        For Exascale FastForward.
-
-        Note: This is very experimental and may change.
-        """
-        self._rcid = rcid
-        self._esid = esid
-
-    def set_tr_env(self, trid, esid=None):
-        """Set transaction environment to be used. Event stack ID object
-        is optional argument, default set to None.
-
-        For Exascale FastForward.
-
-        Note: This is very experimental and may change.
-        """
-        self._trid = trid
-        self._esid = esid
-
-    def create_group(self, name, trid, esid=None):
+    def create_group(self, name):
         """ Create and return a new subgroup.
 
         Name may be absolute or relative.  Fails if the target name already
         exists.
         """
         name, lcpl = self._e(name, lcpl=True)
-        self.set_tr_env(trid, esid=esid)
-        gid = h5g.create(self.id, name, trid, lcpl=lcpl, esid=esid)
+        gid = h5g.create(self.id, name, self.container.tr.id, lcpl=lcpl,
+                         esid=self.container.es.id)
         return Group(gid, container=self.container)
 
 
-    def close(self, esid=None):
-        """Close the group. Named argument esid (default: None) holds the
-        EventStackID identifier."""
-        self.id._close(esid=esid)
+    def close(self):
+        """Close the group."""
+        self.id._close(esid=self.container.es.id)
 
     # def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):
     #     """ Create a new HDF5 dataset
@@ -135,13 +106,11 @@ class Group(Index, HLObject, DictCompat):
     #         self[name] = dset
     #     return dset
 
-    def create_dataset(self, name, trid, shape=None, dtype=None, data=None, **kwds):
+    def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):
         """ Create a new Exascale FastForward HDF5 dataset
 
         name
             Name of the dataset (absolute or relative).
-        trid
-            Transaction identifier.
         shape
             Dataset shape.  Use "()" for scalar datasets.  Required if "data"
             isn't provided.
@@ -185,53 +154,45 @@ class Group(Index, HLObject, DictCompat):
         track_times
             (T/F) Enable dataset creation timestamps.
         """
-
-        dsid = dataset.make_new_dset_ff(self, name, trid, shape, dtype, data, **kwds)
+        dsid = dataset.make_new_dset_ff(self, name, self.container.tr, shape,
+                                        dtype, data, es=self.container.es, **kwds)
         dset = dataset.Dataset(dsid, container=self.container)
         if name is not None:
             self[name] = dset
         return dset
 
-    def create_map(self, name, trid, key_dtype=None, val_dtype=None, esid=None,
-                   **kwds):
-        """ Create a new Exascale FastForward HDF5 map
+    def create_map(self, name, key_dtype=None, val_dtype=None, **kwds):
+        """Create a new Exascale FastForward HDF5 map
 
         name
             Name of the map (absolute or relative). Required.
-        trid
-            Transaction identifier object. Required.
+
         key_dtype
             Numpy dtype or string.  If omitted, dtype('f') will be used.
+
         val_dtype
             Numpy dtype or string.  If omitted, dtype('f') will be used.
-        esid
-            Event stack identifier object.
         """
-
         if name is None:
             raise ValueError("New map object requires a name")
-        mapid = maps.make_new_map(self, self._e(name), trid, kdt=key_dtype,
-                                  vdt=val_dtype, esid=esid, **kwds)
-        mp = maps.Map(mapid)
-        self.set_tr_env(trid, esid=esid)
+        mapid = maps.make_new_map(self, self._e(name), self.container.tr,
+                                  kdt=key_dtype, vdt=val_dtype,
+                                  esid=self.container.es, **kwds)
+        mp = maps.Map(mapid, container=self.container)
         self[name] = mp
         return mp
 
-    def open_map(self, name, rcid, esid=None, **kwds):
+    def open_map(self, name, **kwds):
         """ Open an Exascale FastForward HDF5 map
 
         name
             Name of the map (absolute or relative). Required.
-        rcid
-            Read context object. Required.
-        esid
-            Event stack object. Default None.
         """
         if name is None:
             raise ValueError("Need a map name to open it")
-        self.set_rc_env(rcid, esid=esid)
-        mapid = h5m.open_ff(self.id, name, rcid, es=esid)
-        return maps.Map(mapid)
+        mapid = h5m.open_ff(self.id, name, self.container.rc.id,
+                            es=self.container.es.id)
+        return maps.Map(mapid, container=self.container)
 
     def open_map_by_token(self, token, trid, esid=None, **kwds):
         """ Open an Exascale FastForward HDF5 map by token.
@@ -284,16 +245,20 @@ class Group(Index, HLObject, DictCompat):
 
         dset = self[name]
         if not isinstance(dset, dataset.Dataset):
-            raise TypeError("Incompatible object (%s) already exists" % dset.__class__.__name__)
+            raise TypeError("Incompatible object (%s) already exists" %
+                            dset.__class__.__name__)
 
         if not shape == dset.shape:
-            raise TypeError("Shapes do not match (existing %s vs new %s)" % (dset.shape, shape))
+            raise TypeError("Shapes do not match (existing %s vs new %s)" %
+                            (dset.shape, shape))
 
         if exact:
             if not dtype == dset.dtype:
-                raise TypeError("Datatypes do not exactly match (existing %s vs new %s)" % (dset.dtype, dtype))
+                raise TypeError("Datatypes do not exactly match (existing %s vs new %s)"
+                                % (dset.dtype, dtype))
         elif not numpy.can_cast(dtype, dset.dtype):
-            raise TypeError("Datatypes cannot be safely cast (existing %s vs new %s)" % (dset.dtype, dtype))
+            raise TypeError("Datatypes cannot be safely cast (existing %s vs new %s)"
+                            % (dset.dtype, dtype))
 
         return dset
 
@@ -423,13 +388,14 @@ class Group(Index, HLObject, DictCompat):
             # Commented out the call to h5o.link_ff() below because linking
             # cannot be done in the same transaction where the object is
             # created.
-            # h5o.link_ff(obj.id, self.id, name, self._trid, lcpl=lcpl,
-            #             lapl=self._lapl, es=self._esid)
+            # h5o.link_ff(obj.id, self.id, name, self.container.tr.id, lcpl=lcpl,
+            #             lapl=self._lapl, es=self.container.es.id)
             pass
 
         elif isinstance(obj, SoftLink):
-            self.id.links.create_soft_ff(name, self._e(obj.path), self._trid,
-                          lcpl=lcpl, lapl=self._lapl)
+            self.id.links.create_soft_ff(name, self._e(obj.path),
+                                         self.container.tr.id, lcpl=lcpl,
+                                         lapl=self._lapl)
 
         elif isinstance(obj, ExternalLink):
             self.id.links.create_external(name, self._e(obj.filename),
@@ -441,8 +407,8 @@ class Group(Index, HLObject, DictCompat):
 
         else:
             ds = self.create_dataset(None, data=obj, dtype=base.guess_dtype(obj))
-            h5o.link_ff(obj.id, self.id, name, self._trid, lcpl=lcpl,
-                        lapl=self._lapl, es=self._esid)
+            h5o.link_ff(obj.id, self.id, name, self.container.tr.id, lcpl=lcpl,
+                        lapl=self._lapl, es=self.container.es.id)
 
     def __delitem__(self, name):
         """ Delete (unlink) an item from this group. """
