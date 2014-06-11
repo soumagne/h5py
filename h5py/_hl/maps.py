@@ -62,6 +62,7 @@ class Map(HLObject):
         """ Numpy ndarray shape tuple for map's values """
         return self._val_shape
 
+
     def __init__(self, mapid, container=None):
         """ Initialize a new EFF map object from the MapID identifier object
         """
@@ -74,12 +75,14 @@ class Map(HLObject):
         self._key_shape = None
         self._val_shape = None
 
+
     def close(self):
         """Close the map.
 
         For Exascale FastForward.
         """
         self.id._close_ff(es=self.container.es.id)
+
 
     def count(self):
         """Count of key/value pairs.
@@ -88,13 +91,14 @@ class Map(HLObject):
         """
         return self.id.get_count_ff(self.container.rc.id, es=self.container.es.id)
 
+
     def __len__(self):
         """Count of key/value pairs.
 
         For Exascale FastForward.
         """
-        #return self.count(self._rcid, esid=self._esid)
-        raise NotImplementedError("__len__() not supported, use Map.count()")
+        return self.count()
+
 
     def get(self, key):
         """Read the value for the given key.
@@ -111,13 +115,14 @@ class Map(HLObject):
             return val[()]
         return val
 
+
     def __getitem__(self, key):
         """Get the value for the given map's key.
 
         For Exascale FastForward.
         """
-        #return self.get(key, self._rcid, esid=self._esid)
-        raise NotImplementedError("__getitem__() not supported, use Map.get()")
+        return self.get(key)
+
 
     def set(self, key, value):
         """Set the value for the given key of the map object.
@@ -143,10 +148,11 @@ class Map(HLObject):
 
         self.id.set_ff(key, value, self.container.tr.id, es=self.container.es.id)
 
+
     def __setitem__(self, key, value):
         """Set the value of the map's key"""
-        # self.set(key, value, self._trid, esid=self._esid)
-        raise NotImplementedError("__setitem__ not supported, use Map.set()")
+        self.set(key, value)
+
 
     def key_type(self):
         """Return map's key datatype
@@ -156,6 +162,7 @@ class Map(HLObject):
         t = self.id.get_types_ff(self.container.rc.id, es=self.container.es.id)
         return datatype.Datatype(t[0])
 
+
     def value_type(self):
         """Return map's value datatype
 
@@ -163,6 +170,7 @@ class Map(HLObject):
         """
         t = self.id.get_types_ff(self.container.rc.id, es=self.container.es.id)
         return datatype.Datatype(t[1])
+
 
     def delete(self, key):
         """Delete a key/value pair from the map object.
@@ -172,11 +180,11 @@ class Map(HLObject):
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
         self.id.delete_ff(key, self.container.tr.id, es=self.container.es.id)
 
+
     def __delitem__(self, key):
         """ Delete the map's key """
-        # self.delete(key, self._trid, esid=self._esid)
-        raise \
-            NotImplementedError("__delitem__() not supported, use Map.delete()")
+        self.delete(key)
+
 
     def exists(self, key):
         """Determine whether a key exists in the map object.
@@ -186,8 +194,7 @@ class Map(HLObject):
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
         return self.id.exists_ff(key, self.container.rc.id, es=self.container.es.id)
 
+
     def __contains__(self, key):
         """Test if key is in the map"""
-        # return self.exists(key, self._rcid, esid=self._esid)
-        raise \
-            NotImplementedError("__contains__() not supported, use Map.exists()")
+        return self.exists(key)
