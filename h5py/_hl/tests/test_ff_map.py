@@ -482,3 +482,98 @@ class TestMap(BaseTest):
 
         f.close()
         eff_finalize()
+
+
+    def test_map_kv_ops_w_special(self):
+        """ Map get/set/delete/exists key/value ops using special methods
+        """
+        from mpi4py import MPI
+
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        my_rank = comm.Get_rank()
+        es = EventStack()
+        fname = self.filename("ff_file_map.h5")
+        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.es = es
+        my_version = 1
+        version = f.acquire_context(my_version)
+        self.assertEqual(my_version, version)
+
+        comm.Barrier()
+
+        if my_rank == 0:
+            f.create_transaction(2)
+            f.tr.start()
+
+            m = f.create_map('test_map', key_dtype='S7', val_dtype='int64')
+            m['a'] = 1
+            m['b'] = 2
+            m[1] = 3 # will convert key to string '1'
+            m['12345678'] = 4 # will clip key to 7 chars
+
+            f.tr.finish()
+            f.tr.close()
+
+        f.rc.release()
+        comm.Barrier()
+        f.rc.close()
+
+        my_version = 2
+        version = f.acquire_context(2)        
+        self.assertEqual(my_version, version)
+
+        comm.Barrier()
+
+        if my_rank == 0:
+            self.assertTrue('a' in m)
+            self.assertTrue('b' in m)
+            self.assertFalse('c' in m)
+            self.assertTrue('1' in m)
+            self.assertTrue(1 in m)
+            self.assertTrue('1234567' in m)
+            self.assertEqual(len(m), 4)
+
+            # Close the map object so it can be opened get() operations...
+            m.close()
+            m = f.open_map('test_map')
+
+            self.assertEqual(m['a'], 1)
+            self.assertEqual(m['b'], 2)
+            self.assertEqual(m['1'], 3)
+            self.assertEqual(m[1], 3)
+            self.assertEqual(m['1234567'], 4)
+
+            # Delete some key-value pairs...
+            f.create_transaction(3)
+            f.tr.start()
+            del m['b']
+            del m['1234567']
+            f.tr.finish()
+            f.tr.close()
+
+        f.rc.release()
+        comm.Barrier()
+        f.rc.close()
+
+        my_version = 3
+        version = f.acquire_context(3)
+        self.assertEqual(my_version, version)
+
+        comm.Barrier()
+
+        if my_rank == 0:
+            self.assertTrue('a' in m)
+            self.assertFalse('b' in m)
+            self.assertTrue('1' in m)
+            self.assertFalse('1234567' in m)
+            self.assertEqual(len(m), 2)
+
+        m.close()
+
+        f.rc.release()
+        comm.Barrier()
+        f.rc.close()
+
+        f.close()
+        eff_finalize()
