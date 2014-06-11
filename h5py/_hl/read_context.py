@@ -75,17 +75,17 @@ class ReadContext(object):
         """Copy data for the container from IOD to DAOS up to specified
         container version.
         """
-        self._id.persist(es=self._cnt.es.id)
+        self._id.persist(es=self._ctn.es.id)
 
 
     def release(self):
         """Close the read context and release the read handle for the associated
         container version.
         """
-        self._id.release(es=self._cnt.es.id)
+        self._id.release(es=self._ctn.es.id)
 
 
     def make_snapshot(self, name):
         """Make a named snapshot of the container on DAOS.
         """
-        self._id.snapshot(name, es=self._cnt.es.id)
+        self._id.snapshot(name, es=self._ctn.es.id)
