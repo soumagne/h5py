@@ -1,14 +1,19 @@
 #!/usr/bin/env python
 
-# Make sure that HDF5_FF library is found...
+# Make sure correct h5py module is imported...
+import os
 import sys
-sys.path.insert(1, "../build/lib.linux-x86_64-2.6")
+curr_dir = os.path.abspath(os.path.dirname(__file__))
+h5py_dir = os.path.abspath(os.path.join(curr_dir, os.path.pardir,
+                                        "build", "lib.linux-x86_64-2.6"))
+if not os.path.isdir(h5py_dir):
+    raise RuntimeError('%s: Not a directory' % h5py_dir)
+sys.path.insert(1, h5py_dir)
 #print 'sys.path = ', sys.path
 
 from mpi4py import rc
 rc.initialize = False
 
-import os
 from mpi4py import MPI
 from h5py import h5, File, EventStack
 from h5py.eff_control import eff_init as EFF_init, eff_finalize as EFF_finalize
