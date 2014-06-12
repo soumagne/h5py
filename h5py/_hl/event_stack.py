@@ -15,6 +15,21 @@ _status = {"in_progress": h5es.STATUS_IN_PROGRESS,
            "cancel": h5es.STATUS_CANCEL}
 
 
+class _EventStackNull(object):
+    """Represents H5_EVENT_STACK_NULL"""
+
+    @property
+    def id(self):
+        return None
+
+
+    def __init__(self):
+        pass
+
+
+es_null = _EventStackNull()
+
+
 class EventStack(object):
     """
     Represents an HDF5 event stack.
@@ -100,7 +115,3 @@ class EventStack(object):
         """
         s = self.id.wait_all()
         return _status[s]
-
-
-# Repesents H5_EVENT_STACK_NULL: es_null.id evaluates to None.
-es_null = EventStack()
