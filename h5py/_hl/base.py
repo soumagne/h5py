@@ -13,6 +13,7 @@ import os
 import sys
 
 from h5py import h5d, h5i, h5r, h5p, h5f, h5t, h5o
+from .event_stack import es_null
 
 py3 = sys.version_info[0] == 3
 
@@ -192,18 +193,75 @@ class HLObject(CommonStateObject):
         import files
         return files.File(self.id)
 
+
     @property
-    def container(self):
+    def ctn(self):
         """ Return the container (file) instance of this object. This property
         provides exactly the same functionality as the above 'file' but is
         guaranteed to work for the FastForward HDF5 version. """
         import files
-        if self._container is None:
+        if self._ctn is None:
             if isinstance(self, files.File):
                 return self
-            else:
-                raise ValueError("The container property cannot be None")
-        return self._container
+        return self._ctn
+
+
+    @property
+    def rc(self):
+        """ Hold the ReadContext object associated with this object """
+        if not self.ctn:
+            return self._rc
+        else:
+            self.ctn.rc
+
+
+    @rc.setter
+    def rc(self, obj):
+        """Set the read context object to use in all object's operations."""
+        if not self.ctn:
+            self._rc = obj
+        else:
+            raise RuntimeError("Cannot set read context object when container "
+                               "is reachable")
+
+
+    @property
+    def tr(self):
+        """ Hold the Transaction object associated with this object """
+        if not self.ctn:
+            return self._tr
+        else:
+            self.ctn.tr
+
+
+    @tr.setter
+    def tr(self, obj):
+        """Set the transaction object to use in all object operations"""
+        if not self.ctn:
+            self._tr = obj
+        else:
+            raise RuntimeError("Cannot set transaction object when container "
+                               "is reachable")
+
+
+    @property
+    def es(self):
+        """ Hold current EventStack object for this object """
+        if not self.ctn:
+            return self._es
+        else:
+            self.ctn.es
+
+
+    @es.setter
+    def es(self, obj):
+        """ Accept EventStack object to be used """
+        if not self.ctn:
+            self._es = obj
+        else:
+            raise RuntimeError("Cannot set event stack object when container "
+                               "is reachable")
+
 
     @property
     def name(self):
@@ -263,7 +321,10 @@ class HLObject(CommonStateObject):
     def __init__(self, oid):
         """ Setup this object, given its low-level identifier """
         self._id = oid
-        self._container = None
+        self._ctn = None
+        self._tr = None
+        self._rc = None
+        self._es = es_null
 
     def __hash__(self):
         return hash(self.id)
