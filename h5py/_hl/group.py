@@ -32,7 +32,7 @@ class Group(Index, HLObject, DictCompat):
         if not isinstance(bind, h5g.GroupID):
             raise ValueError("%s is not a GroupID" % bind)
         HLObject.__init__(self, bind)
-        self._container = container
+        self._ctn = container
 
     def create_group(self, name):
         """ Create and return a new subgroup.
@@ -41,14 +41,14 @@ class Group(Index, HLObject, DictCompat):
         exists.
         """
         name, lcpl = self._e(name, lcpl=True)
-        gid = h5g.create(self.id, name, self.container.tr.id, lcpl=lcpl,
-                         esid=self.container.es.id)
-        return Group(gid, container=self.container)
+        gid = h5g.create(self.id, name, self.tr.id, lcpl=lcpl,
+                         esid=self.es.id)
+        return Group(gid, container=self.ctn)
 
 
     def close(self):
         """Close the group."""
-        self.id._close(esid=self.container.es.id)
+        self.id._close(esid=self.es.id)
 
     # def create_dataset(self, name, shape=None, dtype=None, data=None, **kwds):
     #     """ Create a new HDF5 dataset
@@ -154,9 +154,9 @@ class Group(Index, HLObject, DictCompat):
         track_times
             (T/F) Enable dataset creation timestamps.
         """
-        dsid = dataset.make_new_dset_ff(self, name, self.container.tr, shape,
-                                        dtype, data, es=self.container.es, **kwds)
-        dset = dataset.Dataset(dsid, container=self.container)
+        dsid = dataset.make_new_dset_ff(self, name, self.tr, shape, dtype, data,
+                                        es=self.es, **kwds)
+        dset = dataset.Dataset(dsid, container=self.ctn)
         if name is not None:
             self[name] = dset
         return dset
@@ -175,10 +175,9 @@ class Group(Index, HLObject, DictCompat):
         """
         if name is None:
             raise ValueError("New map object requires a name")
-        mapid = maps.make_new_map(self, self._e(name), self.container.tr,
-                                  self.container.es, kdt=key_dtype,
-                                  vdt=val_dtype, **kwds)
-        mp = maps.Map(mapid, container=self.container)
+        mapid = maps.make_new_map(self, self._e(name), self.tr, self.es,
+                                  kdt=key_dtype, vdt=val_dtype, **kwds)
+        mp = maps.Map(mapid, container=self.ctn)
         self[name] = mp
         return mp
 
@@ -190,41 +189,30 @@ class Group(Index, HLObject, DictCompat):
         """
         if name is None:
             raise ValueError("Need a map name to open it")
-        mapid = h5m.open_ff(self.id, name, self.container.rc.id,
-                            es=self.container.es.id)
-        return maps.Map(mapid, container=self.container)
+        mapid = h5m.open_ff(self.id, name, self.rc.id, es=self.es.id)
+        return maps.Map(mapid, container=self.ctn)
 
-    def open_map_by_token(self, token, trid, esid=None, **kwds):
+    def open_map_by_token(self, token, **kwds):
         """ Open an Exascale FastForward HDF5 map by token.
 
         token
             Token buffer. Required.
-        trid
-            Transaction object. Required.
-        esid
-            Event stack object. Default None.
         """
         if token is None:
             raise ValueError("Need a token buffer to open map")
-        self.set_tr_env(trid, esid=esid)
-        mapid = h5o.open_by_token(token, trid, es=esid)
+        mapid = h5o.open_by_token(token, self.tr.id, es=self.es.id)
         return maps.Map(mapid)
 
-    def open_dataset_by_token(self, token, trid, esid=None, **kwds):
+    def open_dataset_by_token(self, token, **kwds):
         """ Open an Exascale FastForward HDF5 dataset by token.
 
         token
             Token buffer. Required.
-        trid
-            Transaction object. Required.
-        esid
-            Event stack object. Default None.
         """
         if token is None:
             raise ValueError("Need a token buffer to open dataset")
-        self.set_tr_env(trid, esid=esid)
-        dsid = h5o.open_by_token(token, trid, es=esid)
-        return dataset.Dataset(dsid, container=self.container)
+        dsid = h5o.open_by_token(token, self.tr.id, es=self.es.id)
+        return dataset.Dataset(dsid, container=self.ctn)
 
     def require_dataset(self, name, shape, dtype, exact=False, **kwds):
         """ Open a dataset, creating it if it doesn't exist.
@@ -283,13 +271,14 @@ class Group(Index, HLObject, DictCompat):
             if oid is None:
                 raise ValueError("Invalid HDF5 object reference")
         else:
-            oid = h5o.open(self.id, self._e(name), lapl=self._lapl)
+            oid = h5o.open_ff(self.id, self._e(name), self.rc.id,
+                              lapl=self._lapl)
 
         otype = h5i.get_type(oid)
         if otype == h5i.GROUP:
-            return Group(oid)
+            return Group(oid, container=self.ctn)
         elif otype == h5i.DATASET:
-            return dataset.Dataset(oid)
+            return dataset.Dataset(oid, container=self.ctn)
         elif otype == h5i.DATATYPE:
             return datatype.Datatype(oid)
         else:
@@ -329,7 +318,8 @@ class Group(Index, HLObject, DictCompat):
             return default
 
         elif getclass and not getlink:
-            typecode = h5o.get_info(self.id, self._e(name)).type
+            typecode = h5o.get_info_ff(self.id, self._e(name), self.rc.id,
+                                       es=self.es.id).type
 
             try:
                 return {h5o.TYPE_GROUP: Group,
@@ -393,22 +383,23 @@ class Group(Index, HLObject, DictCompat):
             pass
 
         elif isinstance(obj, SoftLink):
-            self.id.links.create_soft_ff(name, self._e(obj.path),
-                                         self.container.tr.id, lcpl=lcpl,
-                                         lapl=self._lapl)
+            self.id.links.create_soft_ff(name, self._e(obj.path), self.tr.id,
+                                         lcpl=lcpl, lapl=self._lapl)
 
         elif isinstance(obj, ExternalLink):
             self.id.links.create_external(name, self._e(obj.filename),
-                          self._e(obj.path), lcpl=lcpl, lapl=self._lapl)
+                                          self._e(obj.path), lcpl=lcpl,
+                                          lapl=self._lapl)
 
         elif isinstance(obj, numpy.dtype):
             htype = h5t.py_create(obj)
             htype.commit(self.id, name, lcpl=lcpl)
 
         else:
-            ds = self.create_dataset(None, data=obj, dtype=base.guess_dtype(obj))
-            h5o.link_ff(obj.id, self.id, name, self.container.tr.id, lcpl=lcpl,
-                        lapl=self._lapl, es=self.container.es.id)
+            ds = self.create_dataset(None, data=obj,
+                                     dtype=base.guess_dtype(obj))
+            h5o.link_ff(obj.id, self.id, name, self.tr.id, lcpl=lcpl,
+                        lapl=self._lapl, es=self.es.id)
 
     def __delitem__(self, name):
         """ Delete (unlink) an item from this group. """
@@ -575,7 +566,8 @@ class Group(Index, HLObject, DictCompat):
         if not self:
             r = u"<Closed HDF5 group>"
         else:
-            namestr = (u'"%s"' % self.name) if self.name is not None else u"(anonymous)"
+            namestr = (u'"%s"' % self.name) if self.name is not None \
+                                            else u"(anonymous)"
             r = u'<HDF5 group %s (%d members)>' % (namestr, len(self))
 
         if py3:
