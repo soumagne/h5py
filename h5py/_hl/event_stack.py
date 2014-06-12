@@ -100,3 +100,7 @@ class EventStack(object):
         """
         s = self.id.wait_all()
         return _status[s]
+
+
+# Repesents H5_EVENT_STACK_NULL: es_null.id evaluates to None.
+es_null = EventStack()
