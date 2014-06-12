@@ -15,7 +15,7 @@ from .base import HLObject, py3
 from .group import Group
 from .read_context import make_rcapl, ReadContext
 from .transaction import Transaction
-from .event_stack import EventStack
+from .event_stack import es_null
 from h5py import h5, h5f, h5p, h5i, h5fd, h5t, h5rc, h5tr, _objects
 from h5py import version
 
@@ -65,7 +65,8 @@ def make_fapl(driver, libver, **kwds):
     return plist
 
 
-def make_fid(name, mode, userblock_size, fapl, es, fcpl=None, with_rc=False):
+def make_fid(name, mode, userblock_size, fapl, es=es_null, fcpl=None,
+             with_rc=False):
     """ Get a new FileID by opening or creating a file.
     Also validates mode argument.
     
@@ -94,7 +95,8 @@ def make_fid(name, mode, userblock_size, fapl, es, fcpl=None, with_rc=False):
         (fid, rcid) = h5f.open(name, h5f.ACC_RDONLY, fapl=fapl, rc=with_rc,
                                es=es.id)
     elif mode == 'r+':
-        (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc, es=es.id)
+        (fid, rcid) = h5f.open(name, h5f.ACC_RDWR, fapl=fapl, rc=with_rc,
+                               es=es.id)
     elif mode == 'w-':
         with_rc = False # This flag is meaningless for create()
         fid = h5f.create(name, h5f.ACC_EXCL, fapl=fapl, fcpl=fcpl, es=es.id)
@@ -181,32 +183,6 @@ class File(Group):
         fcpl = self.fid.get_create_plist()
         return fcpl.get_userblock()
 
-    @property
-    def rc(self):
-        """ Hold the ReadContext object associated with the file """
-        return self._rc
-
-
-    @property
-    def tr(self):
-        """ Hold the Transaction object associated with the file """
-        return self._tr
-
-
-    @property
-    def es(self):
-        """ Hold current EventStack object for all file's objects """
-        return self._es
-
-
-    @es.setter
-    def es(self, obj):
-        """ Accept EventStack object to be used by all file's object """
-        if not isinstance(obj, EventStack):
-            raise TypeError("%s not EventStack object" % obj)
-        self._es = obj
-
-
     if mpi and hdf5_version >= (1, 8, 9):
 
         @property
@@ -220,8 +196,8 @@ class File(Group):
             self.id.set_mpi_atomicity(value)
 
 
-    def __init__(self, name, es, mode=None, driver=None, libver=None,
-                 userblock_size=None, with_rc=False, **kwds):
+    def __init__(self, name, mode=None, driver=None, libver=None,
+                 userblock_size=None, with_rc=False, es=es_null, **kwds):
         """Create a new file object.
 
         See the h5py user guide for a detailed explanation of the options.
@@ -230,8 +206,7 @@ class File(Group):
             Name of the file on disk.  Note: for files created with the 'core'
             driver, HDF5 still requires this be non-empty.
         es
-            Exascale FastForward event stack identifier object
-            (EventStack). Required.
+            Exascale FastForward event stack object (EventStack).
         driver
             Name of the driver to use.  Legal values are None (default,
             recommended), 'core', 'sec2', 'stdio', 'mpio', 'iod'.
@@ -260,11 +235,13 @@ class File(Group):
 
             fapl = make_fapl(driver, libver, **kwds)
 
-            (fid, rcid) = make_fid(name, mode, userblock_size, fapl, es, with_rc=with_rc)
-            self._rc = ReadContext(rcid) if rcid is not None else None
-            self._tr = None
+            (fid, rcid) = make_fid(name, mode, userblock_size, fapl, es,
+                                   with_rc=with_rc)
 
         Group.__init__(self, fid)
+        self._rc = ReadContext(rcid) if rcid is not None else None
+        self._tr = None
+        self.es = es
 
 
     def close(self, persist=True):
@@ -291,7 +268,7 @@ class File(Group):
     def create_context(self, version):
         """ Create a read context on the container at requested version.
         """
-        self._rc = ReadContext(h5rc.create(self.id, version), container=self)
+        self.rc = ReadContext(h5rc.create(self.id, version), container=self)
 
 
     def acquire_context(self, version=0, req="exact"):
@@ -318,7 +295,7 @@ class File(Group):
         """Create a transaction associated with the container, read
         context, and transaction number.
         """
-        self._tr = Transaction(self, self.rc, transaction_number)
+        self.tr = Transaction(self, self.rc, transaction_number)
 
 
     def skip_transaction(self, start_trans_number, skip=1):
