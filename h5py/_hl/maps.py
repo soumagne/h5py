@@ -69,7 +69,7 @@ class Map(HLObject):
         if not isinstance(mapid, h5m.MapID):
             raise TypeError("%s is not a MapID object" % mapid)
         HLObject.__init__(self, mapid)
-        self._container = container
+        self._ctn = container
 
         # Shapes for storing key and value data...
         self._key_shape = None
@@ -81,7 +81,7 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        self.id._close_ff(es=self.container.es.id)
+        self.id._close_ff(es=self.es.id)
 
 
     def count(self):
@@ -89,7 +89,7 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        return self.id.get_count_ff(self.container.rc.id, es=self.container.es.id)
+        return self.id.get_count_ff(self.rc.id, es=self.es.id)
 
 
     def __len__(self):
@@ -110,7 +110,7 @@ class Map(HLObject):
         vdt = readtime_dtype(self.val_dtype.dtype, [])
         val = numpy.ndarray(self.val_shape, dtype=vdt, order='C')
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
-        self.id.get_ff(key, val, self.container.rc.id, es=self.container.es.id)
+        self.id.get_ff(key, val, self.rc.id, es=self.es.id)
         if len(val.shape) == 0:
             return val[()]
         return val
@@ -146,7 +146,7 @@ class Map(HLObject):
             raise ValueError("Value shape mismatch; got %s, expected %s" %
                              (value.shape, self._val_shape))
 
-        self.id.set_ff(key, value, self.container.tr.id, es=self.container.es.id)
+        self.id.set_ff(key, value, self.tr.id, es=self.es.id)
 
 
     def __setitem__(self, key, value):
@@ -159,7 +159,7 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        t = self.id.get_types_ff(self.container.rc.id, es=self.container.es.id)
+        t = self.id.get_types_ff(self.rc.id, es=self.es.id)
         return datatype.Datatype(t[0])
 
 
@@ -168,7 +168,7 @@ class Map(HLObject):
 
         For Exascale FastForward.
         """
-        t = self.id.get_types_ff(self.container.rc.id, es=self.container.es.id)
+        t = self.id.get_types_ff(self.rc.id, es=self.es.id)
         return datatype.Datatype(t[1])
 
 
@@ -178,7 +178,7 @@ class Map(HLObject):
         For Exascale FastForward.
         """
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
-        self.id.delete_ff(key, self.container.tr.id, es=self.container.es.id)
+        self.id.delete_ff(key, self.tr.id, es=self.es.id)
 
 
     def __delitem__(self, key):
@@ -192,7 +192,7 @@ class Map(HLObject):
         For Exascale FastForward.
         """
         key = numpy.asarray(key, order='C', dtype=self.key_dtype.dtype)
-        return self.id.exists_ff(key, self.container.rc.id, es=self.container.es.id)
+        return self.id.exists_ff(key, self.rc.id, es=self.es.id)
 
 
     def __contains__(self, key):
