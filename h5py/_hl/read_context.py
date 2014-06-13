@@ -63,7 +63,7 @@ class ReadContext(object):
         else:
             v = self._id.get_version()
             return "<HDF5 read context at version %d (%s)>" \
-                % (v, id(self._id))
+                % (v, hex(id(self)))
 
 
     def close(self):

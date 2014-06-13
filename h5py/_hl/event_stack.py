@@ -27,6 +27,10 @@ class _EventStackNull(object):
         pass
 
 
+    def __repr__(self):
+        return "<HDF5 H5_EVENT_STACK_NULL (%s)>" % hex(id(self))
+
+
 es_null = _EventStackNull()
 
 
@@ -52,7 +56,7 @@ class EventStack(object):
         if not self._id:
             return "<HDF5 closed event stack>"
         else:
-            return "<HDF5 event stack (%s)>" % id(self._id)
+            return "<HDF5 event stack (%s)>" % hex(id(self._id))
 
 
     def create(self):

@@ -59,7 +59,7 @@ class Transaction(object):
         else:
             v = self._id.get_version()
             return "<HDF5 transaction at version %d (%s)>" \
-                % (v, id(self._id))
+                % (v, hex(id(self._id)))
 
 
     def close(self):
