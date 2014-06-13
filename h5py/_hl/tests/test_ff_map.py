@@ -131,6 +131,24 @@ class TestMap(BaseTest):
             m = grp2.create_map('empty_map')
             self.assertIsInstance(m, Map)
             self.assertIsInstance(m.id, h5m.MapID)
+
+            self.assertIsNone(f.ctn)
+            self.assertEqual(str(grp1.ctn), str(f))
+            self.assertEqual(str(grp2.ctn), str(grp1.ctn))
+            self.assertEqual(str(m.ctn), str(grp2.ctn))
+
+            self.assertEqual(str(grp1.tr), str(f.tr))
+            self.assertEqual(str(grp2.tr), str(grp1.tr))
+            self.assertEqual(str(m.tr), str(grp2.tr))
+
+            self.assertEqual(str(grp1.rc), str(f.rc))
+            self.assertEqual(str(grp2.rc), str(grp1.rc))
+            self.assertEqual(str(m.rc), str(grp2.rc))
+
+            self.assertEqual(str(grp1.es), str(f.es))
+            self.assertEqual(str(grp2.es), str(grp1.es))
+            self.assertEqual(str(m.es), str(grp2.es))
+
             m.close()
 
             f.tr.finish()
