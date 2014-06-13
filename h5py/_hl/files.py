@@ -241,7 +241,7 @@ class File(Group):
         Group.__init__(self, fid)
         self._rc = ReadContext(rcid) if rcid is not None else None
         self._tr = None
-        self.es = es
+        self._es = es
 
 
     def close(self, persist=True):

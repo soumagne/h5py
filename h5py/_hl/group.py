@@ -21,6 +21,17 @@ from . import maps
 from .index import Index
 
 
+def _ctn_helper(obj):
+    """Helper function to determine correct source of container object to pass
+    on.
+    """
+    from .files import File
+    if isinstance(obj, File):
+        return obj
+    else:
+        return obj.ctn
+
+
 class Group(Index, HLObject, DictCompat):
 
     """ Represents an Exascale FastForward HDF5 group.
@@ -43,7 +54,8 @@ class Group(Index, HLObject, DictCompat):
         name, lcpl = self._e(name, lcpl=True)
         gid = h5g.create(self.id, name, self.tr.id, lcpl=lcpl,
                          esid=self.es.id)
-        return Group(gid, container=self.ctn)
+        ctn = _ctn_helper(self)
+        return Group(gid, container=ctn)
 
 
     def close(self):
@@ -156,7 +168,8 @@ class Group(Index, HLObject, DictCompat):
         """
         dsid = dataset.make_new_dset_ff(self, name, self.tr, shape, dtype, data,
                                         es=self.es, **kwds)
-        dset = dataset.Dataset(dsid, container=self.ctn)
+        ctn = _ctn_helper(self)
+        dset = dataset.Dataset(dsid, container=ctn)
         if name is not None:
             self[name] = dset
         return dset
@@ -177,7 +190,8 @@ class Group(Index, HLObject, DictCompat):
             raise ValueError("New map object requires a name")
         mapid = maps.make_new_map(self, self._e(name), self.tr, self.es,
                                   kdt=key_dtype, vdt=val_dtype, **kwds)
-        mp = maps.Map(mapid, container=self.ctn)
+        ctn = _ctn_helper(self)
+        mp = maps.Map(mapid, container=ctn)
         self[name] = mp
         return mp
 
@@ -190,7 +204,8 @@ class Group(Index, HLObject, DictCompat):
         if name is None:
             raise ValueError("Need a map name to open it")
         mapid = h5m.open_ff(self.id, name, self.rc.id, es=self.es.id)
-        return maps.Map(mapid, container=self.ctn)
+        ctn = _ctn_helper(self)
+        return maps.Map(mapid, container=ctn)
 
     def open_map_by_token(self, token, **kwds):
         """ Open an Exascale FastForward HDF5 map by token.

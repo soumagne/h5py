@@ -31,10 +31,8 @@ EFF_init(comm, MPI.INFO_NULL)
 my_rank = comm.Get_rank()
 my_size = comm.Get_size()
 print 'size = %d; rank = %d' % (my_size, my_rank)
-es = EventStack()
-f = File(os.environ["USER"]+"_ff_file_ex1.h5", es, mode='w', driver='iod',
+f = File(os.environ["USER"]+"_ff_file_ex1.h5", mode='w', driver='iod',
          comm=comm, info=MPI.INFO_NULL)
-f.es = es
 my_version = 1
 version = f.acquire_context(my_version)
 print "Requested read context version = %d" % my_version
@@ -46,11 +44,31 @@ if my_rank == 0:
     f.create_transaction(2)
     f.tr.start()
 
+    print ">>>>>>>"
+    print "f.ctn =", f.ctn
+    print "f.tr =", f.tr
+    print "f.rc =", f.rc
+    print "f.es =", f.es
+    print "<<<<<<"
+
     grp1 = f.create_group("G1")
+    print ">>>>>>>"
+    print "grp1.ctn =", grp1.ctn
+    print "grp1.tr =", grp1.tr
+    print "grp1.rc =", grp1.rc
+    print "grp1.es =", grp1.es
+    print "<<<<<<"
+
     grp2 = grp1.create_group("G2")
+    print ">>>>>>>"
+    print "grp2.ctn =", grp2.ctn
+    print "grp2.tr =", grp2.tr
+    print "grp2.rc =", grp2.rc
+    print "grp2.es =", grp2.es
+    print "<<<<<<"
 
     f.tr.finish()
-#    f.tr._close()
+#    f.tr.close()
 
 
 f.rc.release()
@@ -61,7 +79,7 @@ if my_rank == 0:
     grp1.close()
     grp2.close()
 
-#f.rc._close()
+#f.rc.close()
 f.close()
 #es.close()
 #comm.Barrier()
