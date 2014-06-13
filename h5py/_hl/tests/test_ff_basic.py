@@ -3,7 +3,8 @@
 import os
 from .common_ff import TestCaseFF
 from h5py import h5
-
+from h5py.highlevel import EventStack
+from h5py._hl.event_stack import es_null
 
 if not h5.get_config().eff:
     raise RuntimeError('The h5py module was not built for Exascale FastForward')
@@ -58,3 +59,33 @@ class TestWorkEnv(TestCaseFF):
         from  mpi4py import MPI
         comm = MPI.COMM_WORLD
         self.assertIsInstance(comm, MPI.Intracomm)
+
+
+
+class TestEventStack(TestCaseFF):
+    """Event stack basic operations"""
+
+    def setUp(self):
+        pass
+
+
+    def tearDown(self):
+        pass
+
+
+    def test_event_stack(self):
+        """Event stack create ops"""
+        es = EventStack()
+        self.assertIsInstance(es, EventStack)
+        self.assertIsNone(es.id)
+        es.create()
+        self.assertIsInstance(es.id, h5es.EventStackID)
+        es.close()
+        elf.assertIsNone(es.id)
+
+
+    def test_es_null(self):
+        """es_null (H5_STACK_NULL) object"""
+        self.assertIsNone(es_null.id)
+        with self.assertRaises(AttributeError):
+            es_null.create()

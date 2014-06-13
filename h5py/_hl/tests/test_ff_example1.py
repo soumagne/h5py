@@ -42,12 +42,6 @@ class TestExample1(BaseTest):
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
 
-        es = EventStack()
-        self.assertIsInstance(es, EventStack)
-        self.assertIsNone(es.id)
-        es.create()
-        self.assertIsInstance(es.id, h5es.EventStackID)
-        
         fname = self.filename("ff_file_ex1.h5")
         f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         
