@@ -5,14 +5,8 @@ from .common_ff import TestCaseFF
 from h5py import h5
 
 
-# Check if this HDF5 is built with MPI and for EFF...
-mpi = h5.get_config().mpi
-if not mpi:
-    raise RuntimeError('This HDF5 does not appear to be built with MPI')
-eff = h5.get_config().eff
-if not eff:
+if not h5.get_config().eff:
     raise RuntimeError('The h5py module was not built for Exascale FastForward')
-
 
 
 

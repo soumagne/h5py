@@ -199,10 +199,6 @@ class HLObject(CommonStateObject):
         """ Return the container (file) instance of this object. This property
         provides exactly the same functionality as the above 'file' but is
         guaranteed to work for the FastForward HDF5 version. """
-        # import files
-        # if self._ctn is None:
-        #     if isinstance(self, files.File):
-        #         return self
         return self._ctn
 
 

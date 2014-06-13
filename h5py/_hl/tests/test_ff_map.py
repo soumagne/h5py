@@ -6,7 +6,7 @@ from .common_ff import ut, TestCaseFF
 from h5py import h5
 from h5py.eff_control import eff_init, eff_finalize
 
-from h5py.highlevel import EventStack, File, Map
+from h5py.highlevel import File, Map
 
 # Check if this HDF5 is built with MPI and for EFF...
 eff = h5.get_config().eff
@@ -38,10 +38,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -76,10 +74,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -117,10 +113,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -160,10 +154,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -222,10 +214,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -266,10 +256,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -308,10 +296,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -365,10 +351,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
@@ -492,10 +476,8 @@ class TestMap(BaseTest):
         comm = MPI.COMM_WORLD
         eff_init(comm, MPI.INFO_NULL)
         my_rank = comm.Get_rank()
-        es = EventStack()
         fname = self.filename("ff_file_map.h5")
-        f = File(fname, es, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
-        f.es = es
+        f = File(fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
         my_version = 1
         version = f.acquire_context(my_version)
         self.assertEqual(my_version, version)
