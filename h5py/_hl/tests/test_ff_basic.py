@@ -2,7 +2,7 @@
 
 import os
 from .common_ff import TestCaseFF
-from h5py import h5
+from h5py import h5, h5es
 from h5py.highlevel import EventStack
 from h5py._hl.event_stack import es_null
 
@@ -81,7 +81,7 @@ class TestEventStack(TestCaseFF):
         es.create()
         self.assertIsInstance(es.id, h5es.EventStackID)
         es.close()
-        elf.assertIsNone(es.id)
+        self.assertIsNone(es.id)
 
 
     def test_es_null(self):
