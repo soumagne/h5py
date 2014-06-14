@@ -2,8 +2,8 @@
 
 import os
 from .common_ff import TestCaseFF
-from h5py import h5
-from h5py.highlevel import EventStack, h5es, h5i
+from h5py import h5, h5es, h5i
+from h5py.highlevel import EventStack
 from h5py._hl.event_stack import es_null
 
 if not h5.get_config().eff:
