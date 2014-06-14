@@ -3,7 +3,7 @@
 import os
 from .common_ff import TestCaseFF
 from h5py import h5
-from h5py.highlevel import EventStack
+from h5py.highlevel import EventStack, h5es, h5i
 from h5py._hl.event_stack import es_null
 
 if not h5.get_config().eff:
@@ -80,8 +80,9 @@ class TestEventStack(TestCaseFF):
         self.assertIsNone(es.id)
         es.create()
         self.assertIsInstance(es.id, h5es.EventStackID)
+        self.assertTrue(es.id.valid)
         es.close()
-        elf.assertIsNone(es.id)
+        self.assertFalse(es.id.valid)
 
 
     def test_es_null(self):
@@ -89,3 +90,10 @@ class TestEventStack(TestCaseFF):
         self.assertIsNone(es_null.id)
         with self.assertRaises(AttributeError):
             es_null.create()
+
+
+    def test_h5ies(self):
+        """H5Iget_type() value for event stack object"""
+        es = EventStack()
+        es.create()
+        self.assertEqual(h5i.get_type(es.id), h5i.ES)
