@@ -337,7 +337,7 @@ class Dataset(Index, HLObject):
         
         For Exascale FastForward.
         """
-        self.id._close(esid=self.es.id)
+        self.id._close_ff(es=self.es.id)
 
     def resize(self, size, axis=None):
         """ Resize the dataset, or the specified axis.
