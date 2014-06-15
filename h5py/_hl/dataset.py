@@ -330,14 +330,14 @@ class Dataset(Index, HLObject):
         self._filters = filters.get_filters(self._dcpl)
         self._local = local()
         self._local.astype = None
-        self._container = container
+        self._ctn = container
 
     def close(self):
         """Close the dataset.
         
         For Exascale FastForward.
         """
-        self.id._close(esid=self.container.es.id)
+        self.id._close(esid=self.es.id)
 
     def resize(self, size, axis=None):
         """ Resize the dataset, or the specified axis.
@@ -369,7 +369,7 @@ class Dataset(Index, HLObject):
             size[axis] = newlen
 
         size = tuple(size)
-        self.id.set_extent_ff(size, self.container.tr.id, es=self.container.es.id)
+        self.id.set_extent_ff(size, self.tr.id, es=self.es.id)
         #h5f.flush(self.id)  # THG recommends
 
     def __len__(self):
@@ -687,8 +687,7 @@ class Dataset(Index, HLObject):
             dest_sel = sel.select(dest.shape, dest_sel, self.id)
 
         for mspace in dest_sel.broadcast(source_sel.mshape):
-            self.id.read_ff(mspace, fspace, dest, self.container.rc.id,
-                            es=self.container.es.id)
+            self.id.read_ff(mspace, fspace, dest, self.rc.id, es=self.es.id)
 
     def write_direct(self, source, source_sel=None, dest_sel=None):
         """ Write data directly to HDF5 from a NumPy array.
@@ -712,8 +711,8 @@ class Dataset(Index, HLObject):
             dest_sel = sel.select(self.shape, dest_sel, self.id)
 
         for fspace in dest_sel.broadcast(source_sel.mshape):
-            self.id.write_ff(mspace, fspace, source, self.container.tr.id,
-                             es=self.container.es.id)
+            self.id.write_ff(mspace, fspace, source, self.tr.id,
+                             es=self.es.id)
 
     def __array__(self, dtype=None):
         """ Create a Numpy array containing the whole dataset.  DON'T THINK
