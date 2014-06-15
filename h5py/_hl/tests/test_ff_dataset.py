@@ -5,7 +5,8 @@ import sys
 import numpy as np
 from .common_ff import ut, TestCaseFF
 from h5py.highlevel import File, Group, Dataset
-from h5py import h5t
+from h5py.eff_control import eff_init, eff_finalize
+from h5py import h5t, h5
 import h5py
 
 if not h5.get_config().eff:
