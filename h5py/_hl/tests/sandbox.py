@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
+import os
 import sys
+# Figure out the h5py's import directory...
+curr_dir = os.path.abspath(os.path.dirname(__file__))
+h5py_dir = os.path.abspath(os.path.join(curr_dir, os.path.pardir,
+                                        os.path.pardir, os.path.pardir))
+sys.path.insert(1, sys.argv[1])
+
 import numpy as np
 from .common_ff import ut, TestCaseFF
 from h5py.highlevel import File, Group, Dataset
