@@ -393,7 +393,7 @@ cdef herr_t dset_rw_ff(hid_t dset, hid_t mtype, hid_t mspace, hid_t fspace,
         free(back_buf)
         free(conv_buf)
         if dstype > 0:
-            H5Tclose_ff(dstype, esid)
+            H5Tclose(dstype)
         if dspace > 0:
             H5Sclose(dspace)
         if cspace > 0:
