@@ -187,7 +187,6 @@ class TestDataset(BaseTest):
         f.rc.release()
         comm.Barrier()
         if rank == 0:
-            d1.close()
-            d2.close()
+            ds.close()
         f.close()
         eff_finalize()        

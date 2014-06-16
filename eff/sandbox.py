@@ -36,9 +36,9 @@ if my_rank == 0:
     f.create_transaction(2)
     f.tr.start()
 
-    dset = f.create_dataset('foo', ())
+    dset = f.create_dataset("/foo/bar/baz", shape=(10, 10), dtype='<i4')
     assert isinstance(dset, Dataset)
-    assert dset.shape == ()
+    assert "/foo/bar/baz" in f
 
     f.tr.finish()
 #    f.tr.close()
