@@ -190,3 +190,30 @@ class TestDataset(BaseTest):
             ds.close()
         f.close()
         eff_finalize()        
+
+
+    def test_reshape(self):
+        """ Create from existing data, and make it fit a new shape """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        f = File(self.fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.acquire_context(1)
+        comm.Barrier()
+        if rank == 0:
+            f.create_transaction(2)
+            f.tr.start()
+
+            data = np.arange(30, dtype='f')
+            dset = f.create_dataset('foo', shape=(10, 3), data=data)
+            self.assertEqual(dset.shape, (10, 3))
+            self.assertArrayEqual(dset[...], data.reshape((10, 3)))
+
+            f.tr.finish()
+        f.rc.release()
+        comm.Barrier()
+        if rank == 0:
+            dset.close()
+        f.close()
+        eff_finalize()        
