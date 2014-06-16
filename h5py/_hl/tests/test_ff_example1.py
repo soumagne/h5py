@@ -1,7 +1,7 @@
 # Test suite for Exascale FastForward "Example1".
 
 import os
-from .common_ff import TestCaseFF
+from .common_ff import ut, TestCaseFF
 from h5py import h5, h5es
 from h5py.eff_control import eff_init, eff_finalize
 from h5py.highlevel import File, EventStack
@@ -21,6 +21,7 @@ class BaseTest(TestCaseFF):
         pass
 
 
+@ut.skip('Test working')
 class TestExample1(BaseTest):
 
     def test_example1(self):

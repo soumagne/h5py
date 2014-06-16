@@ -17,8 +17,9 @@ if not mpi:
     raise RuntimeError('This HDF5 does not appear to be built with MPI support')
 
 
-class BaseTest(TestCaseFF):
-    
+@ut.skip('Test working')
+class TestMap(TestCaseFF):
+
     def setUp(self):
         self.ff_cleanup()
         self.start_h5ff_server()
@@ -27,8 +28,6 @@ class BaseTest(TestCaseFF):
     def tearDown(self):
         pass
 
-
-class TestMap(BaseTest):
 
     def test_create_map_root(self):
         """ Create an empty map in the root group """
