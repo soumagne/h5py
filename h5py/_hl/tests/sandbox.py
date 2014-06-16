@@ -1,62 +1,56 @@
 #!/usr/bin/env python
 
-# Make sure correct h5py module is imported...
-import os
 import sys
-curr_dir = os.path.abspath(os.path.dirname(__file__))
-h5py_dir = os.path.abspath(os.path.join(curr_dir, os.path.pardir,
-                                        "build", "lib.linux-x86_64-2.6"))
-if not os.path.isdir(h5py_dir):
-    raise RuntimeError('%s: Not a directory' % h5py_dir)
-sys.path.insert(1, h5py_dir)
-#print 'sys.path = ', sys.path
-
-from mpi4py import MPI
-from h5py.eff_control import eff_init, eff_finalize
-from h5py import h5, h5p, File, Dataset
 import numpy as np
+from .common_ff import ut, TestCaseFF
+from h5py.highlevel import File, Group, Dataset
+from h5py.eff_control import eff_init, eff_finalize
+from h5py import h5t, h5
+import h5py
 
-comm = MPI.COMM_WORLD
-eff_init(comm, MPI.INFO_NULL)
-my_rank = comm.Get_rank()
-my_size = comm.Get_size()
-print 'size = %d; rank = %d' % (my_size, my_rank)
-f = File(os.environ["USER"]+"_ff_file_ex1.h5", mode='w', driver='iod',
-         comm=comm, info=MPI.INFO_NULL)
-my_version = 1
-version = f.acquire_context(my_version)
-print "Requested read context version = %d" % my_version
-print "Acquired read context version = %d" % version
-
-comm.Barrier()
-
-##############
-
-if my_rank == 0:
-    f.create_transaction(2)
-    f.tr.start()
-
-    dset = f.create_dataset("/foo/bar/baz", shape=(10, 10), dtype='<i4')
-    assert isinstance(dset, Dataset)
-    assert "/foo/bar/baz" in f
-
-    f.tr.finish()
-#    f.tr.close()
+if not h5.get_config().eff:
+    raise RuntimeError('The h5py module was not built for Exascale FastForward')
 
 
-f.rc.release()
 
-comm.Barrier()
+class TestCases(TestCaseFF):
 
-if my_rank == 0:
-    dset.close()
-    # grp2.close()
+    def setUp(self):
+        self.ff_cleanup()
+        self.start_h5ff_server()
+        self.fname = self.filename("ff_file_dataset.h5")
 
-##############
-#f.rc.close()
-f.close()
-#es.close()
-#comm.Barrier()
-eff_finalize()
 
-print 'The End'
+    def tearDown(self):
+        pass
+
+
+    def test_reshape(self):
+        """ Create from existing data, and make it fit a new shape """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        f = File(self.fname, 'w', driver='iod', comm=comm, info=MPI.INFO_NULL)
+        f.acquire_context(1)
+        comm.Barrier()
+        if rank == 0:
+            f.create_transaction(2)
+            f.tr.start()
+
+            data = np.arange(30, dtype='f')
+            dset = f.create_dataset('foo', shape=(10, 3), data=data)
+            self.assertEqual(dset.shape, (10, 3))
+            self.assertArrayEqual(dset[...], data.reshape((10, 3)))
+
+            f.tr.finish()
+        f.rc.release()
+        comm.Barrier()
+        if rank == 0:
+            dset.close()
+        f.close()
+        eff_finalize()
+
+
+if __name__ == '__main__':
+    ut.main()
