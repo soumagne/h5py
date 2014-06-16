@@ -80,7 +80,6 @@ class TestDataset(BaseTest):
             self.assertEqual(dset.dtype, np.dtype('=f4'))
 
             self.assertIsNone(f.ctn)
-            self.assertEqual(str(g.ctn), str(f.ctn))
             self.assertEqual(str(dset.ctn), str(g.ctn))
 
             self.assertEqual(str(g.tr), str(f.tr))
@@ -115,12 +114,12 @@ class TestDataset(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            dset = f.create_dataset('foo', (63,))
-            self.assertEqual(dset.shape, (63,))
-            self.assertEqual(dset.size, 63)
-            dset = f.create_dataset('bar', (6, 10))
-            self.assertEqual(dset.shape, (6, 10))
-            self.assertEqual(dset.size, (60))
+            foo = f.create_dataset('foo', (63,))
+            self.assertEqual(foo.shape, (63,))
+            self.assertEqual(foo.size, 63)
+            bar = f.create_dataset('bar', (6, 10))
+            self.assertEqual(bar.shape, (6, 10))
+            self.assertEqual(bar.size, (60))
 
             with self.assertRaises(TypeError):
                 f.create_dataset('baz')
@@ -129,7 +128,8 @@ class TestDataset(BaseTest):
         f.rc.release()
         comm.Barrier()
         if rank == 0:
-            dset.close()
+            foo.close()
+            bar.close()
         f.close()
         eff_finalize()
 
@@ -165,6 +165,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
+    @ut.skip('Does not work with HDF5_FF')
     def test_dataset_intermediate_group(self):
         """ Create dataset with missing intermediate groups """
         from mpi4py import MPI
