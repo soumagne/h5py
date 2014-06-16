@@ -74,7 +74,7 @@ class TestCaseFF(TestCase):
         return "%s_%s" % (user, fname)
 
 
-    def start_h5ff_server(self, num_ions=1, sleep=2):
+    def start_h5ff_server(self, num_ions=1, sleep=2, quiet=True):
         """Start the h5ff_server and return its subprocess object.
 
         Arguments:
@@ -85,6 +85,9 @@ class TestCaseFF(TestCase):
         sleep
             Seconds to sleep after starting the server. Does not have to be an
             integer number.
+
+        quiet
+            Boolean flag whether or not to show h5ff_server output.
         """
         num_ions = int(num_ions)
         self._num_ions = num_ions
@@ -93,7 +96,10 @@ class TestCaseFF(TestCase):
 
         cmd = ["mpiexec", "-np", str(num_ions), "-hosts", self.eff_mpi_ions,
                self.h5ff_server]
+        if quiet:
+            cmd += ['&>', '/dev/null']
         cmdline = ' '.join(cmd)
+
         servp = subprocess.Popen(cmdline, shell=True, cwd=os.getcwd())
         time.sleep(sleep)
         retcode = servp.poll()
