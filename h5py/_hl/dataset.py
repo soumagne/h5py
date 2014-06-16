@@ -531,7 +531,7 @@ class Dataset(Index, HLObject):
         # Perfom the actual read
         mspace = h5s.create_simple(mshape)
         fspace = selection._id
-        self.id.read(mspace, fspace, arr, mtype)
+        self.id.read_ff(mspace, fspace, arr, self.rc.id, mtype, es=self.es.id)
 
         # Patch up the output for NumPy
         if len(names) == 1:
