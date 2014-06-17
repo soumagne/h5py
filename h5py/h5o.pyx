@@ -228,7 +228,7 @@ def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
 IF EFF:
     def get_info_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
                     char* obj_name='.', PropID lapl=None, EventStackID es=None):
-        """(ObjectID loc, STRING name=, RCntxtID rc, **kwds) => ObjInfo_ff
+        """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None, EventStackID es=None) => ObjInfo_ff
 
         For Exascale FastForward.
 
@@ -248,6 +248,20 @@ IF EFF:
 
         H5Oget_info_by_name_ff(loc.id, name, &info.infostruct, pdefault(lapl), rc.id,
                                esid_default(es))
+        return info
+
+    def get_info_by_name_ff(ObjectID loc not None, char* name, RCntxtID rc not None,
+                            PropID lapl=None, EventStackID es=None):
+        """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None, EventStackID es=None) => ObjInfo_ff
+
+        Retrieve the metadata for an object specified by a location and a
+        pathname, possibly asynchronously. For Exascale FastForward.
+        """
+        cdef ObjInfo_ff info
+        info = ObjInfo_ff()
+
+        H5Oget_info_by_name_ff(loc.id, name, &info.infostruct, pdefault(lapl),
+                               rc.id, esid_default(es))
         return info
 
 # === General object operations ===============================================
