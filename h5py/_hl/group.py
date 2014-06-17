@@ -432,7 +432,13 @@ class Group(Index, HLObject, DictCompat):
 
     def __contains__(self, name):
         """ Test if a member name exists """
-        return self._e(name) in self.id
+        try:
+            h5o.get_info_by_name_ff(self.id, self._e(name), self.rc.id,
+                                    es=self.es.id)
+        except RuntimeError:
+            return False
+        else:
+            return True
 
     def copy(self, source, dest, name=None,
              shallow=False, expand_soft=False, expand_external=False,
