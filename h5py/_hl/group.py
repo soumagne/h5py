@@ -408,7 +408,8 @@ class Group(Index, HLObject, DictCompat):
 
         elif isinstance(obj, numpy.dtype):
             htype = h5t.py_create(obj)
-            htype.commit(self.id, name, lcpl=lcpl)
+            htype.commit_ff(self.id, name, self.tr.id, lcpl=lcpl, es=self.es.id)
+            htype._close_ff(es=self.es.id)
 
         else:
             ds = self.create_dataset(None, data=obj,
