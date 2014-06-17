@@ -145,6 +145,13 @@ def make_new_dset_ff(parent, name, tr, shape=None, dtype=None, data=None,
         if data is not None and (numpy.product(shape) != numpy.product(data.shape)):
             raise ValueError("Shape tuple is incompatible with data")
 
+    # Validate chunk shape
+    tmp_shape = maxshape if maxshape is not None else shape
+    if isinstance(chunks, tuple) and (-numpy.array([i>=j for i,j in zip(tmp_shape,chunks) if i is not None])).any():
+        errmsg = "Chunk shape must not be greater than data shape in any dimension. "\
+                 "{} is not compatible with {}".format(chunks, shape)
+        raise ValueError(errmsg)
+
     if isinstance(dtype, h5py.Datatype):
         # Named types are used as-is
         tid = dtype.id
