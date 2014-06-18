@@ -183,8 +183,9 @@ cdef class MapID(ObjectID):
             pass
 
 
-    def set_ff(self, ndarray key not None, ndarray val not None, TransactionID tr not None,
-               PropID dxpl=None, EventStackID es=None):
+    def set_ff(self, ndarray key not None, ndarray val not None,
+               TransactionID tr not None, PropID dxpl=None,
+               EventStackID es=None):
         """(NDARRAY key, NDARRAY val, TransactionID tr, PropID dxpl=None,
         EventStackID es=None)
 
@@ -204,3 +205,25 @@ cdef class MapID(ObjectID):
                       esid_default(es), 0)
         finally:
             pass
+
+
+    def evict_ff(self, ctn_ver, PropID dxpl=None, EventStackID es=None):
+        """UINT ctn_ver, PropID dxpl=None, EventStackID es=None)
+
+        Evict map from the burst buffer, possibly asynchronously.
+
+        For Exascale FastForward.
+        """
+        H5Mevict_ff(self.id, <uint64_t>ctn_ver, pdefault(dxpl),
+                    esid_default(es))
+
+
+    def prefetch_ff(self, RCntxtID rc not None, hrpl_t replica_id,
+                    PropID dxpl=None, EventStackID es=None):
+        """(RCntxtID rc, UINT replica_id, PropID dxpl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+        """
+        H5Mprefetch_ff(self.id, rc.id, &replica_id, pdefault(dxpl),
+                       esid_default(es))
+

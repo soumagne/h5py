@@ -567,6 +567,8 @@ hdf5:
    EFF hid_t H5Gcreate_ff(hid_t loc_id, char *name, hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t trans_id, hid_t es_id)
    EFF hid_t H5Gopen_ff(hid_t loc_id, char * name, hid_t gapl_id, hid_t rcntxt_id, hid_t es_id)
    EFF hid_t H5Gclose_ff(hid_t group_id, hid_t es_id)
+   EFF herr_t H5Gevict_ff(hid_t grp_id, uint64_t c_version, hid_t dxpl_id, hid_t estack_id)
+   EFF herr_t H5Gprefetch_ff(hid_t grp_id, hid_t rcxt_id, hrpl_t *replica_id, hid_t dxpl_id, hid_t estack_id)
 
 # === H5P API Additions ==================================================
 
@@ -675,6 +677,8 @@ hdf5:
    EFF herr_t H5Mexists_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hbool_t *exists, hid_t rcxt_id, hid_t estack_id)
    EFF herr_t H5Mdelete_ff(hid_t map_id, hid_t key_mem_type_id, void *key, hid_t trans_id, hid_t estack_id)
    EFF herr_t H5Mclose_ff(hid_t map_id, hid_t estack_id)
+   EFF herr_t H5Mevict_ff(hid_t map_id, uint64_t c_version, hid_t dxpl_id, hid_t estack_id)
+   EFF herr_t H5Mprefetch_ff(hid_t map_id, hid_t rcxt_id, hrpl_t *replica_id, hid_t dxpl_id, hid_t estack_id)
 
 # === H5X API =============================================================
 
