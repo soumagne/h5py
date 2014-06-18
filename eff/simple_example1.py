@@ -31,6 +31,7 @@ EFF_init(comm, MPI.INFO_NULL)
 print "size = %d; rank = %d" % (comm.Get_size(), comm.Get_rank())
 f = File(os.environ["USER"]+"_ff_file_ex1.h5", mode='w', driver="iod",
          comm=comm, info=MPI.INFO_NULL)
+print 'f.driver =', f.driver
 print "f.ctn =", f.ctn
 print "f.tr =", f.tr
 print "f.rc =", f.rc
