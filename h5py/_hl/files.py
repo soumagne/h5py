@@ -291,6 +291,18 @@ class File(Group):
         return ver
 
 
+    def persist(self):
+        """Copy data for the container from IOD to DAOS up to specified
+        container version.
+        """
+        self.rc.id.persist(es=self.es.id)
+
+
+    def make_snapshot(self, name):
+        """Make a named snapshot of the container on DAOS."""
+        self.rc.id.snapshot(name, es=self.es.id)
+
+
     def create_transaction(self, transaction_number):
         """Create a transaction associated with the container, read
         context, and transaction number.
