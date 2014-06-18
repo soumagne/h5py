@@ -109,14 +109,16 @@ class TestCaseFF(TestCase):
                                    % (cmdline, retcode))
             else:
                 raise RuntimeError("h5ff_server start process finished early")
-        return servp
+        self._servp = servp
 
 
-    #def shut_h5ff_server(self):
-        #""" Shuts down all h5ff_server processes """
-        #retcode = os.system("killall -g h5ff_server")
-        #if retcode:
-            #raise RuntimeError('killall -g h5ff_server: Command failed')
+    # def shut_h5ff_server(self):
+    #     """ Shuts down all h5ff_server processes """
+    #     if self._servp.poll() is None:
+    #         self._servp.terminate()
+    #     # retcode = os.system("killall -g h5ff_server")
+    #     # if retcode:
+    #     #     raise RuntimeError('killall -g h5ff_server: Command failed')
 
 
     def run_demo(self, fname, np=1):
