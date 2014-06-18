@@ -564,7 +564,7 @@ hdf5:
 
 # === H5G API New Additions ==============================================
 
-   EFF hid_t H5Gcreate_ff(hid_t loc_id, char *name, hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t trans_id, hid_t es_id) 
+   EFF hid_t H5Gcreate_ff(hid_t loc_id, char *name, hid_t lcpl_id, hid_t gcpl_id, hid_t gapl_id, hid_t trans_id, hid_t es_id)
    EFF hid_t H5Gopen_ff(hid_t loc_id, char * name, hid_t gapl_id, hid_t rcntxt_id, hid_t es_id)
    EFF hid_t H5Gclose_ff(hid_t group_id, hid_t es_id)
 
@@ -633,6 +633,8 @@ hdf5:
    EFF herr_t H5Aexists_by_name_ff(hid_t loc_id, char *obj_name, char *attr_name, hid_t lapl_id, hbool_t *ret, hid_t rcxt_id, hid_t estack_id)
    EFF herr_t H5Aexists_ff(hid_t obj_id, char *attr_name, hbool_t *ret, hid_t rcxt_id, hid_t estack_id)
    EFF herr_t H5Aclose_ff(hid_t attr_id, hid_t estack_id)
+   EFF herr_t H5Aprefetch_ff(hid_t attr_id, hid_t rcxt_id, hrpl_t *replica_id, hid_t dxpl_id, hid_t estack_id)
+   EFF herr_t H5Aevict_ff(hid_t attr_id, uint64_t c_version, hid_t dxpl_id, hid_t estack_id)
 
 # === H5O API Additions ==================================================
 
