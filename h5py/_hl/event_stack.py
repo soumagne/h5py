@@ -43,7 +43,7 @@ class EventStack(object):
 
     @property
     def id(self):
-        """Holds h5es.EventStackID object"""
+        """Hold h5es.EventStackID object"""
         return self._id
 
 
@@ -66,7 +66,7 @@ class EventStack(object):
 
 
     def close(self):
-        """Closes an event stack.
+        """Close an event stack.
         
         At this point the event stack identifier becomes invalid.
         """
@@ -87,21 +87,21 @@ class EventStack(object):
 
 
     def test(self, event_idx=0):
-        """Reports the completion status of the event in the event stack.
+        """Report the completion status of the event in the event stack.
         Possible status values: 'in_progress', 'succeed', 'fail', 'cancel'."""
         s = self.id.test(event_idx=event_idx)
         return _status[s]
 
 
     def test_all(self):
-        """Reports overall completion status for all events in the event stack.
+        """Report overall completion status for all events in the event stack.
         Possible status values: 'in_progress', 'succeed', 'fail', 'cancel'."""
         s = self.id.test_all()
         return _status[s]
 
 
     def wait(self, event_idx=0):
-        """Waits for the completion or cancellation of the event specified by
+        """Wait for the completion or cancellation of the event specified by
         event_idx in the event stack and reports the event's completion status.
         The call does not return until the event being waited on completes or is
         cancelled. Possible status values: 'in_progress', 'succeed', 'fail',
@@ -112,10 +112,15 @@ class EventStack(object):
 
 
     def wait_all(self):
-        """Waits for the completion or cancellation of all events in the event
+        """Wait for the completion or cancellation of all events in the event
         stack and reports an overall completion status. The call does not return
         until all events in the event stack complete or are cancelled. Possible
         status values: 'in_progress', 'succeed', 'fail', 'cancel'.
         """
         s = self.id.wait_all()
         return _status[s]
+
+
+    def null(self):
+        """Return an object representing the H5_EVENT_STACK_NULL value."""
+        return es_null
