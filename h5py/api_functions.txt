@@ -617,6 +617,8 @@ hdf5:
    EFF herr_t H5Dread_ff(hid_t dset_id, hid_t mem_type_id, hid_t mem_space_id, hid_t file_space_id, hid_t dxpl_id, void *buf, hid_t rcxt_id, hid_t estack_id)
    EFF herr_t H5Dset_extent_ff(hid_t dset_id, hsize_t* size, hid_t trans_id, hid_t estack_id)
    EFF herr_t H5Dclose_ff(hid_t dset_id, hid_t estack_id)
+   EFF herr_t H5Devict_ff(hid_t dset_id, uint64_t c_version, hid_t dxpl_id, hid_t estack_id)
+   EFF herr_t H5Dprefetch_ff(hid_t dset_id, hid_t rcxt_id, hrpl_t *replica_id, hid_t dxpl_id, hid_t estack_id)
 
 # === H5A API Additions ==================================================
 

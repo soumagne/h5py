@@ -518,3 +518,27 @@ cdef class DatasetID(ObjectID):
             may even be zero.
         """
         return H5Dget_storage_size(self.id)
+
+
+    def evict_ff(self, ctn_ver, PropID dxpl=None, EventStackID es=None):
+        """UINT ctn_ver, PropID dxpl=None, EventStackID es=None)
+
+        Evict dataset from the burst buffer, possibly asynchronously.
+
+        For Exascale FastForward.
+        """
+        H5Devict_ff(self.id, <uint64_t>ctn_ver, pdefault(dxpl),
+                    esid_default(es))
+
+
+    def prefetch_ff(self, RCntxtID rc not None, hrpl_t replica_id,
+                    PropID dxpl=None, EventStackID es=None):
+        """(RCntxtID rc, UINT replica_id, PropID dxpl=None, EventStackID es=None)
+
+        Prefetch all or part of a dataset from persistent storage to burst
+        buffer storage, possibly asynchronously.
+
+        For Exascale FastForward.
+        """
+        H5Dprefetch_ff(self.id, rc.id, &replica_id, pdefault(dxpl),
+                       esid_default(es))
