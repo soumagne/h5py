@@ -610,6 +610,8 @@ hdf5:
    EFF herr_t H5Tcommit_ff(hid_t loc_id, char *name, hid_t type_id, hid_t lcpl_id, hid_t tcpl_id, hid_t tapl_id, hid_t trans_id, hid_t estack_id)
    EFF hid_t H5Topen_ff(hid_t loc_id, char *name, hid_t tapl_id, hid_t rcxt_id, hid_t estack_id)
    EFF herr_t H5Tclose_ff(hid_t type_id, hid_t estack_id)
+   EFF herr_t H5Tevict_ff(hid_t type_id, uint64_t c_version, hid_t dxpl_id, hid_t estack_id)
+   EFF herr_t H5Tprefetch_ff(hid_t type_id, hid_t rcxt_id, hrpl_t *replica_id, hid_t dxpl_id, hid_t estack_id)
 
 # === H5D API Additions ==================================================
 

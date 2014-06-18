@@ -479,6 +479,28 @@ cdef class TypeID(ObjectID):
             H5Tclose_ff(self.id, esid_default(es))
 
 
+    def evict_ff(self, ctn_ver, PropID dxpl=None, EventStackID es=None):
+        """UINT ctn_ver, PropID dxpl=None, EventStackID es=None)
+
+        Evict named datatype attribute from the burst buffer, possibly
+        asynchronously.
+
+        For Exascale FastForward.
+        """
+        H5Tevict_ff(self.id, <uint64_t>ctn_ver, pdefault(dxpl),
+                    esid_default(es))
+
+
+    def prefetch_ff(self, RCntxtID rc not None, hrpl_t replica_id,
+                    PropID dxpl=None, EventStackID es=None):
+        """(RCntxtID rc, UINT replica_id, PropID dxpl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+        """
+        H5Tprefetch_ff(self.id, rc.id, &replica_id, pdefault(dxpl),
+                       esid_default(es))
+
+
     def encode(self):
         """() => STRING
 
