@@ -23,7 +23,7 @@ from h5r cimport Reference, RegionReference
 
 from utils cimport  emalloc, efree, \
                     require_tuple, convert_dims, convert_tuple
-from h5p cimport pdefault as h5p_default, PropTAID, PropTCID
+from h5p cimport pdefault as h5p_default, PropTAID, PropTCID, PropID
 from h5rc cimport RCntxtID
 from h5es cimport esid_default, EventStackID
 from h5tr cimport TransactionID
@@ -487,7 +487,7 @@ cdef class TypeID(ObjectID):
 
         For Exascale FastForward.
         """
-        H5Tevict_ff(self.id, <uint64_t>ctn_ver, pdefault(dxpl),
+        H5Tevict_ff(self.id, <uint64_t>ctn_ver, h5p_default(dxpl),
                     esid_default(es))
 
 
@@ -497,7 +497,7 @@ cdef class TypeID(ObjectID):
 
         For Exascale FastForward.
         """
-        H5Tprefetch_ff(self.id, rc.id, &replica_id, pdefault(dxpl),
+        H5Tprefetch_ff(self.id, rc.id, &replica_id, h5p_default(dxpl),
                        esid_default(es))
 
 
