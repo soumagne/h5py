@@ -31,21 +31,21 @@ class Attribute(object):
 
 
     @property
-    def container(self):
+    def ctn(self):
         """Container (File) object this attribute belongs to."""
-        return self._container
+        return self._ctn
 
 
     def __init__(self, bind, container=None):
         if not isinstance(bind, h5a.AttrID):
             raise ValueError("%s is not h5a.AttrID" % bind)
         self._id = bind
-        self._container = container
+        self._ctn = container
 
 
     def close(self):
         """ Close the attribute object """
-        self.id._close_ff(es=self.container.es.id)
+        self.id._close_ff(es=self.ctn.es.id)
 
 
     def value(self):
@@ -57,7 +57,7 @@ class Attribute(object):
         tid = self.id.get_type()
         dt = readtime_dtype(self.id.dtype, [])
         val = numpy.ndarray(self.id.shape, dtype=dt, order='C')
-        self.id.read_ff(val, self.container.rc.id, es=self.container.es.id)
+        self.id.read_ff(val, self.ctn.rc.id, es=self.ctn.es.id)
 
         if len(val.shape) == 0:
             return val[()]
@@ -77,9 +77,9 @@ class View(object):
 
 
     @property
-    def container(self):
+    def ctn(self):
         """Container (File) object this view belongs to."""
-        return self._container
+        return self._ctn
 
 
     def __init__(self, loc, query, sel=None, container=None):
@@ -118,7 +118,7 @@ class View(object):
             vcpl.set_view_elmt_scope(sel.id)
             self._id = h5v.create_ff(loc.id, query.id, rc.id, vcpl=vcpl,
                                      es=esid)
-        self._container = container
+        self._ctn = container
 
 
     def close(self):
@@ -165,13 +165,13 @@ class View(object):
         For Exascale FastForward.
         """
 
-        locid = self.id.get_location_ff(es=self.container.es.id)
+        locid = self.id.get_location_ff(es=self.ctn.es.id)
         if isinstance(locid, h5f.FileID):
             return File(locid)
         elif isinstance(locid, h5g.GroupID):
-            return Group(locid, container=self.container)
+            return Group(locid, container=self.ctn)
         elif isinstance(locid, h5d.DatasetID):
-            return Dataset(locid, container=self.container)
+            return Dataset(locid, container=self.ctn)
         else:
             raise ValueError("%s invalid view object location" % locid)
 
@@ -187,7 +187,7 @@ class View(object):
         """
 
         attrs_id = self.id.get_attrs_ff(start=start, count=count,
-                                        es=self.container.es.id)
+                                        es=self.ctn.es.id)
         for aid in attrs_id:
             yield Attribute(aid)
 
@@ -205,16 +205,16 @@ class View(object):
         """
 
         objs_id = self.id.get_objs_ff(start=start, count=count,
-                                      es=self.container.es.id)
+                                      es=self.ctn.es.id)
         for oid in objs_id:
             if isinstance(oid, h5d.DatasetID):
-                obj = Dataset(oid, container=self.container)
+                obj = Dataset(oid, container=self.ctn)
             elif isinstance(oid, h5g.GroupID):
-                obj = Group(oid, container=self.container)
+                obj = Group(oid, container=self.ctn)
             elif isinstance(oid, h5t.TypeID):
-                obj = Datatype(oid, container=self.container)
+                obj = Datatype(oid, container=self.ctn)
             elif isinstance(oid, h5m.MapID):
-                obj = Map(oid, container=self.container)
+                obj = Map(oid, container=self.ctn)
             else:
                 raise ValueError("%s unexpected object type" % oid)
 
@@ -233,6 +233,6 @@ class View(object):
         """
 
         tl = self.id.get_elem_regions_ff(start=start, count=count,
-                                         es=self.container.es.id)
+                                         es=self.ctn.es.id)
         for dsid, spaceid in tl:
             yield h5r.create(dsid, '.', h5r.DATASET_REGION, spaceid)
