@@ -18,6 +18,7 @@ cdef extern from "hdf5.h":
   ctypedef long long hsize_t
   ctypedef signed long long hssize_t
   ctypedef signed long long haddr_t
+  ctypedef uint64_t hrpl_t
 
   ctypedef struct hvl_t:
     size_t len                 # Length of VL data (in base type units)

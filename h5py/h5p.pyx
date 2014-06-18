@@ -1320,6 +1320,23 @@ IF EFF:
             H5Pset_dxpl_inject_corruption(self.id, <hbool_t>flag)
 
 
+        def set_replica(self, hrpl_t replica_id):
+            """(UINT replica_id)
+            
+            Set the replica property in a dataset transfer property list,
+            specifying an object replica identifier. When this property is
+            set, evict or read operations on the object will evict or read the
+            specified replica rather than the transaction update data for the
+            object.
+
+            Replica IDs are returned by the H5Dprefetch_ff(), H5Gprefetch_ff(),
+            H5Mprefetch_ff(), and H5Tprefetch_ff() routines.  Replica properties
+            are recognized by H5Devict_ff(), H5Mevict_ff(), H5Gevict_ff(),
+            H5Tevict_ff(), H5Dread_ff() and H5Mget_ff() routines.
+            """
+            H5Pset_dxpl_replica(self.id, replica_id)
+
+
     cdef class PropVCID(PropCreateID):
         """ View creation property list """
 
