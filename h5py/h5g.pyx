@@ -283,33 +283,17 @@ cdef class GroupID(ObjectID):
         self.links = h5l.LinkProxy(id_)
 
 
-#    def _close(self):
-#        """()
-#
-#        Terminate access through this identifier.  You shouldn't have to
-#        call this manually; group identifiers are automatically released
-#        when their Python wrappers are freed.
-#        """
-#        with _objects.registry.lock:
-#            H5Gclose(self.id)
-#            if not self.valid:
-#                del _objects.registry[self.id]
+    def _close(self, EventStackID esid=None):
+        """(EventStackID esid=None)
 
-
-    # For Exascale FastForward
-    IF EFF and MPI:
-        # Replacement for the above _close() method.
-        def _close(self, EventStackID esid=None):
-            """(EventStackID esid=None)
-
-            Terminate access through this identifier.  You shouldn't have to
-            call this manually; group identifiers are automatically released
-            when their Python wrappers are freed.
-            """
-            with _objects.registry.lock:
-                H5Gclose_ff(self.id, esid_default(esid))
-                if not self.valid:
-                    del _objects.registry[self.id]
+        Terminate access through this identifier.  You shouldn't have to
+        call this manually; group identifiers are automatically released
+        when their Python wrappers are freed.
+        """
+        with _objects.registry.lock:
+            H5Gclose_ff(self.id, esid_default(esid))
+            if not self.valid:
+                del _objects.registry[self.id]
 
 
     def link(self, char* current_name, char* new_name,
@@ -462,6 +446,28 @@ cdef class GroupID(ObjectID):
             return py_cmnt
         finally:
             efree(cmnt)
+
+
+    def evict_ff(self, ctn_ver, PropID dxpl=None, EventStackID es=None):
+        """UINT ctn_ver, PropID dxpl=None, EventStackID es=None)
+
+        Evict group from the burst buffer, possibly asynchronously.
+
+        For Exascale FastForward.
+        """
+        H5Gevict_ff(self.id, <uint64_t>ctn_ver, pdefault(dxpl),
+                    esid_default(es))
+
+
+    def prefetch_ff(self, RCntxtID rc not None, hrpl_t replica_id,
+                    PropID dxpl=None, EventStackID es=None):
+        """(RCntxtID rc, UINT replica_id, PropID dxpl=None, EventStackID es=None)
+
+        For Exascale FastForward.
+        """
+        H5Gprefetch_ff(self.id, rc.id, &replica_id, pdefault(dxpl),
+                       esid_default(es))
+
 
     # === Special methods =====================================================
 
