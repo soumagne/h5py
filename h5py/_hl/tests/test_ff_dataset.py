@@ -1,5 +1,5 @@
 # Testing HDF5 Exascale FastForward
-# Tests adapted from the original h5py's collection of dataset tests
+# Tests adapted from the original h5py's collection of attribute tests
 
 import sys
 import numpy as np
@@ -677,7 +677,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip('Test works')
+    @ut.skip('Test works')
     def test_roundtrip(self):
         """ Read the contents of an array and write them back """
         from mpi4py import MPI
