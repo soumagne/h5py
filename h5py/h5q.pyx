@@ -23,6 +23,7 @@ TYPE_DATA_ELEM = H5Q_TYPE_DATA_ELEM
 TYPE_ATTR_VALUE = H5Q_TYPE_ATTR_VALUE
 TYPE_ATTR_NAME = H5Q_TYPE_ATTR_NAME
 TYPE_LINK_NAME = H5Q_TYPE_LINK_NAME
+TYPE_MISC = H5Q_TYPE_MISC
 
 # Match operator
 MATCH_EQUAL = H5Q_MATCH_EQUAL
@@ -108,13 +109,13 @@ cdef class QueryID(ObjectID):
         return QueryID.open(qid)
 
 
-    def get_query_type(self):
+    def get_type(self):
         """() => INT type
 
         Get the query type of the atomic query object.
         """
         cdef H5Q_type_t query_type
-        H5Qget_match_info(self.id, &query_type, NULL)
+        H5Qget_type(self.id, &query_type)
         return <int>query_type
 
 
@@ -124,7 +125,7 @@ cdef class QueryID(ObjectID):
         Get the match operator of the atomic query object.
         """
         cdef H5Q_match_op_t match_op
-        H5Qget_match_info(self.id, NULL, &match_op)
+        H5Qget_match_op(self.id, &match_op)
         return <int>match_op
 
 

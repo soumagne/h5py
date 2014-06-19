@@ -9,7 +9,8 @@ import numpy as np
 _query_type = {'data_elem': h5q.TYPE_DATA_ELEM,
                'attr_value': h5q.TYPE_ATTR_VALUE,
                'attr_name': h5q.TYPE_ATTR_NAME,
-               'link_name': h5q.TYPE_LINK_NAME}
+               'link_name': h5q.TYPE_LINK_NAME,
+               'misc': h5q.TYPE_MISC}
 
 _match_op = {'==': h5q.MATCH_EQUAL,
              '!=': h5q.MATCH_NOT_EQUAL,
@@ -61,7 +62,7 @@ class Query(object):
                 qt = "atomic"
             else:
                 qt = "compound"
-        return "<HDF5 %s query object (id: %s)>" % (qt, id(self.id))
+        return "<HDF5 %s query object (id: %s)>" % (qt, hex(id(self)))
 
 
     def close(self):
@@ -85,7 +86,7 @@ class AQuery(Query):
     def type(self):
         """ Return string representation of the query's type. """
         
-        qt = self.id.get_query_type()
+        qt = self.id.get_type()
         return _query_type.keys()[_query_type.values().index(qt)]
 
 

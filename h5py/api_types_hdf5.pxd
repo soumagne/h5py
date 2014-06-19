@@ -879,6 +879,7 @@ cdef extern from "H5Qpublic.h":
         H5Q_TYPE_ATTR_VALUE, # selects attribute values
         H5Q_TYPE_ATTR_NAME,  # selects attributes
         H5Q_TYPE_LINK_NAME   # selects objects
+        H5Q_TYPE_MISC        # (for combine queries) selects misc objects
 
     # Query match conditions
     ctypedef enum H5Q_match_op_t:

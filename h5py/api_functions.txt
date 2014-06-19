@@ -696,7 +696,8 @@ hdf5:
    # EFF hid_t H5Qcreate(H5Q_type_t query_type, H5Q_match_op_t match_op, ...)
    EFF herr_t H5Qclose(hid_t query_id)
    EFF hid_t H5Qcombine(hid_t query1_id, H5Q_combine_op_t combine_op, hid_t query2_id)
-   EFF herr_t H5Qget_match_info(hid_t query_id, H5Q_type_t *query_type, H5Q_match_op_t *match_op)
+   EFF herr_t H5Qget_type(hid_t query_id, H5Q_type_t *query_type)
+   EFF herr_t H5Qget_match_op(hid_t query_id, H5Q_match_op_t *match_op)
    EFF herr_t H5Qget_components(hid_t query_id, hid_t *sub_query1_id, hid_t *sub_query2_id)
    EFF herr_t H5Qget_combine_op(hid_t query_id, H5Q_combine_op_t *op_type)
 
