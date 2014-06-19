@@ -131,7 +131,7 @@ cdef herr_t attr_rw_ff(hid_t attr, hid_t mtype, void *progbuf, int read,
         free(conv_buf)
         free(back_buf)
         if atype > 0:
-            H5Tclose_ff(atype, esid)
+            H5Tclose(atype)
         if aspace > 0:
             H5Sclose(aspace)
 
