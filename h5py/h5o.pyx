@@ -148,9 +148,6 @@ IF EFF:
 
     cdef class _ObjInfo_ff(_ObjInfoBase_ff):
 
-       # property fileno:
-       #     def __get__(self):
-       #         return self.istr[0].fileno
         property addr:
             def __get__(self):
                 return self.istr[0].addr
@@ -160,9 +157,12 @@ IF EFF:
         property rc:
             def __get__(self):
                 return self.istr[0].rc
+        property num_attrs:
+            def __get__(self):
+                return <int>self.istr[0].num_attrs
 
         def _hash(self):
-            return hash((self.addr, self.type, self.rc))
+            return hash((self.addr, self.type, self.rc, self.num_attrs))
 
 
     cdef class ObjInfo_ff(_ObjInfo_ff):
@@ -173,15 +173,9 @@ IF EFF:
         """
 
         cdef H5O_ff_info_t infostruct
-        # cdef public _OHdr hdr
 
         def __init__(self):
-            # self.hdr = _OHdr()
-
             self.istr = &self.infostruct
-            # self.hdr.istr = &self.infostruct
-            # self.hdr.space.istr = &self.infostruct
-            # self.hdr.mesg.istr = &self.infostruct
 
         def __copy__(self):
             cdef ObjInfo_ff newcopy
@@ -226,16 +220,14 @@ def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
 
 
 IF EFF:
-    def get_info_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
-                    char* obj_name='.', PropID lapl=None, EventStackID es=None):
-        """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None, EventStackID es=None) => ObjInfo_ff
+    def get_info_ff(ObjectID loc not None, RCntxtID rc not None,
+                    char* name=NULL, *, PropID lapl=None, EventStackID es=None):
+        """(ObjectID loc, RCntxtID rc, STRING name=NULL, PropID lapl=None, EventStackID es=None) => ObjInfo_ff
 
         For Exascale FastForward.
 
         Get information describing an object in an HDF5 file, possibly
         asynchronously. Keywords:
-
-        STRING obj_name (".")
 
         PropID lapl (None)
             Link access property list
@@ -246,8 +238,11 @@ IF EFF:
         cdef ObjInfo_ff info
         info = ObjInfo_ff()
 
-        H5Oget_info_by_name_ff(loc.id, name, &info.infostruct, pdefault(lapl), rc.id,
-                               esid_default(es))
+        if name == NULL:
+            H5Oget_info_ff(loc.id, &info.infostruct, rc.id, esid_default(es))
+        else:
+            H5Oget_info_by_name_ff(loc.id, name, &info.infostruct,
+                                   pdefault(lapl), rc.id, esid_default(es))
         return info
 
     def get_info_by_name_ff(ObjectID loc not None, char* name, RCntxtID rc not None,
