@@ -141,7 +141,8 @@ class File(Group):
         # hdf5 complains that a file identifier is an invalid location for an
         # attribute. Instead of self, pass the root group to AttributeManager:
         import attrs
-        return attrs.AttributeManager(self['/'])
+        # return attrs.AttributeManager(self['/'])
+        return attrs.AttributeManager(self)
 
     @property
     def filename(self):

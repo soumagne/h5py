@@ -11,7 +11,7 @@ import numpy
 import collections
 
 import h5py
-from h5py import h5s, h5t, h5a
+from h5py import h5s, h5t, h5a, h5o
 from . import base
 from .dataset import readtime_dtype
 
@@ -140,6 +140,8 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
                 h5a.delete_ff(self._pnt.id, self._pnt.tr.id, self._e(name),
                               es=self._pnt.es.id)
                 raise
+            else:
+                attr._close_ff(es=self._pnt.es.id)
 
     def modify(self, name, value):
         """ Change the value of an attribute while preserving its type.
@@ -175,8 +177,7 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         
         For Exascale FastForward.
         """
-        # I expect we will not have more than 2**32 attributes
-        return h5a.get_num_attrs(self._pnt.id)
+        return h5o.get_info_ff(self._pnt.id, self._pnt.rc.id).num_attrs
 
     def __iter__(self):
         """ Iterate over the names of attributes. """
