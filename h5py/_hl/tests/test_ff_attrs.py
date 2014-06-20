@@ -16,7 +16,7 @@ class BaseTest(TestCaseFF):
 
     def setUp(self):
         self.ff_cleanup()
-        self.start_h5ff_server()
+        self.start_h5ff_server(quiet=False)
         self.fname = self.filename("ff_file_attrs.h5")
 
 
@@ -51,9 +51,11 @@ class TestAccess(BaseTest):
             f.rc.release()
             f.acquire_context(2)
 
-            # Suspect in these two checks: h5o.get_info_ff()
+            #File "h5a.pyx", line 432, in h5py.h5a.iterate (h5py/h5a.c:5695)
+            # H5Aiterate2(loc.id, <H5_index_t>index_type, <H5_iter_order_t>order,
+            # RuntimeError: link iteration failed (Symbol table: Iteration failed)
             # self.assertEqual(f.attrs.keys(), ['a'])
-            # self.assertEqual(len(f.attrs), 1)
+            self.assertEqual(len(f.attrs), 1)
             self.assertEqual(f.attrs['a'], 4.0)
 
             f.rc.release()
