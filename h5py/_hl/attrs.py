@@ -51,6 +51,9 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
 
         For Exascale FastForward.
         """
+        if name not in self:
+            raise KeyError('Attribute "%s" does not exist' % name)
+
         attr = h5a.open_ff(self._pnt.id, self._pnt.rc.id, self._e(name),
                            es=self._pnt.es.id)
 

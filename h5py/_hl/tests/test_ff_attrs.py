@@ -57,6 +57,8 @@ class TestAccess(BaseTest):
             # self.assertEqual(f.attrs.keys(), ['a'])
             self.assertEqual(len(f.attrs), 1)
             self.assertEqual(f.attrs['a'], 4.0)
+            with self.assertRaises(KeyError):
+                f.attrs['b']
 
             f.rc.release()
 
