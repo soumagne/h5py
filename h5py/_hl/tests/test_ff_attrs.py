@@ -31,7 +31,7 @@ class TestAccess(BaseTest):
         Feature: Attribute creation/retrieval via special methods
     """
 
-    #@ut.skip('Test works')
+    @ut.skip('Test works')
     def test_create_scalar(self):
         """ Attribute creation by direct asignment """
         from mpi4py import MPI
@@ -57,8 +57,72 @@ class TestAccess(BaseTest):
             # self.assertEqual(f.attrs.keys(), ['a'])
             self.assertEqual(len(f.attrs), 1)
             self.assertEqual(f.attrs['a'], 4.0)
+
             with self.assertRaises(KeyError):
                 f.attrs['b']
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_overwrite(self):
+        """ Attributes are silently overwritten """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['a'] = 4.0
+            f.attrs['a'] = 5.0
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            self.assertEqual(f.attrs['a'], 5.0)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    # @ut.skip('Test works')
+    def test_rank(self):
+        """ Attribute rank is preserved """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['a'] = (4.0, 5.0)
+            f.attrs['b'] = np.ones((1,))
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            self.assertEqual(f.attrs['a'].shape, (2,))
+            self.assertArrayEqual(f.attrs['a'], np.array((4.0,5.0)))
+
+            out = f.attrs['b']
+            self.assertEqual(out.shape, (1,))
+            self.assertEqual(out[()], 1)
 
             f.rc.release()
 
