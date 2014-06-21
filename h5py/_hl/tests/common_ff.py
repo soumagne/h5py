@@ -74,7 +74,7 @@ class TestCaseFF(TestCase):
         return "%s_%s" % (user, fname)
 
 
-    def start_h5ff_server(self, num_ions=1, sleep=2, quiet=True):
+    def start_h5ff_server(self, num_ions=1, sleep=1, quiet=True, shell=True):
         """Start the h5ff_server and return its subprocess object.
 
         Arguments:
@@ -88,6 +88,9 @@ class TestCaseFF(TestCase):
 
         quiet
             Boolean flag whether or not to show h5ff_server output.
+
+        shell
+            Boolean flag whether to start the h5ff_server through the shell.
         """
         num_ions = int(num_ions)
         self._num_ions = num_ions
@@ -98,9 +101,10 @@ class TestCaseFF(TestCase):
                self.h5ff_server]
         if quiet:
             cmd += ['&>', '/dev/null']
-        cmdline = ' '.join(cmd)
+        if shell:
+            cmdline = ' '.join(cmd)
 
-        servp = subprocess.Popen(cmdline, shell=True, cwd=os.getcwd())
+        servp = subprocess.Popen(cmdline, shell=shell, cwd=os.getcwd())
         time.sleep(sleep)
         retcode = servp.poll()
         if retcode is not None:
@@ -112,13 +116,18 @@ class TestCaseFF(TestCase):
         self._servp = servp
 
 
-    # def shut_h5ff_server(self):
-    #     """ Shuts down all h5ff_server processes """
-    #     if self._servp.poll() is None:
-    #         self._servp.terminate()
-    #     # retcode = os.system("killall -g h5ff_server")
-    #     # if retcode:
-    #     #     raise RuntimeError('killall -g h5ff_server: Command failed')
+    def shut_h5ff_server(self, sleep=1):
+        """ Shut down all h5ff_server processes.
+        
+        Arguments:
+        
+        sleep
+            Amount of time to sleep before shutting down the sever. Can be a
+            floating point number.
+        """
+        time.sleep(sleep)
+        if self._servp.poll() is None:
+            self._servp.terminate()
 
 
     def run_demo(self, fname, np=1):
