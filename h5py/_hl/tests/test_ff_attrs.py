@@ -281,3 +281,334 @@ class TestAccess(BaseTest):
 
             f.close()
         eff_finalize()
+
+
+class TestScalar(BaseTest):
+
+    @ut.skip('Test works')
+    def test_int(self):
+        """ Integers are read as correct NumPy type """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['x'] = np.array(1, dtype=np.int8)
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertIsInstance(out, np.int8)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_compound(self):
+        """ Compound scalars are read as numpy.void """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            dt = np.dtype([('a','i'),('b','f')])
+            data = np.array((1,4.2), dtype=dt)
+            f.attrs['x'] = data
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertIsInstance(out, np.void)
+            self.assertEqual(out, data)
+            self.assertEqual(out['b'], data['b'])
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+class TestArray(BaseTest):
+
+
+    @ut.skip('Test works')
+    def test_single(self):
+        """ Single-element arrays are correctly recovered """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            data = np.ndarray((1,), dtype='f')
+            f.attrs['x'] = data
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertIsInstance(out, np.ndarray)
+            self.assertEqual(out.shape, (1,))
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_multi(self):
+        """ Rank-1 arrays are correctly recovered """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            data = np.ndarray((47,), dtype='f')
+            data[:] = 47.0
+            data[10:35] = -47.0
+            f.attrs['x'] = data
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertIsInstance(out, np.ndarray)
+            self.assertEqual(out.shape, (47,))
+            self.assertArrayEqual(out, data)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+class TestTypes(BaseTest):
+    """ Feature: All supported types can be stored in attributes """
+
+
+    @ut.skip('Test works')
+    def test_int(self):
+        """ Storage of integer types  """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            rc_ver = 1
+            tr_ver = 2
+            dtypes = (np.int8, np.int16, np.int32, np.int64, np.uint8,
+                      np.uint16, np.uint32, np.uint64)
+            for dt in dtypes:
+                f.acquire_context(rc_ver)
+                f.create_transaction(tr_ver)
+                f.tr.start()
+
+                data = np.ndarray((1,), dtype=dt)
+                data[...] = 47
+                f.attrs['x'] = data
+
+                f.tr.finish()
+                f.rc.release()
+
+                rc_ver += 1
+                f.acquire_context(rc_ver)
+
+                out = f.attrs['x']
+                self.assertEqual(out.dtype, dt)
+                self.assertArrayEqual(out, data)
+
+                f.rc.release()
+                tr_ver += 1
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_float(self):
+        """ Storage of floating point types """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            rc_ver = 1
+            tr_ver = 2
+            dtypes = tuple(np.dtype(x) for x in ('<f4','>f4','<f8','>f8'))
+            for dt in dtypes:
+                f.acquire_context(rc_ver)
+                f.create_transaction(tr_ver)
+                f.tr.start()
+
+                data = np.ndarray((1,), dtype=dt)
+                data[...] = 47.1967
+                f.attrs['x'] = data
+
+                f.tr.finish()
+                f.rc.release()
+
+                rc_ver += 1
+                f.acquire_context(rc_ver)
+
+                out = f.attrs['x']
+                self.assertEqual(out.dtype, dt)
+                self.assertArrayEqual(out, data)
+
+                f.rc.release()
+                tr_ver += 1
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_complex(self):
+        """ Storage of complex types """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            rc_ver = 1
+            tr_ver = 2
+            dtypes = tuple(np.dtype(x) for x in ('<c8','>c8','<c16','>c16'))
+            for dt in dtypes:
+                f.acquire_context(rc_ver)
+                f.create_transaction(tr_ver)
+                f.tr.start()
+
+                data = np.ndarray((1,), dtype=dt)
+                data[...] = 47.-1967j
+                f.attrs['x'] = data
+
+                f.tr.finish()
+                f.rc.release()
+
+                rc_ver += 1
+                f.acquire_context(rc_ver)
+
+                out = f.attrs['x']
+                self.assertEqual(out.dtype, dt)
+                self.assertArrayEqual(out, data)
+
+                f.rc.release()
+                tr_ver += 1
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_string(self):
+        """ Storage of fixed-length strings """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            rc_ver = 1
+            tr_ver = 2
+            dtypes = tuple(np.dtype(x) for x in ('|S1', '|S10'))
+            for dt in dtypes:
+                f.acquire_context(rc_ver)
+                f.create_transaction(tr_ver)
+                f.tr.start()
+
+                data = np.ndarray((1,), dtype=dt)
+                data[...] = 'n'
+                f.attrs['x'] = data
+
+                f.tr.finish()
+                f.rc.release()
+
+                rc_ver += 1
+                f.acquire_context(rc_ver)
+
+                out = f.attrs['x']
+                self.assertEqual(out.dtype, dt)
+                self.assertEqual(out[0], data[0])
+
+                f.rc.release()
+                tr_ver += 1
+
+            f.close()
+        eff_finalize()
+
+
+    # @ut.skip('Test works')
+    def test_bool(self):
+        """ Storage of NumPy booleans """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            data = np.ndarray((2,), dtype=np.bool_)
+            data[...] = True, False
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['x'] = data
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertEqual(out.dtype, data.dtype)
+            self.assertEqual(out[0], data[0])
+            self.assertEqual(out[1], data[1])
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
