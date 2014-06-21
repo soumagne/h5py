@@ -28,7 +28,7 @@ class BaseTest(TestCaseFF):
 class TestAccess(BaseTest):
 
     """
-        Feature: Attribute creation/retrieval via special methods
+        Feature: Attribute creation/retrieval/deletion via special methods
     """
 
     @ut.skip('Test works')
@@ -96,7 +96,7 @@ class TestAccess(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip('Test works')
+    @ut.skip('Test works')
     def test_rank(self):
         """ Attribute rank is preserved """
         from mpi4py import MPI
@@ -123,6 +123,159 @@ class TestAccess(BaseTest):
             out = f.attrs['b']
             self.assertEqual(out.shape, (1,))
             self.assertEqual(out[()], 1)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_delete(self):
+        """ Deletion of attributes using __delitem__ """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['a'] = 4.0
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            self.assertIn('a', f.attrs)
+
+            f.create_transaction(3)
+            f.tr.start()
+
+            del f.attrs['a']
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(3)
+
+            self.assertNotIn('a', f.attrs)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_unicode(self):
+        """ Attributes can be accessed via Unicode or byte strings  """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs[b'ascii'] = 47
+            name1 = b'non-ascii\xfe'
+            f.attrs[name1] = 47
+            name2 = u'Omega \u03A9'
+            f.attrs[name2] = 47
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            self.assertEqual(f.attrs[b'ascii'], 47)
+            self.assertEqual(f.attrs[name1], 47)
+            self.assertEqual(f.attrs[name2], 47)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test works')
+    def test_named(self):
+        """ Attributes created from named types link to the source type object
+        """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f['type'] = np.dtype('u8')
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+            f.create_transaction(3)
+            f.tr.start()
+
+            f.attrs.create('x', 42, dtype=f['type'])
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(3)
+
+            self.assertEqual(f.attrs['x'], 42)
+            aid = h5a.open_ff(f.id, f.rc.id, b'x')
+            htype = aid.get_type()
+            htype2 = f['type'].id
+            self.assertEqual(htype, htype2)
+            # self.assertTrue(htype.committed())
+
+            f.rc.release()
+
+            htype._close()
+            htype2._close()
+            aid._close_ff()
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test fails')
+    def test_vlen(self):
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            a = np.array([np.arange(3), np.arange(4)],
+                         dtype=h5t.special_dtype(vlen=int))
+            f.attrs['a'] = a
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            self.assertArrayEqual(f.attrs['a'][0], a[0])
 
             f.rc.release()
 
