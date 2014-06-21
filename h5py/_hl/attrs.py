@@ -138,12 +138,12 @@ class AttributeManager(base.DictCompat, base.CommonStateObject):
         if data is not None:
             try:
                 attr.write_ff(data, self._pnt.tr.id, es=self._pnt.es.id)
-            except:
-                attr._close_ff(es=self._pnt.es.id)
-                h5a.delete_ff(self._pnt.id, self._pnt.tr.id, self._e(name),
-                              es=self._pnt.es.id)
-                raise
-            else:
+            # except:
+            #     attr._close_ff(es=self._pnt.es.id)
+            #     h5a.delete_ff(self._pnt.id, self._pnt.tr.id, self._e(name),
+            #                   es=self._pnt.es.id)
+            #     raise
+            finally:
                 attr._close_ff(es=self._pnt.es.id)
 
     def modify(self, name, value):
