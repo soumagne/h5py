@@ -5,7 +5,7 @@ import numpy as np
 from .common_ff import ut, TestCaseFF
 from h5py.highlevel import File, AttributeManager
 from h5py.eff_control import eff_init, eff_finalize
-from h5py import h5t, h5a, get_config
+from h5py import h5t, h5a, get_config, special_dtype
 
 if not get_config().eff:
     raise RuntimeError('The h5py module was not built for Exascale FastForward')
@@ -580,7 +580,7 @@ class TestTypes(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip('Test works')
+    @ut.skip('Test works')
     def test_bool(self):
         """ Storage of NumPy booleans """
         from mpi4py import MPI
@@ -607,6 +607,118 @@ class TestTypes(BaseTest):
             self.assertEqual(out.dtype, data.dtype)
             self.assertEqual(out[0], data[0])
             self.assertEqual(out[1], data[1])
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test FAILS')
+    def test_vlen_string_array(self):
+        """ Storage of vlen byte string arrays """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            dt = special_dtype(vlen=bytes)
+            data = np.ndarray((2,), dtype=dt)
+            data[...] = b"Hello", b"HDF5 FastForward is awesome!"
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['x'] = data
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertEqual(out.dtype, data.dtype)
+            self.assertEqual(out[0], data[0])
+            self.assertEqual(out[1], data[1])
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('Test FAILS')
+    def test_string_scalar(self):
+        """ Storage of variable-length byte string scalars (auto-creation) """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['x'] = b'HDF5 FastForward is awesome!'
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertEqual(out, b'HDF5 FastForward is awesome!')
+            self.assertEqual(type(out), data[0])
+            aid = h5a.open_ff(f.id, f.rc.id, b"x")
+            tid = aid.get_type()
+            self.assertEqual(type(tid), h5t.TypeStringID)
+            self.assertEqual(tid.get_cset(), h5t.CSET_ASCII)
+            self.assertTrue(tid.is_variable_str())
+            aid._close_ff()
+            tid._close_ff()
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    # @ut.skip('Test FAILS')
+    def test_unicode_scalar(self):
+        """ Storage of variable-length Unicode string scalars (auto-creation)
+        """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['x'] = u'HDF5 FastForward is awesome\u2340!'
+
+            f.tr.finish()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            out = f.attrs['x']
+            self.assertEqual(out, b'HDF5 FastForward is awesome\u2340!')
+            self.assertEqual(type(out), data[0])
+            aid = h5a.open_ff(f.id, f.rc.id, b"x")
+            tid = aid.get_type()
+            self.assertEqual(type(tid), h5t.TypeStringID)
+            self.assertEqual(tid.get_cset(), h5t.CSET_UTF8)
+            self.assertTrue(tid.is_variable_str())
+            aid._close_ff()
+            tid._close_ff()
 
             f.rc.release()
 
