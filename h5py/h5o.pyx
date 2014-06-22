@@ -177,7 +177,7 @@ def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
 
 # For Exascale FastForward
 IF EFF:
-    cdef class _ObjInfo_ff(_ObjInfoBase_ff):
+    cdef class _ObjInfo_ff:
 
         cdef H5O_ff_info_t *istr
 

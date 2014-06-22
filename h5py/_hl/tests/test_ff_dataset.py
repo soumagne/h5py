@@ -23,7 +23,7 @@ class BaseTest(TestCaseFF):
 
 
     def tearDown(self):
-        pass
+        self.shut_h5ff_server()
 
 
 
@@ -728,7 +728,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test FAILS')
     def test_create_ref(self):
         """ Region references can be used as slicing arguments """
         from mpi4py import MPI
@@ -743,7 +743,7 @@ class TestDataset(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            dset = f.create_dataset('x', data=self.data)
+            dset = f.create_dataset('x', data=data)
             dset[...] = data
 
             f.tr.finish()
@@ -765,7 +765,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test FAILS')
     def test_rt(self):
         """ Compound types are read back in correct order """
         from mpi4py import MPI
@@ -791,7 +791,6 @@ class TestDataset(BaseTest):
             f.acquire_context(1)
             f.create_transaction(2)
             f.tr.start()
-
             
             f['test'] = testdata
 
@@ -801,7 +800,7 @@ class TestDataset(BaseTest):
 
             f.acquire_context(2)
 
-            outdata = f.['test'][...]
+            outdata = f['test'][...]
             self.assertTrue(np.all(outdata == testdata))
             self.assertEqual(outdata.dtype, testdata.dtype)
 
@@ -811,7 +810,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test works')
     def test_astype(self):
         """ .astype context manager """
         from mpi4py import MPI
@@ -825,7 +824,7 @@ class TestDataset(BaseTest):
             f.create_transaction(2)
             f.tr.start()
 
-            f.create_dataset('x', (100,), dtype='i2')
+            dset = f.create_dataset('x', (100,), dtype='i2')
             dset[...] = np.arange(100)
 
             f.tr.finish()
@@ -845,7 +844,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test FAILS')
     def test_regref(self):
         """ Indexing a region reference dataset returns a h5py.RegionReference
         """
@@ -889,7 +888,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test FAILS')
     def test_reference_field(self):
         """Compound types of which a reference is an element work right"""
         from mpi4py import MPI
@@ -906,7 +905,7 @@ class TestDataset(BaseTest):
             f.tr.start()
 
             dset = f.create_dataset('x', (1,), dtype=dt)
-            dset[0] = (42, self.f['/'].ref)
+            dset[0] = (42, f['/'].ref)
 
             f.tr.finish()
             f.rc.release()
@@ -922,7 +921,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test FAILS')
     def test_ref_scalar(self):
         """Indexing returns a real Python object on scalar datasets"""
         from mpi4py import MPI
@@ -952,7 +951,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('NOT YET TESTED')
+    @ut.skip('Test works')
     def test_bytestr(self):
         """Indexing a byte string dataset returns a real python byte string"""
         from mpi4py import MPI
