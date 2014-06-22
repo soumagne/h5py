@@ -140,13 +140,46 @@ cdef class ObjInfo(_ObjInfo):
         return newcopy
 
 
+def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
+        char* obj_name='.', int index_type=H5_INDEX_NAME, int order=H5_ITER_NATIVE,
+        PropID lapl=None):
+    """(ObjectID loc, STRING name=, INT index=, **kwds) => ObjInfo
+
+    Get information describing an object in an HDF5 file.  Provide the object
+    itself, or the containing group and exactly one of "name" or "index".
+
+    STRING obj_name (".")
+        When "index" is specified, look in this subgroup instead.
+        Otherwise ignored.
+
+    PropID lapl (None)
+        Link access property list
+
+    INT index_type (h5.INDEX_NAME)
+
+    INT order (h5.ITER_NATIVE)
+    """
+    cdef ObjInfo info
+    info = ObjInfo()
+
+    if name != NULL and index >= 0:
+        raise TypeError("At most one of name or index may be specified")
+    elif name != NULL and index < 0:
+        H5Oget_info_by_name(loc.id, name, &info.infostruct, pdefault(lapl))
+    elif name == NULL and index >= 0:
+        H5Oget_info_by_idx(loc.id, obj_name, <H5_index_t>index_type,
+            <H5_iter_order_t>order, index, &info.infostruct, pdefault(lapl))
+    else:
+        H5Oget_info(loc.id, &info.infostruct)
+
+    return info
+
+
 # For Exascale FastForward
 IF EFF:
-    cdef class _ObjInfoBase_ff:
+    cdef class _ObjInfo_ff(_ObjInfoBase_ff):
 
         cdef H5O_ff_info_t *istr
-
-    cdef class _ObjInfo_ff(_ObjInfoBase_ff):
 
         property addr:
             def __get__(self):
@@ -184,44 +217,8 @@ IF EFF:
             return newcopy
 
 
-def get_info(ObjectID loc not None, char* name=NULL, int index=-1, *,
-        char* obj_name='.', int index_type=H5_INDEX_NAME, int order=H5_ITER_NATIVE,
-        PropID lapl=None):
-    """(ObjectID loc, STRING name=, INT index=, **kwds) => ObjInfo
-
-    Get information describing an object in an HDF5 file.  Provide the object
-    itself, or the containing group and exactly one of "name" or "index".
-
-    STRING obj_name (".")
-        When "index" is specified, look in this subgroup instead.
-        Otherwise ignored.
-
-    PropID lapl (None)
-        Link access property list
-
-    INT index_type (h5.INDEX_NAME)
-
-    INT order (h5.ITER_NATIVE)
-    """
-    cdef ObjInfo info
-    info = ObjInfo()
-
-    if name != NULL and index >= 0:
-        raise TypeError("At most one of name or index may be specified")
-    elif name != NULL and index < 0:
-        H5Oget_info_by_name(loc.id, name, &info.infostruct, pdefault(lapl))
-    elif name == NULL and index >= 0:
-        H5Oget_info_by_idx(loc.id, obj_name, <H5_index_t>index_type,
-            <H5_iter_order_t>order, index, &info.infostruct, pdefault(lapl))
-    else:
-        H5Oget_info(loc.id, &info.infostruct)
-
-    return info
-
-
-IF EFF:
     def get_info_ff(ObjectID loc not None, RCntxtID rc not None,
-                    char* name=NULL, *, PropID lapl=None, EventStackID es=None):
+                    char* name=NULL, PropID lapl=None, EventStackID es=None):
         """(ObjectID loc, RCntxtID rc, STRING name=NULL, PropID lapl=None, EventStackID es=None) => ObjInfo_ff
 
         For Exascale FastForward.
@@ -245,8 +242,10 @@ IF EFF:
                                    pdefault(lapl), rc.id, esid_default(es))
         return info
 
-    def get_info_by_name_ff(ObjectID loc not None, char* name, RCntxtID rc not None,
-                            PropID lapl=None, EventStackID es=None):
+
+    def get_info_by_name_ff(ObjectID loc not None, char* name,
+                            RCntxtID rc not None, PropID lapl=None,
+                            EventStackID es=None):
         """(ObjectID loc, STRING name, RCntxtID rc, PropID lapl=None, EventStackID es=None) => ObjInfo_ff
 
         Retrieve the metadata for an object specified by a location and a

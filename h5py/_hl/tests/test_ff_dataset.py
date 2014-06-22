@@ -169,7 +169,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Does not work with HDF5_FF')
+    @ut.skip('Test FAILS')
     def test_dataset_intermediate_group(self):
         """ Create dataset with missing intermediate groups """
         from mpi4py import MPI
@@ -339,7 +339,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Fails with HDF5_FF')
+    @ut.skip('Test FAILS')
     def test_create_fillval(self):
         """ Fill value is reflected in dataset contents """
         from mpi4py import MPI
@@ -373,7 +373,7 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works with one assert commented')
+    @ut.skip('Test works')
     def test_named(self):
         """ Named type object works and links the dataset to type """
         from mpi4py import MPI
@@ -725,4 +725,259 @@ class TestDataset(BaseTest):
         if rank == 0:
             dset.close()
         f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_create_ref(self):
+        """ Region references can be used as slicing arguments """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        data = np.arange(100*100).reshape((100, 100))
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            dset = f.create_dataset('x', data=self.data)
+            dset[...] = data
+
+            f.tr.finish()
+            f.tr.close()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            slic = np.s_[25:35, 10:100:5]
+            ref = dset.regionref[slic]
+            self.assertArrayEqual(dset[ref], data[slic])
+            self.assertEqual(dset.regionref.shape(ref), dset.shape)
+            self.assertEqual(dset.regionref.selection(ref), (10, 18))
+
+            f.rc.release()
+
+            dset.close()
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_rt(self):
+        """ Compound types are read back in correct order """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        data = np.arange(100*100).reshape((100, 100))
+        dt = np.dtype([('weight', np.float64),
+                       ('cputime', np.float64),
+                       ('walltime', np.float64),
+                       ('parents_offset', np.uint32),
+                       ('n_parents', np.uint32),
+                       ('status', np.uint8),
+                       ('endpoint_type', np.uint8), ] )
+
+        testdata = np.ndarray((16,), dtype=dt)
+        for key in dt.fields:
+            testdata[key] = np.random.random((16,))*100
+        
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            
+            f['test'] = testdata
+
+            f.tr.finish()
+            f.tr.close()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            outdata = f.['test'][...]
+            self.assertTrue(np.all(outdata == testdata))
+            self.assertEqual(outdata.dtype, testdata.dtype)
+
+            f.rc.release()
+
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_astype(self):
+        """ .astype context manager """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.create_dataset('x', (100,), dtype='i2')
+            dset[...] = np.arange(100)
+
+            f.tr.finish()
+            f.tr.close()
+            f.rc.release()
+
+            f.acquire_context(2)
+
+            with dset.astype('f8'):
+                self.assertEqual(dset[...].dtype, np.dtype('f8'))
+                self.assertTrue(np.all(dset[...] == np.arange(100)))
+
+            f.rc.release()
+
+            dset.close()
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_regref(self):
+        """ Indexing a region reference dataset returns a h5py.RegionReference
+        """
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            dset1 = f.create_dataset('x', (10,10))
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            regref = dset1.regionref[...]
+
+            f.create_transaction(3)
+            f.tr.start()
+
+            dset2 = f.create_dataset('y', (1,), dtype=h5py.special_dtype(ref=h5py.RegionReference))
+            dset2[0] = regref
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(3)
+
+            self.assertEqual(type(dset2[0]), h5py.RegionReference)
+
+            f.rc.release()
+
+
+            dset1.close()
+            dset2.close()
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_reference_field(self):
+        """Compound types of which a reference is an element work right"""
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        reftype = h5py.special_dtype(ref=h5py.Reference)
+        dt = np.dtype([('a', 'i'),('b',reftype)])
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            dset = f.create_dataset('x', (1,), dtype=dt)
+            dset[0] = (42, self.f['/'].ref)
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            out = dset[0]
+            self.assertEqual(type(out[1]), h5py.Reference)
+
+            f.rc.release()
+
+            dset.close()
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_ref_scalar(self):
+        """Indexing returns a real Python object on scalar datasets"""
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            dset = f.create_dataset('x', (), dtype=h5py.special_dtype(ref=h5py.Reference))
+            dset[()] = f.ref
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            self.assertEqual(type(dset[()]), h5py.Reference)
+
+            f.rc.release()
+
+            dset.close()
+            f.close()
+        eff_finalize()
+
+
+    @ut.skip('NOT YET TESTED')
+    def test_bytestr(self):
+        """Indexing a byte string dataset returns a real python byte string"""
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            dset = f.create_dataset('x', (1,),
+                                    dtype=h5py.special_dtype(vlen=bytes))
+            dset[0] = b"Hello there!"
+        
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            self.assertEqual(type(dset[0]), bytes)
+
+            f.rc.release()
+
+            dset.close()
+            f.close()
         eff_finalize()
