@@ -120,7 +120,6 @@ class View(object):
             vcpl.set_view_elmt_scope(sel.id)
             self._id = h5v.create_ff(loc.id, query.id, self._ctn.rc.id,
                                      vcpl=vcpl, es=self._ctn.es.id)
-        self._ctn = loc.ctn
 
 
     def close(self):
