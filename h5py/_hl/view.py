@@ -99,7 +99,7 @@ class View(object):
 
         For Exascale FastForward.
         """
-        if not isinstance(loc.id, (h5g.GroupID, h5d.DatasetID)):
+        if not isinstance(loc, (Group, Dataset)):
             raise TypeError("A view can only be created on a file, group, or "
                             "dataset")
         if not isinstance(query.id, h5q.QueryID):
