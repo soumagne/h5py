@@ -82,7 +82,7 @@ class View(object):
         return self._ctn
 
 
-    def __init__(self, loc, query, sel=None, container=None):
+    def __init__(self, loc, query, sel=None):
         """Create a new view object. Arguments:
 
         loc
@@ -96,9 +96,6 @@ class View(object):
             Optional, default is None. One of selection objects from the
             selections.py module for constraining query results presented in the
             view. Its id property must be of h5s.SpaceID type.
-
-        container
-            Optional, default None. Container (File) the loc object belongs to.
 
         For Exascale FastForward.
         """
@@ -118,7 +115,7 @@ class View(object):
             vcpl.set_view_elmt_scope(sel.id)
             self._id = h5v.create_ff(loc.id, query.id, rc.id, vcpl=vcpl,
                                      es=esid)
-        self._ctn = container
+        self._ctn = loc.ctn
 
 
     def close(self):
