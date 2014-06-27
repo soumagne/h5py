@@ -99,22 +99,27 @@ class View(object):
 
         For Exascale FastForward.
         """
-
         if not isinstance(loc.id, (h5g.GroupID, h5d.DatasetID)):
             raise TypeError("A view can only be created on a file, group, or "
                             "dataset")
         if not isinstance(query.id, h5q.QueryID):
             raise TypeError("Query argument must be h5q.QueryID type")
 
+        if isinstance(loc, File):
+            self._ctn = loc
+        else:
+            self._ctn = loc.ctn
+
         if sel is None:
-            self._id = h5v.create_ff(loc.id, query.id, rc.id, es=esid)
+            self._id = h5v.create_ff(loc.id, query.id, self._ctn.rc.id,
+                                     es=self._ctn.es.id)
         else:
             if not isinstance(sel.id, h5s.SpaceID):
                 raise TypeError("%s is not a h5s.SpaceID" % sel)
             vcpl = h5p.create(h5p.VIEW_CREATE)
             vcpl.set_view_elmt_scope(sel.id)
-            self._id = h5v.create_ff(loc.id, query.id, rc.id, vcpl=vcpl,
-                                     es=esid)
+            self._id = h5v.create_ff(loc.id, query.id, self._ctn.rc.id,
+                                     vcpl=vcpl, es=self._ctn.es.id)
         self._ctn = loc.ctn
 
 
