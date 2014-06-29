@@ -188,8 +188,9 @@ def exists_ff(ObjectID loc not None, char* name, RCntxtID rc not None, *,
         Event stack identifier
     """
     cdef hbool_t exists
-    H5Aexists_by_name_ff(loc.id, obj_name, name, pdefault(lapl), &exists, rc.id,
-                         esid_default(es))
+    H5Aexists_ff(loc.id, name, &exists, rc.id, esid_default(es))
+    # H5Aexists_by_name_ff(loc.id, obj_name, name, pdefault(lapl), &exists, rc.id,
+    #                      esid_default(es))
     return <bint>exists
 
 
