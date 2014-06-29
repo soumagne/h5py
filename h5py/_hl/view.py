@@ -129,7 +129,6 @@ class View(object):
 
     def get_query(self):
         """ Copy of the query object used to create this view """
-
         qid = self.id.get_query()
         return make_query(qid)
 
@@ -138,25 +137,21 @@ class View(object):
         """ Count of attributes, objects, and dataset element regions in the
         view. A tuple with three elements is returned.
         """
-
         return self.id.get_counts()
 
 
     def attr_count(self):
         """ Count of attributes in the view. """
-
         return self.count()[0]
 
 
     def obj_count(self):
         """ Count of objects in the view. """
-        
         return self.count()[1]
 
 
-    def dset_count(self):
+    def reg_count(self):
         """ Count of dataset element regions in the view. """
-        
         return self.count()[2]
 
 
@@ -165,7 +160,6 @@ class View(object):
         
         For Exascale FastForward.
         """
-
         locid = self.id.get_location_ff(es=self.ctn.es.id)
         if isinstance(locid, h5f.FileID):
             return File(locid)
@@ -186,7 +180,6 @@ class View(object):
 
         For Exascale FastForward.
         """
-
         attrs_id = self.id.get_attrs_ff(start=start, count=count,
                                         es=self.ctn.es.id)
         for aid in attrs_id:
@@ -204,7 +197,6 @@ class View(object):
 
         For Exascale FastForward.
         """
-
         objs_id = self.id.get_objs_ff(start=start, count=count,
                                       es=self.ctn.es.id)
         for oid in objs_id:
@@ -232,7 +224,6 @@ class View(object):
 
         For Exascale FastForward.
         """
-
         tl = self.id.get_elem_regions_ff(start=start, count=count,
                                          es=self.ctn.es.id)
         for dsid, spaceid in tl:
