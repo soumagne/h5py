@@ -590,7 +590,8 @@ class Group(Index, HLObject, DictCompat):
         else:
             namestr = (u'"%s"' % self.name) if self.name is not None \
                                             else u"(anonymous)"
-            r = u'<HDF5 group %s (%d members)>' % (namestr, len(self))
+            # r = u'<HDF5 group %s (%d members)>' % (namestr, len(self))
+            r = u'<HDF5 group %s (%s)>' % (namestr, hex(id(self)))
 
         if py3:
             return r
