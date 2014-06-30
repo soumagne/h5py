@@ -57,6 +57,9 @@ cpdef ObjectID wrap_identifier(hid_t ident):
     elif typecode == H5I_MAP:
         import h5m
         obj = h5m.MapID.open(ident)
+    elif typecode == H5I_DATASPACE:
+        import h5s
+        obj = h5s.SpaceID.open(ident)
     else:
         raise ValueError("Unrecognized type code %d" % typecode)
 
