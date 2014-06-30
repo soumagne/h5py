@@ -427,7 +427,7 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip('Test works')
+    @ut.skip('Test works')
     def test_view_009(self):
         """Retrieving found objects and regions"""
         from h5py.highlevel import Group
@@ -479,5 +479,48 @@ class TestView(BaseTest):
             d4.close()
             g1.close()
             g2.close()
+            f.close()
+        eff_finalize()
+
+
+    # @ut.skip('Test works')
+    def test_view_010(self):
+        """Retrieving found attributes"""
+        from h5py import h5a
+        from mpi4py import MPI
+        comm = MPI.COMM_WORLD
+        eff_init(comm, MPI.INFO_NULL)
+        rank = comm.Get_rank()
+        if rank == 0:
+            data = np.arange(50)
+            data.resize((5,10))
+            f = File(self.fname, 'w', driver='iod', comm=comm,
+                     info=MPI.INFO_NULL)
+            f.acquire_context(1)
+            f.create_transaction(2)
+            f.tr.start()
+
+            f.attrs['foo'] = data
+            f.attrs['bar'] = 1.0*data
+            f.attrs['baz'] = np.arange(50)
+            f.attrs['blah'] = 1.
+
+            f.tr.finish()
+            f.rc.release()
+            f.acquire_context(2)
+
+            q = (AQuery('attr_value') > 24) & (AQuery('attr_name') == 'foo')
+            v = View(f, q)
+
+            attrs = v.attrs(count=v.attr_count)
+            counter = 0
+            for a in attrs:
+                self.assertIsInstance(a.id, h5a.AttrID)
+                a.close()
+                counter += 1
+            self.assertEqual(counter, v.attr_count)
+
+            f.rc.release()
+
             f.close()
         eff_finalize()
