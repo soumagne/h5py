@@ -32,7 +32,6 @@ class TestAccess(BaseTest):
         Feature: Attribute creation/retrieval/deletion via special methods
     """
 
-    @ut.skip('Test works')
     def test_create_scalar(self):
         """ Attribute creation by direct asignment """
         from mpi4py import MPI
@@ -68,7 +67,6 @@ class TestAccess(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_overwrite(self):
         """ Attributes are silently overwritten """
         from mpi4py import MPI
@@ -97,7 +95,6 @@ class TestAccess(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_rank(self):
         """ Attribute rank is preserved """
         from mpi4py import MPI
@@ -131,7 +128,6 @@ class TestAccess(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_delete(self):
         """ Deletion of attributes using __delitem__ """
         from mpi4py import MPI
@@ -172,7 +168,6 @@ class TestAccess(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_unicode(self):
         """ Attributes can be accessed via Unicode or byte strings  """
         from mpi4py import MPI
@@ -207,7 +202,6 @@ class TestAccess(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_named(self):
         """ Attributes created from named types link to the source type object
         """
@@ -286,7 +280,6 @@ class TestAccess(BaseTest):
 
 class TestScalar(BaseTest):
 
-    @ut.skip('Test works')
     def test_int(self):
         """ Integers are read as correct NumPy type """
         from mpi4py import MPI
@@ -316,7 +309,6 @@ class TestScalar(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_compound(self):
         """ Compound scalars are read as numpy.void """
         from mpi4py import MPI
@@ -353,7 +345,6 @@ class TestScalar(BaseTest):
 class TestArray(BaseTest):
 
 
-    @ut.skip('Test works')
     def test_single(self):
         """ Single-element arrays are correctly recovered """
         from mpi4py import MPI
@@ -385,7 +376,6 @@ class TestArray(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_multi(self):
         """ Rank-1 arrays are correctly recovered """
         from mpi4py import MPI
@@ -424,7 +414,6 @@ class TestTypes(BaseTest):
     """ Feature: All supported types can be stored in attributes """
 
 
-    @ut.skip('Test works')
     def test_int(self):
         """ Storage of integer types  """
         from mpi4py import MPI
@@ -464,7 +453,6 @@ class TestTypes(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_float(self):
         """ Storage of floating point types """
         from mpi4py import MPI
@@ -503,7 +491,6 @@ class TestTypes(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_complex(self):
         """ Storage of complex types """
         from mpi4py import MPI
@@ -542,7 +529,6 @@ class TestTypes(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_string(self):
         """ Storage of fixed-length strings """
         from mpi4py import MPI
@@ -581,7 +567,6 @@ class TestTypes(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_bool(self):
         """ Storage of NumPy booleans """
         from mpi4py import MPI

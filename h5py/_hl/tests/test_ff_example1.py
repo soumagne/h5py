@@ -21,7 +21,6 @@ class BaseTest(TestCaseFF):
         pass
 
 
-@ut.skip('Test working')
 class TestExample1(BaseTest):
 
     def test_example1(self):

@@ -33,7 +33,6 @@ class TestDataset(BaseTest):
         Tests for HDF5 Exascale FastForward Dataset object
     """
 
-    @ut.skip('Test works')
     def test_create_scalar(self):
         """ Create a scalar dataset """
         from mpi4py import MPI
@@ -60,7 +59,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_create_simple(self):
         """ Create a size-1 dataset in a group and confirm default dtype """
         from mpi4py import MPI
@@ -103,7 +101,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_create_extended(self):
         """ Create an extended dataset and missing shape raises TypeError """
         from mpi4py import MPI
@@ -137,7 +134,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_create_scalar_extended(self):
         """ Create scalar and extended datasets from existing data """
         from mpi4py import MPI
@@ -196,7 +192,6 @@ class TestDataset(BaseTest):
         eff_finalize()        
 
 
-    @ut.skip('Test works')
     def test_reshape(self):
         """ Create from existing data, and make it fit a new shape """
         from mpi4py import MPI
@@ -231,7 +226,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_dtype(self):
         """ Retrieve dtype from dataset """
         from mpi4py import MPI
@@ -257,7 +251,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_require(self):
         """ require_dataset() operations """
         from mpi4py import MPI
@@ -293,7 +286,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_chunks(self):
         """ Dataset creation with specifying chunks """
         from mpi4py import MPI
@@ -373,7 +365,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_named(self):
         """ Named type object works and links the dataset to type """
         from mpi4py import MPI
@@ -415,7 +406,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_resize(self):
         """ Dataset.resize() operations """
         from mpi4py import MPI
@@ -470,7 +460,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_slicing_single(self):
         """ Retrieving a single element with NumPy semantics """
         from mpi4py import MPI
@@ -517,7 +506,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_simple_slicing(self):
         """ Simple NumPy-style slices (start:stop:step) are supported """
         from mpi4py import MPI
@@ -551,7 +539,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_read(self):
         """ Read arrays """
         from mpi4py import MPI
@@ -601,7 +588,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_write_element(self):
         """ Write a single element to the array """
         from mpi4py import MPI
@@ -638,7 +624,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_write_slices(self):
         """ Write slices to array type """
         from mpi4py import MPI
@@ -677,7 +662,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_roundtrip(self):
         """ Read the contents of an array and write them back """
         from mpi4py import MPI
@@ -810,7 +794,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_astype(self):
         """ .astype context manager """
         from mpi4py import MPI
@@ -951,7 +934,6 @@ class TestDataset(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_bytestr(self):
         """Indexing a byte string dataset returns a real python byte string"""
         from mpi4py import MPI

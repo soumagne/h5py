@@ -4,7 +4,6 @@ import numpy as np
 from .common_ff import ut, TestCaseFF
 from h5py.highlevel import File, View, AQuery, CQuery
 from h5py.eff_control import eff_init, eff_finalize
-# from h5py import h5t, h5a
 
 
 
@@ -12,7 +11,7 @@ class BaseTest(TestCaseFF):
 
     def setUp(self):
         self.ff_cleanup()
-        self.start_h5ff_server(quiet=False)
+        self.start_h5ff_server(quiet=True)
         self.fname = self.filename("ff_file_view.h5")
 
 
@@ -27,7 +26,6 @@ class TestView(BaseTest):
         Feature: View (H5V) operations
     """
 
-    @ut.skip('Test works')
     def test_view_001(self):
         """ View creation on file, group, dataset, attribute"""
         from mpi4py import MPI
@@ -67,7 +65,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_002(self):
         """ View location object"""
         from h5py.highlevel import Group, Dataset
@@ -112,7 +109,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_003(self):
         """Finding attributes and objects by name"""
         from mpi4py import MPI
@@ -185,7 +181,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_004(self):
         """Finding datasets by value"""
         from mpi4py import MPI
@@ -236,7 +231,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_005(self):
         """Finding attributes by value"""
         from mpi4py import MPI
@@ -273,7 +267,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_006(self):
         """Finding attributes with compound query"""
         from mpi4py import MPI
@@ -318,7 +311,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_007(self):
         """Finding datasets with compound query"""
         from mpi4py import MPI
@@ -375,7 +367,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_008(self):
         """Finding objects with compound query"""
         from mpi4py import MPI
@@ -427,7 +418,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    @ut.skip('Test works')
     def test_view_009(self):
         """Retrieving found objects and regions"""
         from h5py.highlevel import Group
@@ -483,7 +473,6 @@ class TestView(BaseTest):
         eff_finalize()
 
 
-    # @ut.skip('Test works')
     def test_view_010(self):
         """Retrieving found attributes"""
         from h5py import h5a

@@ -17,7 +17,6 @@ if not mpi:
     raise RuntimeError('This HDF5 does not appear to be built with MPI support')
 
 
-@ut.skip('Test working')
 class TestMap(TestCaseFF):
 
     def setUp(self):
