@@ -189,7 +189,8 @@ class View(object):
         attrs_id = self.id.get_attrs_ff(start=start, count=count,
                                         es=self.ctn.es.id)
         for aid in attrs_id:
-            yield Attribute(aid)
+            a = Attribute(aid, container=self.ctn)
+            yield a
 
 
     def objs(self, start=0, count=1):
