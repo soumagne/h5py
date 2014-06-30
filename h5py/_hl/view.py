@@ -82,6 +82,56 @@ class View(object):
         return self._ctn
 
 
+    @property
+    def location(self):
+        """ Object on which the view is created, possibly asynchronously.
+        
+        For Exascale FastForward.
+        """
+        locid = self.id.get_location_ff(es=self.ctn.es.id)
+        if isinstance(locid, h5f.FileID):
+            return File(locid)
+        elif isinstance(locid, h5g.GroupID):
+            return Group(locid, container=self.ctn)
+        elif isinstance(locid, h5d.DatasetID):
+            return Dataset(locid, container=self.ctn)
+        else:
+            raise ValueError("%s invalid view object location" % locid)
+
+
+    @property
+    def query(self):
+        """ Copy of the query object used to create this view """
+        qid = self.id.get_query()
+        return make_query(qid)
+
+
+    @property
+    def count(self):
+        """ Count of attributes, objects, and dataset element regions in the
+        view. A tuple with three elements is returned.
+        """
+        return self.id.get_counts()
+
+
+    @property
+    def attr_count(self):
+        """ Count of attributes in the view. """
+        return self.count[0]
+
+
+    @property
+    def obj_count(self):
+        """ Count of objects in the view. """
+        return self.count[1]
+
+
+    @property
+    def reg_count(self):
+        """ Count of dataset element regions in the view. """
+        return self.count[2]
+
+
     def __init__(self, loc, query, sel=None):
         """Create a new view object. Arguments:
 
@@ -125,50 +175,6 @@ class View(object):
     def close(self):
         """ Close the view object """
         self.id._close()
-
-
-    def get_query(self):
-        """ Copy of the query object used to create this view """
-        qid = self.id.get_query()
-        return make_query(qid)
-
-
-    def count(self):
-        """ Count of attributes, objects, and dataset element regions in the
-        view. A tuple with three elements is returned.
-        """
-        return self.id.get_counts()
-
-
-    def attr_count(self):
-        """ Count of attributes in the view. """
-        return self.count()[0]
-
-
-    def obj_count(self):
-        """ Count of objects in the view. """
-        return self.count()[1]
-
-
-    def reg_count(self):
-        """ Count of dataset element regions in the view. """
-        return self.count()[2]
-
-
-    def location(self):
-        """ Object on which the view is created, possibly asynchronously.
-        
-        For Exascale FastForward.
-        """
-        locid = self.id.get_location_ff(es=self.ctn.es.id)
-        if isinstance(locid, h5f.FileID):
-            return File(locid)
-        elif isinstance(locid, h5g.GroupID):
-            return Group(locid, container=self.ctn)
-        elif isinstance(locid, h5d.DatasetID):
-            return Dataset(locid, container=self.ctn)
-        else:
-            raise ValueError("%s invalid view object location" % locid)
 
 
     def attrs(self, start=0, count=1):
