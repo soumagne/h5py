@@ -49,7 +49,7 @@ def create(ObjectID loc not None, char* name, int ref_type, ObjectID space=None)
     elif ref_type == H5R_DATASET_REGION:
         if space is None:   # work around segfault in HDF5
             raise ValueError("Dataspace required for region reference")
-        ref = RegionReference()
+        ref = DsetRegionReference()
     else:
         raise ValueError("Unknown reference typecode")
 
@@ -72,7 +72,7 @@ def dereference(Reference ref not None, ObjectID id not None):
     in the file) must also be provided.  Returns None if the reference
     is zero-filled.
 
-    The reference may be either Reference or RegionReference.
+    The reference may be either Reference or DsetRegionReference.
     """
     import h5i
     if not ref:
@@ -81,7 +81,7 @@ def dereference(Reference ref not None, ObjectID id not None):
 
 
 @with_phil
-def get_region(RegionReference ref not None, ObjectID id not None):
+def get_region(DsetRegionReference ref not None, ObjectID id not None):
     """(Reference ref, ObjectID id) => SpaceID or None
 
     Retrieve the dataspace selection pointed to by the reference.
@@ -90,7 +90,7 @@ def get_region(RegionReference ref not None, ObjectID id not None):
     object in the file (including the dataset itself) must also be
     provided.
 
-    The reference object must be a RegionReference.  If it is zero-filled,
+    The reference object must be a DsetRegionReference.  If it is zero-filled,
     returns None.
     """
     import h5s
@@ -104,7 +104,7 @@ def get_obj_type(Reference ref not None, ObjectID id not None):
     """(Reference ref, ObjectID id) => INT obj_code or None
 
     Determine what type of object the reference points to.  The
-    reference may be a Reference or RegionReference.  The file
+    reference may be a Reference or DsetRegionReference.  The file
     identifier or the identifier of any object in the file must also
     be provided.
 
@@ -170,7 +170,7 @@ cdef class Reference:
     def __repr__(self):
         return "<HDF5 object reference%s>" % ("" if self else " (null)")
 
-cdef class RegionReference(Reference):
+cdef class DsetRegionReference(Reference):
 
     """
         Opaque representation of an HDF5 region reference.

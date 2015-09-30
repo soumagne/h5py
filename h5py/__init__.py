@@ -40,7 +40,7 @@ _register_lzf()
 
 # --- Public API --------------------------------------------------------------
 
-from . import h5a, h5d, h5ds, h5f, h5fd, h5g, h5r, h5s, h5t, h5p, h5z
+from . import h5a, h5d, h5ds, h5f, h5fd, h5g, h5q, h5r, h5s, h5t, h5p, h5x, h5z
 
 from ._hl import filters
 from ._hl.base import is_hdf5, HLObject
@@ -51,7 +51,7 @@ from ._hl.datatype import Datatype
 from ._hl.attrs import AttributeManager
 
 from .h5 import get_config
-from .h5r import Reference, RegionReference
+from .h5r import Reference, DsetRegionReference
 from .h5t import special_dtype, check_dtype
 
 from . import version

@@ -27,7 +27,7 @@ MODULES =  ['defs','_errors','_objects','_proxy', 'h5fd', 'h5z',
             '_conv', 'h5t','h5s',
             'h5p',
             'h5d', 'h5a', 'h5f', 'h5g',
-            'h5l', 'h5o',
+            'h5l', 'h5o', 'h5q', 'h5x',
             'h5ds', 'h5ac']
 
 

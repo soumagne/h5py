@@ -13,7 +13,7 @@
     Low-level type-conversion routines.
 """
 
-from h5r cimport Reference, RegionReference, hobj_ref_t, hdset_reg_ref_t
+from h5r cimport Reference, DsetRegionReference, hobj_ref_t, hdset_reg_ref_t
 from h5t cimport H5PY_OBJ, typewrap, py_create, TypeID
 cimport numpy as np
 from libc.stdlib cimport realloc
@@ -373,10 +373,10 @@ cdef int conv_regref2pyref(void* ipt, void* opt, void* bkg, void* priv) except -
     cdef PyObject** bkg_obj = <PyObject**>bkg
     cdef hdset_reg_ref_t* buf_ref = <hdset_reg_ref_t*>ipt
 
-    cdef RegionReference ref = RegionReference()
+    cdef DsetRegionReference ref = DsetRegionReference()
     cdef PyObject* ref_ptr = NULL
 
-    memcpy(ref.ref.reg_ref, buf_ref, sizeof(hdset_reg_ref_t))
+    memcpy(ref.ref.dset_reg_ref, buf_ref, sizeof(hdset_reg_ref_t))
 
     ref.typecode = H5R_DATASET_REGION
 
@@ -395,14 +395,14 @@ cdef int conv_pyref2regref(void* ipt, void* opt, void* bkg, void* priv) except -
     cdef hdset_reg_ref_t* buf_ref = <hdset_reg_ref_t*>opt
 
     cdef object obj
-    cdef RegionReference ref
+    cdef DsetRegionReference ref
 
     if buf_obj[0] != NULL and buf_obj[0] != Py_None:
         obj = <object>(buf_obj[0])
-        if not isinstance(obj, RegionReference):
+        if not isinstance(obj, DsetRegionReference):
             raise TypeError("Can't convert incompatible object to HDF5 region reference")
-        ref = <RegionReference>(buf_obj[0])
-        memcpy(buf_ref, ref.ref.reg_ref, sizeof(hdset_reg_ref_t))
+        ref = <DsetRegionReference>(buf_obj[0])
+        memcpy(buf_ref, ref.ref.dset_reg_ref, sizeof(hdset_reg_ref_t))
     else:
         memset(buf_ref, c'\0', sizeof(hdset_reg_ref_t))
 

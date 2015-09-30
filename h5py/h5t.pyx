@@ -19,7 +19,7 @@
 from _objects cimport pdefault
 
 from numpy cimport dtype, ndarray
-from h5r cimport Reference, RegionReference
+from h5r cimport Reference, DsetRegionReference
 
 from utils cimport  emalloc, efree, \
                     require_tuple, convert_dims, convert_tuple
@@ -184,6 +184,8 @@ UNIX_D64BE = lockid(H5T_UNIX_D64BE)
 # Reference types
 STD_REF_OBJ = lockid(H5T_STD_REF_OBJ)
 STD_REF_DSETREG = lockid(H5T_STD_REF_DSETREG)
+STD_REF_REG = lockid(H5T_STD_REF_REG)
+STD_REF_ATTR = lockid(H5T_STD_REF_ATTR)
 
 # Null terminated (C) and Fortran string types
 C_S1 = lockid(H5T_C_S1)
@@ -688,7 +690,7 @@ cdef class TypeReferenceID(TypeID):
         if H5Tequal(self.id, H5T_STD_REF_OBJ):
             return special_dtype(ref=Reference)
         elif H5Tequal(self.id, H5T_STD_REF_DSETREG):
-            return special_dtype(ref=RegionReference)
+            return special_dtype(ref=DsetRegionReference)
         else:
             raise TypeError("Unknown reference type")
 
@@ -1440,7 +1442,7 @@ cdef TypeStringID _c_vlen_unicode():
 cdef TypeReferenceID _c_ref(object refclass):
     if refclass is Reference:
         return STD_REF_OBJ
-    elif refclass is RegionReference:
+    elif refclass is DsetRegionReference:
         return STD_REF_DSETREG
     raise TypeError("Unrecognized reference code")
 
@@ -1545,7 +1547,7 @@ def special_dtype(**kwds):
         a 2-tuple containing an (integer) base dtype and a dict mapping
         string names to integer values.
 
-    ref = Reference | RegionReference
+    ref = Reference | DsetRegionReference
         Create a NumPy representation of an HDF5 object or region reference
         type.
     """
@@ -1574,8 +1576,8 @@ def special_dtype(**kwds):
 
     if name == 'ref':
 
-        if val not in (Reference, RegionReference):
-            raise ValueError("Ref class must be Reference or RegionReference")
+        if val not in (Reference, DsetRegionReference):
+            raise ValueError("Ref class must be Reference or DsetRegionReference")
 
         return dtype('O', metadata={'ref': val})
 
@@ -1599,7 +1601,7 @@ def check_dtype(**kwds):
 
     ref = dtype
         If the dtype represents an HDF5 reference type, returns the reference
-        class (either Reference or RegionReference).  Returns None if the dtype
+        class (either Reference or DsetRegionReference).  Returns None if the dtype
         does not represent an HDF5 reference type.
     """
 

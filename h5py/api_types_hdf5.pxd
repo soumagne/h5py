@@ -217,6 +217,7 @@ cdef extern from "hdf5.h":
     H5I_ATTR,               # group ID for Attribute objects
     H5I_REFERENCE,          # group ID for Reference objects
     H5I_VFL,                # group ID for virtual file layer
+    H5I_QUERY,              # group ID for Query objects
     H5I_GENPROP_CLS,        # group ID for generic property list classes
     H5I_GENPROP_LST,        # group ID for generic property lists
     H5I_NGROUPS             # number of valid groups, MUST BE LAST!
@@ -401,15 +402,52 @@ cdef extern from "hdf5.h":
   hid_t H5P_CRT_ORDER_TRACKED
   hid_t H5P_CRT_ORDER_INDEXED
 
+# === H5Q - Query API =========================================================
+
+  unsigned int H5Q_REF_REG  # (0x100u) region references are present
+  unsigned int H5Q_REF_OBJ  # (0x010u) object references are present
+  unsigned int H5Q_REF_ATTR # (0x001u) attribute references are present
+
+  char *H5Q_VIEW_REF_REG_NAME   # region references
+  char *H5Q_VIEW_REF_OBJ_NAME   # object references
+  char *H5Q_VIEW_REF_ATTR_NAME  # attribute references
+
+  # Query type
+  ctypedef enum H5Q_type_t:
+    H5Q_TYPE_DATA_ELEM,  # selects data elements
+    H5Q_TYPE_ATTR_VALUE, # selects attribute values
+    H5Q_TYPE_ATTR_NAME,  # selects attributes
+    H5Q_TYPE_LINK_NAME   # selects objects
+    H5Q_TYPE_MISC        # (for combine queries) selects misc objects
+
+  # Query match conditions
+  ctypedef enum H5Q_match_op_t:
+    H5Q_MATCH_EQUAL,        # equal
+    H5Q_MATCH_NOT_EQUAL,    # not equal
+    H5Q_MATCH_LESS_THAN,    # less than
+    H5Q_MATCH_GREATER_THAN  # greater than
+
+  # Query combine operators
+  ctypedef enum H5Q_combine_op_t:
+    H5Q_COMBINE_AND,
+    H5Q_COMBINE_OR,
+    H5Q_SINGLETON
+
 # === H5R - Reference API =====================================================
 
   size_t H5R_DSET_REG_REF_BUF_SIZE
   size_t H5R_OBJ_REF_BUF_SIZE
 
+  ctypedef struct href_var:
+      size_t buf_size   # Size of serialized reference
+      void *buf         # Pointer to serialized reference
+
   ctypedef enum H5R_type_t:
     H5R_BADTYPE = (-1),
     H5R_OBJECT,
     H5R_DATASET_REGION,
+    H5R_REGION,
+    H5R_ATTR,
     H5R_INTERNAL,
     H5R_MAXTYPE
 
@@ -589,6 +627,8 @@ cdef extern from "hdf5.h":
   cdef enum:
     H5T_STD_REF_OBJ
     H5T_STD_REF_DSETREG
+    H5T_STD_REF_REG
+    H5T_STD_REF_ATTR
 
   # Type-conversion infrastructure
 
@@ -620,6 +660,29 @@ cdef extern from "hdf5.h":
   ctypedef herr_t (*H5T_conv_t)(hid_t src_id, hid_t dst_id, H5T_cdata_t *cdata,
       size_t nelmts, size_t buf_stride, size_t bkg_stride, void *buf,
       void *bkg, hid_t dset_xfer_plist) except -1
+
+# === H5X - Index API =========================================================
+
+  int H5X_CLASS_T_VERS
+
+  # Plugin IDs
+  int H5X_PLUGIN_ERROR     # (-1) no plugin
+  int H5X_PLUGIN_NONE      # 0    reserved indefinitely
+  int H5X_PLUGIN_DUMMY     # 1    dummy
+  int H5X_PLUGIN_FASTBIT   # 2    fastbit
+  int H5X_PLUGIN_ALACRITY  # 3    alacrity
+
+  int H5X_PLUGIN_RESERVED  # 64   plugin ids below this value reserved
+
+  int H5X_PLUGIN_MAX       # 256  maximum plugin id
+  int H5X_MAX_NPLUGINS     # 16   maximum number of plugins allowed in a pipeline
+
+  # Index type
+  ctypedef enum H5X_type_t:
+    H5X_TYPE_LINK_NAME,   # Link name index
+    H5X_TYPE_ATTR_NAME,   # Attribute name index
+    H5X_TYPE_DATA_ELEM,   # Dataset element index
+    H5X_TYPE_MAP_VALUE    # Map value index
 
 # === H5Z - Filters ===========================================================
 
