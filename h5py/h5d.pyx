@@ -368,7 +368,7 @@ cdef class DatasetID(ObjectID):
             Use this in SWMR write mode to allow readers to be updated with the
             dataset changes.
             
-            Feature requires: 1.9.178 HDF5
+            Feature requires: 1.9.300 HDF5
             """ 
             H5Dflush(self.id)
 
@@ -387,7 +387,7 @@ cdef class DatasetID(ObjectID):
             
             Use this in SWMR read mode to poll for dataset changes.
             
-            Feature requires: 1.9.178 HDF5
+            Feature requires: 1.9.300 HDF5
             """ 
             H5Drefresh(self.id)
 

@@ -23,7 +23,7 @@ import sys
 import h5py
 import logging
 
-#assert h5py.version.hdf5_version_tuple >= (1,9,178), "SWMR requires HDF5 version >= 1.9.178"
+#assert h5py.version.hdf5_version_tuple >= (1,9,300), "SWMR requires HDF5 version >= 1.9.300"
 
 class EventHandler(pyinotify.ProcessEvent):
 

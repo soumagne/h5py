@@ -668,7 +668,7 @@ class Dataset(HLObject):
             """ Refresh the dataset metadata by reloading from the file.
             
             This is part of the SWMR features and only exist when the HDF5
-            librarary version >=1.9.178
+            library version >=1.9.300
             """
             self._id.refresh()
                 
@@ -679,7 +679,7 @@ class Dataset(HLObject):
             If the dataset is chunked, raw data chunks are written to the file.
             
             This is part of the SWMR features and only exist when the HDF5 
-            librarary version >=1.9.178
+            library version >=1.9.300
             """
             self._id.flush()
             
