@@ -2,7 +2,7 @@ import h5py
 import numpy as np
 
 # Create simple test file
-myfile = h5py.h5f.create("test.h5")
+myfile = h5py.h5f.create("test_view_region.h5")
 mytype = h5py.h5t.NATIVE_INT32
 myspace = h5py.h5s.create_simple((100,))
 mydataset = h5py.h5d.create(myfile, "pressure", mytype, myspace)
