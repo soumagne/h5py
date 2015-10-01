@@ -31,5 +31,8 @@ cdef class Reference:
 cdef class DsetRegionReference(Reference):
     pass
 
+cdef class RegionReference(Reference):
+    pass
+
 cdef class AttributeReference(Reference):
     pass

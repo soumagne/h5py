@@ -41,6 +41,8 @@ cdef extern from "hdf5.h":
 #   H5E_TBBT,                   # Threaded, Balanced, Binary Trees (not in 1.8)
     H5E_TST,                    # Ternary Search Trees                       
     H5E_RS,                     # Reference Counted Strings                  
+    H5E_QUERY,                  # Query
+    H5E_INDEX,                  # Index
     H5E_ERROR,                  # Error API                                  
     H5E_SLIST                   # Skip Lists     
 

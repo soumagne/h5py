@@ -11,8 +11,12 @@
     H5R API for object and region references.
 """
 
+cdef extern from "hdf5.h":
+    herr_t H5Rcreate(void *ref, H5R_type_t ref_type, ...) except *
+
 # Pyrex compile-time imports
-from _objects cimport ObjectID
+from _objects cimport ObjectID, pdefault
+from h5p cimport PropID
 
 from ._objects import phil, with_phil
 
@@ -21,51 +25,65 @@ from ._objects import phil, with_phil
 
 OBJECT = H5R_OBJECT
 DATASET_REGION = H5R_DATASET_REGION
+REGION = H5R_REGION
+ATTR = H5R_ATTR
 
 
 # === Reference API ===========================================================
 
 @with_phil
-def create(ObjectID loc not None, char* name, int ref_type, ObjectID space=None):
-    """(ObjectID loc, STRING name, INT ref_type, SpaceID space=None)
-    => ReferenceObject ref
+def create(int ref_type, *args):
+    """(INT ref_type, *args) => ReferenceObject ref
 
     Create a new reference. The value of ref_type detemines the kind
     of reference created:
 
     OBJECT
         Reference to an object in an HDF5 file.  Parameters "loc"
-        and "name" identify the object; "space" is unused.
+        and "name" identify the object.
 
     DATASET_REGION
         Reference to a dataset region.  Parameters "loc" and
         "name" identify the dataset; the selection on "space"
         identifies the region.
     """
-    cdef hid_t space_id
+    cdef hid_t loc_id, space_id
+    cdef char* name
     cdef Reference ref
+
+    loc = args[0]
+    if not isinstance(loc, ObjectID):
+        raise ValueError("Second argument must be ObjectID")
+    loc_id = loc.id
+
+    obj_name = args[1]
+    if not isinstance(obj_name, str):
+        raise ValueError("Third argument must be string")
+    name = obj_name
+
     if ref_type == H5R_OBJECT:
         ref = Reference()
+        H5Rcreate(&ref.ref, <H5R_type_t>ref_type, loc_id, name)
     elif ref_type == H5R_DATASET_REGION:
-        if space is None:   # work around segfault in HDF5
+        space = args[2]
+        if not isinstance(space, ObjectID): # work around segfault in HDF5
             raise ValueError("Dataspace required for region reference")
+        space_id = space.id
         ref = DsetRegionReference()
+        H5Rcreate(&ref.ref, <H5R_type_t>ref_type, loc_id, name, space_id)
+    elif ref_type == H5R_REGION:
+        ref = RegionReference()
+    elif ref_type == H5R_ATTR:
+        ref = AttributeReference()
     else:
         raise ValueError("Unknown reference typecode")
-
-    if space is None:
-        space_id = -1
-    else:
-        space_id = space.id
-
-    H5Rcreate(&ref.ref, loc.id, name, <H5R_type_t>ref_type, space_id)
 
     return ref
 
 
 @with_phil
-def dereference(Reference ref not None, ObjectID id not None):
-    """(Reference ref, ObjectID id) => ObjectID or None
+def dereference(Reference ref not None, ObjectID id not None, PropID oapl=None):
+    """(Reference ref, ObjectID id, PropID oapl=None) => ObjectID or None
 
     Open the object pointed to by the reference and return its
     identifier.  The file identifier (or the identifier for any object
@@ -77,11 +95,11 @@ def dereference(Reference ref not None, ObjectID id not None):
     import h5i
     if not ref:
         return None
-    return h5i.wrap_identifier(H5Rdereference(id.id, <H5R_type_t>ref.typecode, &ref.ref))
+    return h5i.wrap_identifier(H5Rdereference2(id.id, pdefault(oapl), <H5R_type_t>ref.typecode, &ref.ref))
 
 
 @with_phil
-def get_region(DsetRegionReference ref not None, ObjectID id not None):
+def get_region(Reference ref not None, ObjectID id not None):
     """(Reference ref, ObjectID id) => SpaceID or None
 
     Retrieve the dataspace selection pointed to by the reference.
@@ -94,7 +112,7 @@ def get_region(DsetRegionReference ref not None, ObjectID id not None):
     returns None.
     """
     import h5s
-    if ref.typecode != H5R_DATASET_REGION or not ref:
+    if not ref.typecode in (H5R_DATASET_REGION, H5R_REGION) or not ref:
         return None
     return h5s.SpaceID(H5Rget_region(id.id, <H5R_type_t>ref.typecode, &ref.ref))
 
@@ -110,16 +128,16 @@ def get_obj_type(Reference ref not None, ObjectID id not None):
 
     The return value is one of:
 
-    - h5g.LINK
-    - h5g.GROUP
-    - h5g.DATASET
-    - h5g.TYPE
+    - h5o.H5O_TYPE_GROUP
+    - h5o.H5O_TYPE_DATASET
 
     If the reference is zero-filled, returns None.
     """
+    cdef H5O_type_t type
     if not ref:
         return None
-    return <int>H5Rget_obj_type(id.id, <H5R_type_t>ref.typecode, &ref.ref)
+    H5Rget_obj_type2(id.id, <H5R_type_t>ref.typecode, &ref.ref, &type)
+    return <int>type
 
 
 @with_phil
@@ -186,7 +204,37 @@ cdef class DsetRegionReference(Reference):
     def __repr__(self):
         return "<HDF5 region reference%s>" % ("" if self else " (null")
 
+cdef class RegionReference(Reference):
 
+    """
+        Opaque representation of an HDF5 region reference.
+
+        This is a subclass of Reference which exists mainly for programming
+        convenience.
+    """
+
+    def __cinit__(self, *args, **kwds):
+        self.typecode = H5R_REGION
+        self.typesize = sizeof(hreg_ref_t)
+
+    def __repr__(self):
+        return "<HDF5 region reference%s>" % ("" if self else " (null")
+
+cdef class AttributeReference(Reference):
+
+    """
+        Opaque representation of an HDF5 attribute reference.
+
+        This is a subclass of Reference which exists mainly for programming
+        convenience.
+    """
+
+    def __cinit__(self, *args, **kwds):
+        self.typecode = H5R_ATTR
+        self.typesize = sizeof(hattr_ref_t)
+
+    def __repr__(self):
+        return "<HDF5 attribute reference%s>" % ("" if self else " (null")
 
 
 

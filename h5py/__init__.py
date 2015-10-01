@@ -51,7 +51,7 @@ from ._hl.datatype import Datatype
 from ._hl.attrs import AttributeManager
 
 from .h5 import get_config
-from .h5r import Reference, DsetRegionReference
+from .h5r import Reference, DsetRegionReference, RegionReference, AttributeReference
 from .h5t import special_dtype, check_dtype
 
 from . import version
