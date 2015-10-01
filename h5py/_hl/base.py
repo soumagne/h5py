@@ -49,8 +49,8 @@ def guess_dtype(data):
     constructor to figure out)
     """
     with phil:
-        if isinstance(data, h5r.RegionReference):
-            return h5t.special_dtype(ref=h5r.RegionReference)
+        if isinstance(data, h5r.DsetRegionReference):
+            return h5t.special_dtype(ref=h5r.DsetRegionReference)
         if isinstance(data, h5r.Reference):
             return h5t.special_dtype(ref=h5r.Reference)
         if type(data) == bytes:
@@ -181,7 +181,7 @@ class _RegionProxy(object):
             raise TypeError("Region references can only be made to datasets")
         from . import selections
         selection = selections.select(self.id.shape, args, dsid=self.id)
-        return h5r.create(self.id, b'.', h5r.DATASET_REGION, selection.id)
+        return h5r.create(h5r.DATASET_REGION, self.id, b'.', selection.id)
 
     def shape(self, ref):
         """ Get the shape of the target dataspace referred to by *ref*. """
@@ -239,7 +239,7 @@ class HLObject(CommonStateObject):
     @with_phil
     def ref(self):
         """ An (opaque) HDF5 reference to this object """
-        return h5r.create(self.id, b'.', h5r.OBJECT)
+        return h5r.create(h5r.OBJECT, self.id, b'.')
 
     @property
     @with_phil

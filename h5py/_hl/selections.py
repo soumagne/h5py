@@ -72,7 +72,7 @@ def select(shape, args, dsid):
             sel[arg]
             return sel
 
-        elif isinstance(arg, h5r.RegionReference):
+        elif isinstance(arg, h5r.DsetRegionReference):
             sid = h5r.get_region(arg, dsid)
             if shape != sid.shape:
                 raise TypeError("Reference shape does not match dataset shape")
@@ -113,7 +113,7 @@ class _RegionProxy(object):
         object.  Selection must be compatible with the dataset.
         """
         selection = select(self.id.shape, args, self.id)
-        return h5r.create(self.id, '.', h5r.DATASET_REGION, selection.id)
+        return h5r.create(h5r.DATASET_REGION, self.id, '.', selection.id)
 
 class Selection(object):
 

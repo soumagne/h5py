@@ -384,7 +384,7 @@ class Dataset(HLObject):
 
         # === Special-case region references ====
 
-        if len(args) == 1 and isinstance(args[0], h5r.RegionReference):
+        if len(args) == 1 and isinstance(args[0], h5r.DsetRegionReference):
 
             obj = h5r.dereference(args[0], self.id)
             if obj != self.id:
