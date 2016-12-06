@@ -8,7 +8,7 @@ Starting with version 2.5.0, h5py includes support for the HDF5 SWMR features.
 The SWMR feature is not available in the current release (1.8 series) of HDF5 
 library. It is planned to be released for production use in version 1.10. Until
 then it is available as an experimental prototype form from development snapshot
-version 1.9.178 on the
+version 1.9.300 on the
 `HDF Group ftp server <ftp://ftp.hdfgroup.uiuc.edu/pub/outgoing/SWMR/>`_ or the
 `HDF Group svn repository <http://svn.hdfgroup.uiuc.edu/hdf5/branches/revise_chunks>`_.
 

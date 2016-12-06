@@ -505,7 +505,7 @@ cdef class FileID(GroupID):
             activating SWMR writing mode, but not committed datatypes. Attributes
             attached to objects cannot remain open. 
 
-            Feature requires: 1.9.178 HDF5
+            Feature requires: 1.9.300 HDF5
             """
             H5Fstart_swmr_write(self.id)
             

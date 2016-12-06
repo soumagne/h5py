@@ -108,8 +108,8 @@ hdf5:
   herr_t    H5Dset_extent(hid_t dset_id, hsize_t* size)
 
   # SWMR functions
-  1.9.178   herr_t H5Dflush(hid_t dataset_id)
-  1.9.178   herr_t H5Drefresh(hid_t dataset_id)
+  1.9.300   herr_t H5Dflush(hid_t dataset_id)
+  1.9.300   herr_t H5Drefresh(hid_t dataset_id)
 
   # Direct Chunk Writing
   1.8.11    herr_t H5DOwrite_chunk(hid_t dset_id, hid_t dxpl_id, uint32_t filters, const hsize_t *offset, size_t data_size, const void *buf)
@@ -156,7 +156,7 @@ hdf5:
   MPI 1.8.9 herr_t H5Fget_mpi_atomicity(hid_t file_id, hbool_t *flag)
 
   # SWMR functions
-  1.9.178   herr_t H5Fstart_swmr_write(hid_t file_id)
+  1.9.300   herr_t H5Fstart_swmr_write(hid_t file_id)
 
 
   # === H5G - Groups API ======================================================
