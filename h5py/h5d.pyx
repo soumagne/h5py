@@ -20,6 +20,7 @@ from utils cimport  check_numpy_read, check_numpy_write, \
 from h5t cimport TypeID, typewrap, py_create
 from h5s cimport SpaceID
 from h5p cimport PropID, propwrap
+from h5tr cimport TransactionID
 from _proxy cimport dset_rw
 
 from h5py import _objects
@@ -60,7 +61,8 @@ IF HDF5_VERSION >= VDS_MIN_HDF5_VERSION:
 
 @with_phil
 def create(ObjectID loc not None, object name, TypeID tid not None,
-               SpaceID space not None, PropID dcpl=None, PropID lcpl=None, PropID dapl = None):
+               SpaceID space not None, PropID dcpl=None, PropID lcpl=None,
+               PropID dapl=None, TransactionID tr=None):
         """ (objectID loc, STRING name or None, TypeID tid, SpaceID space,
              PropDCID dcpl=None, PropID lcpl=None) => DatasetID
 
@@ -73,22 +75,35 @@ def create(ObjectID loc not None, object name, TypeID tid not None,
             cname = name
 
         if cname != NULL:
-            dsid = H5Dcreate2(loc.id, cname, tid.id, space.id,
-                     pdefault(lcpl), pdefault(dcpl), pdefault(dapl))
+            if tr is None:
+                dsid = H5Dcreate2(loc.id, cname, tid.id, space.id,
+                    pdefault(lcpl), pdefault(dcpl), pdefault(dapl))
+            else:
+                dsid = H5Dcreate_ff(loc.id, cname, tid.id, space.id,
+                    pdefault(lcpl), pdefault(dcpl), pdefault(dapl), tr.id)
         else:
             dsid = H5Dcreate_anon(loc.id, tid.id, space.id,
                      pdefault(dcpl), pdefault(dapl))
+
         return DatasetID(dsid)
 
 @with_phil
-def open(ObjectID loc not None, char* name, PropID dapl=None):
+def open(ObjectID loc not None, char* name, PropID dapl=None,
+         TransactionID tr=None):
     """ (ObjectID loc, STRING name, PropID dapl=None) => DatasetID
 
     Open an existing dataset attached to a group or file object, by name.
 
     If specified, dapl may be a dataset access property list.
     """
-    return DatasetID(H5Dopen2(loc.id, name, pdefault(dapl)))
+    cdef hid_t dsid
+
+    if tr is None:
+        dsid = H5Dopen2(loc.id, name, pdefault(dapl))
+    else:
+        dsid = H5Dopen_ff(loc.id, name, pdefault(dapl), tr.id)
+
+    return DatasetID(dsid)
 
 # --- Proxy functions for safe(r) threading -----------------------------------
 
@@ -140,11 +155,22 @@ cdef class DatasetID(ObjectID):
                 sid = self.get_space()
                 return sid.get_simple_extent_ndims()
 
+    @with_phil
+    def close(self, TransactionID tr_id=None):
+        """()
+
+        Terminate access through this identifier.
+        """
+        if tr_id is None:
+            self._close()
+        else:
+            H5Dclose_ff(self.id, tr_id.id)
+        _objects.nonlocal_close()
 
     @with_phil
     def read(self, SpaceID mspace not None, SpaceID fspace not None,
                    ndarray arr_obj not None, TypeID mtype=None,
-                   PropID dxpl=None):
+                   PropID dxpl=None, TransactionID tr=None):
         """ (SpaceID mspace, SpaceID fspace, NDARRAY arr_obj,
              TypeID mtype=None, PropDXID dxpl=None)
 
@@ -163,7 +189,7 @@ cdef class DatasetID(ObjectID):
             this is not the case, ValueError will be raised and the read will
             fail.  Keyword dxpl may be a dataset transfer property list.
         """
-        cdef hid_t self_id, mtype_id, mspace_id, fspace_id, plist_id
+        cdef hid_t self_id, mtype_id, mspace_id, fspace_id, plist_id, tr_id
         cdef void* data
         cdef int oldflags
 
@@ -177,14 +203,15 @@ cdef class DatasetID(ObjectID):
         fspace_id = fspace.id
         plist_id = pdefault(dxpl)
         data = PyArray_DATA(arr_obj)
+        tr_id = tr.id
 
-        dset_rw(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, 1)
+        dset_rw(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, tr_id, 1)
 
 
     @with_phil
     def write(self, SpaceID mspace not None, SpaceID fspace not None,
                     ndarray arr_obj not None, TypeID mtype=None,
-                    PropID dxpl=None):
+                    PropID dxpl=None, TransactionID tr=None):
         """ (SpaceID mspace, SpaceID fspace, NDARRAY arr_obj,
              TypeID mtype=None, PropDXID dxpl=None)
 
@@ -203,7 +230,7 @@ cdef class DatasetID(ObjectID):
             The provided Numpy array must be C-contiguous.  If this is not the
             case, ValueError will be raised and the read will fail.
         """
-        cdef hid_t self_id, mtype_id, mspace_id, fspace_id, plist_id
+        cdef hid_t self_id, mtype_id, mspace_id, fspace_id, plist_id, tr_id
         cdef void* data
         cdef int oldflags
 
@@ -217,8 +244,9 @@ cdef class DatasetID(ObjectID):
         fspace_id = fspace.id
         plist_id = pdefault(dxpl)
         data = PyArray_DATA(arr_obj)
+        tr_id = tr.id
 
-        dset_rw(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, 0)
+        dset_rw(self_id, mtype_id, mspace_id, fspace_id, plist_id, data, tr_id, 0)
 
 
     @with_phil

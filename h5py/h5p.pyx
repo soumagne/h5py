@@ -27,6 +27,8 @@ from h5s cimport SpaceID
 from h5ac cimport CacheConfig
 from h5py import _objects
 
+from uuid import UUID
+
 from ._objects import phil, with_phil
 
 if MPI:
@@ -86,6 +88,9 @@ cdef object lockcls(hid_t id_in):
     pid.locked = 1
     return pid
 
+cdef extern from "Python.h":
+    object PyString_FromStringAndSize(char *, int)
+    char *PyString_AS_STRING(object s)
 
 # === Public constants and data structures ====================================
 
@@ -1127,6 +1132,18 @@ cdef class PropFAID(PropInstanceID):
             """
             raise RuntimeError("MPI-POSIX driver is broken; removed in h5py 2.3.1")
 
+        @with_phil
+        def set_fapl_daosm(self, Comm comm not None, Info info not None, bytes pool_uuid not None, char *pool_grp):
+            """ (Comm comm, Info info, uuid uuid, STRING pool_grp)
+
+            Set DAOS-M HDF5 driver.
+
+            Comm: An mpi4py.MPI.Comm instance
+            Info: An mpi4py.MPI.Info instance
+            uuid: A generated uuid from the pool
+            pool_grp: A pool_grp string identifier
+            """
+            H5Pset_fapl_daosm(self.id, comm.ob_mpi, info.ob_mpi, pool_uuid, pool_grp)
 
     @with_phil
     def get_mdc_config(self):

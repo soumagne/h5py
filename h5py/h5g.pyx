@@ -17,6 +17,7 @@ include "config.pxi"
 from _objects cimport pdefault
 from utils cimport emalloc, efree
 from h5p cimport PropID
+from h5tr cimport TransactionID
 cimport _hdf5 # to implement container testing for 1.6
 from _errors cimport set_error_handler, err_cookie
 
@@ -124,17 +125,24 @@ cdef class GroupIter:
 # === Basic group management ==================================================
 
 @with_phil
-def open(ObjectID loc not None, char* name):
+def open(ObjectID loc not None, char* name, TransactionID tr=None):
     """(ObjectID loc, STRING name) => GroupID
 
     Open an existing HDF5 group, attached to some other group.
     """
-    return GroupID(H5Gopen(loc.id, name))
+    cdef hid_t gid
+
+    if tr is None:
+        gid = H5Gopen(loc.id, name)
+    else:
+        gid = H5Gopen_ff(loc.id, name, H5P_DEFAULT, tr.id)
+
+    return GroupID(gid)
 
 
 @with_phil
 def create(ObjectID loc not None, object name, PropID lcpl=None,
-           PropID gcpl=None):
+           PropID gcpl=None, TransactionID tr=None):
     """(ObjectID loc, STRING name or None, PropLCID lcpl=None,
         PropGCID gcpl=None)
     => GroupID
@@ -148,7 +156,10 @@ def create(ObjectID loc not None, object name, PropID lcpl=None,
         cname = name
 
     if cname != NULL:
-        gid = H5Gcreate2(loc.id, cname, pdefault(lcpl), pdefault(gcpl), H5P_DEFAULT)
+        if tr is None:
+            gid = H5Gcreate2(loc.id, cname, pdefault(lcpl), pdefault(gcpl), H5P_DEFAULT)
+        else:
+            gid = H5Gcreate_ff(loc.id, cname, pdefault(lcpl), pdefault(gcpl), H5P_DEFAULT, tr.id)
     else:
         gid = H5Gcreate_anon(loc.id, pdefault(gcpl), H5P_DEFAULT)
 
@@ -257,6 +268,17 @@ cdef class GroupID(ObjectID):
             import h5l
             self.links = h5l.LinkProxy(id_)
 
+    @with_phil
+    def close(self, TransactionID tr_id=None):
+        """()
+
+        Terminate access through this identifier.
+        """
+        if tr_id is None:
+            self._close()
+        else:
+            H5Gclose_ff(self.id, tr_id.id)
+        _objects.nonlocal_close()
 
     @with_phil
     def link(self, char* current_name, char* new_name,

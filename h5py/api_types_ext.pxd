@@ -14,6 +14,9 @@ include 'config.pxi'
 IF MPI:
     from mpi4py.MPI cimport MPI_Comm, MPI_Info, Comm, Info
 
+cdef extern from "uuid/uuid.h":
+  ctypedef unsigned char uuid_t[16]
+
 cdef extern from "stdlib.h":
   ctypedef long size_t
   void *malloc(size_t size)

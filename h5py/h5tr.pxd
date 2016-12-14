@@ -9,8 +9,7 @@
 
 from defs cimport *
 
-cdef herr_t attr_rw(hid_t attr, hid_t mtype, void *progbuf, int read) except -1
+from _objects cimport ObjectID
 
-cdef herr_t dset_rw(hid_t dset, hid_t mtype, hid_t mspace, hid_t fspace,
-                    hid_t dxpl, void* progbuf, hid_t tr, int read) except -1
-
+cdef class TransactionID(ObjectID):
+    pass

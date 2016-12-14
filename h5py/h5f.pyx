@@ -17,6 +17,7 @@ include "config.pxi"
 from _objects cimport pdefault
 from h5p cimport propwrap, PropFAID, PropFCID
 from h5t cimport typewrap
+from h5tr cimport TransactionID
 from h5i cimport wrap_identifier
 from h5ac cimport CacheConfig
 from utils cimport emalloc, efree
@@ -62,7 +63,8 @@ LIBVER_LATEST = H5F_LIBVER_LATEST
 # === File operations =========================================================
 
 @with_phil
-def open(char* name, unsigned int flags=H5F_ACC_RDWR, PropFAID fapl=None):
+def open(char* name, unsigned int flags=H5F_ACC_RDWR, PropFAID fapl=None,
+                                                      TransactionID tr=None):
     """(STRING name, UINT flags=ACC_RDWR, PropFAID fapl=None) => FileID
 
     Open an existing HDF5 file.  Keyword "flags" may be:
@@ -75,14 +77,23 @@ def open(char* name, unsigned int flags=H5F_ACC_RDWR, PropFAID fapl=None):
 
     Keyword fapl may be a file access property list.
     """
-    return FileID(H5Fopen(name, flags, pdefault(fapl)))
+    cdef hid_t fid, trid
+
+    if tr is None:
+        fid = H5Fopen(name, flags, pdefault(fapl))
+    else:
+        trid = tr.id
+        fid = H5Fopen_ff(name, flags, pdefault(fapl), &trid)
+
+    return FileID(fid)
 
 
 @with_phil
 def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
-                                                PropFAID fapl=None):
+                                                PropFAID fapl=None,
+                                                TransactionID tr=None):
     """(STRING name, INT flags=ACC_TRUNC, PropFCID fcpl=None,
-    PropFAID fapl=None) => FileID
+    PropFAID fapl=None, TransactionID tr=None) => FileID
 
     Create a new HDF5 file.  Keyword "flags" may be:
 
@@ -95,7 +106,15 @@ def create(char* name, int flags=H5F_ACC_TRUNC, PropFCID fcpl=None,
     To keep the behavior in line with that of Python's built-in functions,
     the default is ACC_TRUNC.  Be careful!
     """
-    return FileID(H5Fcreate(name, flags, pdefault(fcpl), pdefault(fapl)))
+    cdef hid_t fid, trid
+
+    if tr is None:
+        fid = H5Fcreate(name, flags, pdefault(fcpl), pdefault(fapl))
+    else:
+        trid = tr.id
+        fid = H5Fcreate_ff(name, flags, pdefault(fcpl), pdefault(fapl), &trid)
+
+    return FileID(fid)
 
 
 @with_phil
@@ -272,7 +291,7 @@ cdef class FileID(GroupID):
 
 
     @with_phil
-    def close(self):
+    def close(self, TransactionID tr_id=None):
         """()
 
         Terminate access through this identifier.  Note that depending on
@@ -280,7 +299,10 @@ cdef class FileID(GroupID):
         physical file might not be closed until all remaining open
         identifiers are freed.
         """
-        self._close()
+        if tr_id is None:
+            self._close()
+        else:
+            H5Fclose_ff(self.id, tr_id.id)
         _objects.nonlocal_close()
 
 

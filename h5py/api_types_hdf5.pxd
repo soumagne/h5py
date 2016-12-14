@@ -85,6 +85,15 @@ cdef extern from "hdf5.h":
   ctypedef  herr_t (*H5D_operator_t)(void *elem, hid_t type_id, unsigned ndim,
                     hsize_t *point, void *operator_data) except -1
 
+# === H5ES - Event Stack API =============================================
+
+  # Asynchronous operation status
+  ctypedef enum H5ES_status_t:
+     H5ES_STATUS_IN_PROGRESS,   # Operation has not yet completed
+     H5ES_STATUS_SUCCEED,       # Operation has completed, successfully
+     H5ES_STATUS_FAIL,          # Operation has completed, but failed
+     H5ES_STATUS_CANCEL         # Operation has not completed and has been cancelled
+
 # === H5F - File API ==========================================================
 
   # File constants
@@ -231,6 +240,7 @@ cdef extern from "hdf5.h":
     H5I_ATTR,               # group ID for Attribute objects
     H5I_REFERENCE,          # group ID for Reference objects
     H5I_VFL,                # group ID for virtual file layer
+    H5I_TR,                 # group ID for Transaction objects
     H5I_GENPROP_CLS,        # group ID for generic property list classes
     H5I_GENPROP_LST,        # group ID for generic property lists
     H5I_ERROR_CLASS,        # group ID for error classes
